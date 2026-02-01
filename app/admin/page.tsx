@@ -7,39 +7,35 @@ export const dynamic = 'force-dynamic';
 export default async function AdminDashboard() {
     const { startDate } = await getAvailabilityWindow();
 
-    // 1. Total Referees (Only actual referees)
-    // using raw query to be safe given previous context about Prisma Client issues
-    const refereesCountRaw = await db.$queryRaw<Array<{ count: bigint }>>`
-        SELECT COUNT(*) as count FROM referees WHERE "officialType" = 'REFEREE'
-    `;
+    // Execute all queries in parallel
+    const [refereesCountRaw, officialsCountRaw, formsThisWeek, latestRegistrations] = await Promise.all([
+        // 1. Total Referees
+        db.$queryRaw<Array<{ count: bigint }>>`SELECT COUNT(*) as count FROM referees WHERE "officialType" = 'REFEREE'`,
+
+        // 2. Total Officials
+        db.$queryRaw<Array<{ count: bigint }>>`SELECT COUNT(*) as count FROM referees WHERE "officialType" != 'REFEREE' AND "officialType" IS NOT NULL`,
+
+        // 3. Forms Submitted This Week
+        db.availabilityForm.count({ where: { weekStartDate: startDate } }),
+
+        // 4. Latest Registrations
+        db.$queryRaw<Array<{
+            id: string;
+            firstName: string;
+            lastName: string;
+            officialType: string | null;
+            tckn: string | null;
+            createdAt: Date | string;
+        }>>`
+            SELECT id, "firstName", "lastName", "officialType", tckn, "createdAt" 
+            FROM referees 
+            ORDER BY "createdAt" DESC 
+            LIMIT 5
+        `
+    ]);
+
     const totalReferees = Number(refereesCountRaw[0]?.count || 0);
-
-    // 2. Total Officials (Non-referees)
-    const officialsCountRaw = await db.$queryRaw<Array<{ count: bigint }>>`
-        SELECT COUNT(*) as count FROM referees WHERE "officialType" != 'REFEREE' AND "officialType" IS NOT NULL
-    `;
     const totalOfficials = Number(officialsCountRaw[0]?.count || 0);
-
-    // 3. Forms Submitted This Week
-    const formsThisWeek = await db.availabilityForm.count({
-        where: { weekStartDate: startDate }
-    });
-
-    // 4. Latest Registrations
-    // 4. Latest Registrations - Using Raw Query to bypass Prisma "officialType" validation error
-    const latestRegistrations = await db.$queryRaw<Array<{
-        id: string;
-        firstName: string;
-        lastName: string;
-        officialType: string | null;
-        tckn: string | null;
-        createdAt: Date | string;
-    }>>`
-        SELECT id, "firstName", "lastName", "officialType", tckn, "createdAt" 
-        FROM referees 
-        ORDER BY "createdAt" DESC 
-        LIMIT 5
-    `;
 
     return (
         <div>
