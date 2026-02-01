@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { decrypt } from "@/lib/session";
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
     // 1. Check if route is protected
     const path = request.nextUrl.pathname;
     const isAdminRoute = path.startsWith("/admin");
@@ -21,7 +21,6 @@ export async function middleware(request: NextRequest) {
 
         if (!session?.userId) {
             // Not authenticated -> Redirect to Home (where login modal is)
-            // or to Admin Login if trying to access admin?
             if (isAdminRoute) {
                 return NextResponse.redirect(new URL("/admin/login", request.nextUrl));
             }
@@ -36,9 +35,6 @@ export async function middleware(request: NextRequest) {
 
         if (isRefereeRoute && session.role !== "REFEREE") {
             // Admin trying to access Referee?
-            // Usually Admins can see everything, but user said "giriş yapsınlar... yöneticilerin kısmı".
-            // Let's redirect Admin back to Admin Panel to prevent confusion, 
-            // unless they explicitly need to see referee view.
             return NextResponse.redirect(new URL("/admin", request.nextUrl));
         }
     }

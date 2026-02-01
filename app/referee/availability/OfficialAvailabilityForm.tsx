@@ -31,13 +31,13 @@ export function OfficialAvailabilityForm({ referee, days, existingForm, isLocked
     const getDayData = (date: Date) => {
         if (!existingForm) return null;
         const target = date.toISOString().split('T')[0];
-        return existingForm.days.find((d) => {
+        return (existingForm.days as AvailabilityDay[]).find((d: AvailabilityDay) => {
             const dayDate = d.date instanceof Date ? d.date.toISOString().split('T')[0] : (d.date as unknown as string).split('T')[0];
             return dayDate === target;
         });
     };
 
-    const isRegionSelected = (rName: string) => referee.regions.some((r) => r.name === rName);
+    const isRegionSelected = (rName: string) => referee.regions.some((r: Region) => r.name === rName);
 
     return (
         <form action={formAction} className="space-y-8">
