@@ -1,0 +1,133 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id       Int      @id @default(autoincrement())
+  username String   @unique
+  tckn     String   @unique
+  password String
+  role     Role     @relation(fields: [roleId], references: [id])
+  roleId   Int
+  referee  Referee?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+
+model Role {
+  id    Int    @id @default(autoincrement())
+  name  String @unique // "ADMIN" or "REFEREE"
+  users User[]
+
+  @@map("roles")
+}
+
+model Region {
+  id       Int       @id @default(autoincrement())
+  name     String    @unique // "Anadolu", "Avrupa", "BGM"
+  referees Referee[] // Many-to-many relation implicitly handled by Prisma
+
+  @@map("regions")
+}
+
+model Referee {
+  id             Int      @id @default(autoincrement())
+  user           User     @relation(fields: [userId], references: [id])
+  userId         Int      @unique
+  tckn           String   @unique
+  firstName      String
+  lastName       String
+  email          String   @unique
+  phone          String
+  classification String // "A", "B", "C", "IL_HAKEMI", "ADAY_HAKEM"
+  officialType   String   @default("REFEREE") // "REFEREE", "TABLE", "OBSERVER", "HEALTH", "STATISTICIAN"
+  imageUrl       String?
+  regions        Region[]
+  forms          AvailabilityForm[]
+  assignments    MatchAssignment[]
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@map("referees")
+}
+
+model AvailabilityForm {
+  id            Int      @id @default(autoincrement())
+  referee       Referee  @relation(fields: [refereeId], references: [id])
+  refereeId     Int
+  weekStartDate DateTime // The Monday (or specific start) of the week
+  status        String   @default("DRAFT") // "DRAFT", "SUBMITTED", "LOCKED"
+  days          AvailabilityDay[]
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([refereeId, weekStartDate]) // One form per week per referee
+  @@map("availability_forms")
+}
+
+model AvailabilityDay {
+  id       Int              @id @default(autoincrement())
+  form     AvailabilityForm @relation(fields: [formId], references: [id], onDelete: Cascade)
+  formId   Int
+  date     DateTime
+  slots    String           // Stores selected time slots e.g. "10:00-13:00,19:00-22:00"
+  
+  @@map("availability_days")
+}
+
+model SystemSetting {
+  key         String @id
+  value       String
+  description String?
+
+  @@map("system_settings")
+}
+
+model Match {
+  id        Int      @id @default(autoincrement())
+  matchCode String   @unique
+  league    String
+  homeTeam  String
+  awayTeam  String
+  date      DateTime
+  location  String
+  
+  assignments MatchAssignment[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("matches")
+}
+
+model MatchAssignment {
+  id        Int      @id @default(autoincrement())
+  match     Match    @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  matchId   Int
+  referee   Referee  @relation(fields: [refereeId], references: [id], onDelete: Cascade)
+  refereeId Int
+  role      String
+
+  @@unique([matchId, refereeId])
+  @@map("match_assignments")
+}
+
+model LoginAttempt {
+  id           Int      @id @default(autoincrement())
+  ipAddress    String   @unique
+  attempts     Int      @default(0)
+  lastAttempt  DateTime @default(now())
+  blockedUntil DateTime?
+
+  @@map("login_attempts")
+}
