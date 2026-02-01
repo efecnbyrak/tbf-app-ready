@@ -8,9 +8,10 @@ interface DayRowProps {
     dateString: string;
     initialSlot: string | null;
     isLocked: boolean;
+    officialType?: string;
 }
 
-const TIME_SLOTS = [
+const REFEREE_SLOTS = [
     "17:00",
     "18:30",
     "20:00",
@@ -18,7 +19,15 @@ const TIME_SLOTS = [
     "14:00 - 20:00"
 ] as const;
 
-export function DayRow({ index, dayName, dateString, initialSlot, isLocked }: DayRowProps) {
+const OFFICIAL_SLOTS = [
+    "09:00-16:30",
+    "16:30-22:00"
+] as const;
+
+export function DayRow({ index, dayName, dateString, initialSlot, isLocked, officialType }: DayRowProps) {
+    const isReferee = officialType === "REFEREE";
+    const currentSlots = isReferee ? REFEREE_SLOTS : OFFICIAL_SLOTS;
+
     // Parse initial slots
     const parseInitialSlots = (): { isAvailable: boolean; selectedSlots: string[] } => {
         if (!initialSlot || initialSlot === "Uygun Değil") {
@@ -29,7 +38,9 @@ export function DayRow({ index, dayName, dateString, initialSlot, isLocked }: Da
         }
         // Parse time slots (can be multiple, comma-separated)
         const slots = initialSlot.split(',').map(s => s.trim());
-        return { isAvailable: false, selectedSlots: slots };
+        // Filter out any slots that don't belong to the current role (migration/switching safety)
+        const validSlots = slots.filter(s => (currentSlots as readonly string[]).includes(s));
+        return { isAvailable: false, selectedSlots: validSlots };
     };
 
     const { isAvailable: initialIsAvailable, selectedSlots: initialSelectedSlots } = parseInitialSlots();
@@ -48,6 +59,7 @@ export function DayRow({ index, dayName, dateString, initialSlot, isLocked }: Da
     const handleSlotChange = (slot: string, checked: boolean) => {
         if (checked) {
             setSelectedSlots(prev => [...prev, slot]);
+            setIsAvailable(false); // Uncheck UYGUNUM if a slot is selected
         } else {
             setSelectedSlots(prev => prev.filter(s => s !== slot));
         }
@@ -89,7 +101,7 @@ export function DayRow({ index, dayName, dateString, initialSlot, isLocked }: Da
 
             {/* Time Slots Grid */}
             <div className="grid grid-cols-2 md:grid-cols-5 gap-2 mt-2">
-                {TIME_SLOTS.map((slot) => {
+                {(currentSlots as readonly string[]).map((slot) => {
                     const isChecked = selectedSlots.includes(slot);
                     const isDisabled = isLocked || isAvailable;
 

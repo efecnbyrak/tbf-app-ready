@@ -7,12 +7,12 @@ import { useActionState } from "react";
 import { formatClassification } from "@/lib/format-utils";
 import { Referee, Region, AvailabilityForm as AvailabilityFormType, AvailabilityDay } from "@prisma/client";
 
-interface AvailabilityFormProps {
-    referee: Referee & { regions: Region[] };
+interface OfficialAvailabilityFormProps {
+    referee: any;
     days: Date[];
-    existingForm: (AvailabilityFormType & { days: AvailabilityDay[] }) | null;
+    existingForm: any;
     isLocked: boolean;
-    deadline?: Date;
+    deadline: Date;
     startDate: Date;
     endDate: Date;
     customRoleLabel?: string;
@@ -24,7 +24,7 @@ const initialState: { error: string | undefined; success: boolean } = {
     success: false
 };
 
-export function AvailabilityForm({ referee, days, existingForm, isLocked, deadline, startDate, endDate, customRoleLabel, customRoleTitle }: AvailabilityFormProps) {
+export function OfficialAvailabilityForm({ referee, days, existingForm, isLocked, deadline, startDate, endDate, customRoleLabel, customRoleTitle }: OfficialAvailabilityFormProps) {
     const [state, formAction, isPending] = useActionState(saveAvailability, initialState);
 
     // Helper to get day data
@@ -124,6 +124,7 @@ export function AvailabilityForm({ referee, days, existingForm, isLocked, deadli
                                 dateString={day.toLocaleDateString('tr-TR')}
                                 initialSlot={dayData ? (dayData.slots as unknown as string) : null}
                                 isLocked={isLocked}
+                                officialType={referee.officialType || (customRoleLabel ? "OFFICIAL" : "REFEREE")}
                             />
                         );
                     })}

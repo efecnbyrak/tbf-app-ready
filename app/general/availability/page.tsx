@@ -2,7 +2,7 @@ import { db } from "@/lib/db";
 import { verifySession } from "@/lib/session";
 import { getAvailabilityWindow } from "@/lib/availability-utils";
 import { Info, Lock } from "lucide-react";
-import { AvailabilityForm } from "@/app/referee/availability/AvailabilityForm";
+import { OfficialAvailabilityForm } from "../../referee/availability/OfficialAvailabilityForm";
 
 export default async function OfficialAvailabilityPage() {
     const session = await verifySession();
@@ -41,8 +41,11 @@ export default async function OfficialAvailabilityPage() {
     const typeLabels: Record<string, string> = {
         "TABLE": "Masa Görevlisi",
         "OBSERVER": "Gözlemci",
-        "HEALTH": "Sağlıkçı",
-        "STATISTICIAN": "İstatistikçi",
+        "HEALTH": "Sağlık Görevlisi",
+        "STATISTICIAN": "İstatistik Görevlisi",
+        "FIELD_COMMISSIONER": "Saha Komiseri",
+        "TABLE_HEALTH": "Masa & Sağlık",
+        "TABLE_STATISTICIAN": "Masa & İstatistik",
         "REFEREE": "Hakem"
     };
 
@@ -69,7 +72,7 @@ export default async function OfficialAvailabilityPage() {
                 )}
             </header>
 
-            <AvailabilityForm
+            <OfficialAvailabilityForm
                 referee={referee}
                 days={days}
                 existingForm={existingForm}

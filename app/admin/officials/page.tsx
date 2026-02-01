@@ -38,8 +38,11 @@ export default async function OfficialsPage({ searchParams }: PageProps) {
     const types = [
         { id: "TABLE", label: "Masa Görevlileri", icon: Table, color: "text-orange-600", bg: "bg-orange-50 dark:bg-orange-900/20", borderColor: "border-orange-200 dark:border-orange-800" },
         { id: "OBSERVER", label: "Gözlemciler", icon: Shield, color: "text-blue-600", bg: "bg-blue-50 dark:bg-blue-900/20", borderColor: "border-blue-200 dark:border-blue-800" },
-        { id: "STATISTICIAN", label: "İstatistikçiler", icon: FileSpreadsheet, color: "text-purple-600", bg: "bg-purple-50 dark:bg-purple-900/20", borderColor: "border-purple-200 dark:border-purple-800" },
+        { id: "STATISTICIAN", label: "İstatistik Görevlileri", icon: FileSpreadsheet, color: "text-purple-600", bg: "bg-purple-50 dark:bg-purple-900/20", borderColor: "border-purple-200 dark:border-purple-800" },
         { id: "HEALTH", label: "Sağlık Görevlileri", icon: Activity, color: "text-green-600", bg: "bg-green-50 dark:bg-green-900/20", borderColor: "border-green-200 dark:border-green-800" },
+        { id: "FIELD_COMMISSIONER", label: "Saha Komiserleri", icon: Shield, color: "text-amber-600", bg: "bg-amber-50 dark:bg-amber-900/20", borderColor: "border-amber-200 dark:border-amber-800" },
+        { id: "TABLE_HEALTH", label: "Masa & Sağlık", icon: Activity, color: "text-cyan-600", bg: "bg-cyan-50 dark:bg-cyan-900/20", borderColor: "border-cyan-200 dark:border-cyan-800" },
+        { id: "TABLE_STATISTICIAN", label: "Masa & İstatistik", icon: FileSpreadsheet, color: "text-indigo-600", bg: "bg-indigo-50 dark:bg-indigo-900/20", borderColor: "border-indigo-200 dark:border-indigo-800" },
     ];
 
     return (

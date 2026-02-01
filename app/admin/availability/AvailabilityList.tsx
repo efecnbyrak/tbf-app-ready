@@ -3,9 +3,9 @@
 import React, { useState } from "react";
 import { Search, ChevronDown, ChevronUp, Calendar } from "lucide-react";
 import { formatClassification } from "@/lib/format-utils";
-import { Referee, Region, AvailabilityForm, AvailabilityDay } from "@prisma/client";
+import { Referee, Region, AvailabilityForm as PrismaForm, AvailabilityDay } from "@prisma/client";
 
-type AvailabilityFormWithDetails = AvailabilityForm & {
+type AvailabilityFormWithDetails = PrismaForm & {
     referee: Referee & { regions: Region[]; officialType?: string };
     days: AvailabilityDay[];
 };
@@ -101,8 +101,11 @@ export function AvailabilityList({ forms, startDate, endDate }: AvailabilityList
                                             const typeLabels: Record<string, string> = {
                                                 "TABLE": "Masa Görevlisi",
                                                 "OBSERVER": "Gözlemci",
-                                                "HEALTH": "Sağlıkçı",
-                                                "STATISTICIAN": "İstatistikçi",
+                                                "HEALTH": "Sağlık Görevlisi",
+                                                "STATISTICIAN": "İstatistik Görevlisi",
+                                                "FIELD_COMMISSIONER": "Saha Komiseri",
+                                                "TABLE_HEALTH": "Masa & Sağlık",
+                                                "TABLE_STATISTICIAN": "Masa & İstatistik",
                                                 "REFEREE": "Hakem"
                                             };
                                             const displayText = isGeneralOfficial
@@ -207,8 +210,11 @@ export function AvailabilityList({ forms, startDate, endDate }: AvailabilityList
                                             const typeLabels: Record<string, string> = {
                                                 "TABLE": "Masa Görevlisi",
                                                 "OBSERVER": "Gözlemci",
-                                                "HEALTH": "Sağlıkçı",
-                                                "STATISTICIAN": "İstatistikçi",
+                                                "HEALTH": "Sağlık Görevlisi",
+                                                "STATISTICIAN": "İstatistik Görevlisi",
+                                                "FIELD_COMMISSIONER": "Saha Komiseri",
+                                                "TABLE_HEALTH": "Masa & Sağlık",
+                                                "TABLE_STATISTICIAN": "Masa & İstatistik",
                                                 "REFEREE": "Hakem"
                                             };
                                             const displayText = isGeneralOfficial

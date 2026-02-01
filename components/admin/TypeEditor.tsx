@@ -15,8 +15,11 @@ const TYPES = [
     { value: "REFEREE", label: "Hakem" },
     { value: "TABLE", label: "Masa Görevlisi" },
     { value: "OBSERVER", label: "Gözlemci" },
+    { value: "STATISTICIAN", label: "İstatistik Görevlisi" },
     { value: "HEALTH", label: "Sağlık Görevlisi" },
-    { value: "STATISTICIAN", label: "İstatistikçi" }
+    { value: "FIELD_COMMISSIONER", label: "Saha Komiseri" },
+    { value: "TABLE_HEALTH", label: "Masa & Sağlık" },
+    { value: "TABLE_STATISTICIAN", label: "Masa & İstatistik" }
 ];
 
 export function TypeEditor({ refereeId, currentType }: TypeEditorProps) {

@@ -17,6 +17,9 @@ const RoleIcon = ({ type }: { type: string }) => {
         case "OBSERVER": return <Shield className="w-4 h-4 text-blue-600" />;
         case "HEALTH": return <Activity className="w-4 h-4 text-green-600" />;
         case "STATISTICIAN": return <FileSpreadsheet className="w-4 h-4 text-purple-600" />;
+        case "FIELD_COMMISSIONER": return <Shield className="w-4 h-4 text-amber-600" />;
+        case "TABLE_HEALTH": return <Activity className="w-4 h-4 text-cyan-600" />;
+        case "TABLE_STATISTICIAN": return <FileSpreadsheet className="w-4 h-4 text-indigo-600" />;
         default: return <User className="w-4 h-4 text-zinc-500" />;
     }
 };

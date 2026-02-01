@@ -2,7 +2,7 @@ import { db } from "@/lib/db";
 import { verifySession } from "@/lib/session";
 import { getAvailabilityWindow } from "@/lib/availability-utils";
 import { Info, Lock } from "lucide-react";
-import { AvailabilityForm } from "./AvailabilityForm";
+import { OfficialAvailabilityForm } from "./OfficialAvailabilityForm";
 
 export default async function AvailabilityPage() {
     const session = await verifySession();
@@ -53,7 +53,7 @@ export default async function AvailabilityPage() {
                 )}
             </header>
 
-            <AvailabilityForm
+            <OfficialAvailabilityForm
                 referee={referee}
                 days={days}
                 existingForm={existingForm}

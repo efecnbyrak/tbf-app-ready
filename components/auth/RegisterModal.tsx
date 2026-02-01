@@ -136,8 +136,11 @@ export function RegisterModal({ isOpen, onClose, onSwitchToLogin }: RegisterModa
                         <option value="REFEREE">Hakem</option>
                         <option value="TABLE">Masa Görevlisi</option>
                         <option value="OBSERVER">Gözlemci</option>
-                        <option value="HEALTH">Sağlıkçı</option>
-                        <option value="STATISTICIAN">İstatistikçi</option>
+                        <option value="STATISTICIAN">İstatistik Görevlisi</option>
+                        <option value="HEALTH">Sağlık Görevlisi</option>
+                        <option value="FIELD_COMMISSIONER">Saha Komiseri</option>
+                        <option value="TABLE_HEALTH">Masa & Sağlık</option>
+                        <option value="TABLE_STATISTICIAN">Masa & İstatistik</option>
                     </select>
                     {state.errors?.roleType && <p className="text-red-500 text-xs mt-1">{state.errors.roleType}</p>}
                 </div>
