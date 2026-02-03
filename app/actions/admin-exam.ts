@@ -20,9 +20,18 @@ export async function createQuestion(data: {
 
         revalidatePath("/admin/questions");
         return { success: true, question };
-    } catch (error) {
+    } catch (error: any) {
         console.error("Error creating question:", error);
-        return { success: false, error: "Soru eklenirken bir hata oluştu." };
+
+        // Detailed error reporting for debugging
+        let errorMessage = "Soru eklenirken bir hata oluştu.";
+        if (error.code === 'P2021') {
+            errorMessage = "Hata: Veritabanında 'questions' tablosu bulunamadı. Lütfen 'npx prisma db push' komutunu çalıştırın.";
+        } else if (error.message) {
+            errorMessage = `Hata: ${error.message}`;
+        }
+
+        return { success: false, error: errorMessage };
     }
 }
 
@@ -47,9 +56,17 @@ export async function updateQuestion(
 
         revalidatePath("/admin/questions");
         return { success: true, question };
-    } catch (error) {
+    } catch (error: any) {
         console.error("Error updating question:", error);
-        return { success: false, error: "Soru güncellenirken bir hata oluştu." };
+
+        let errorMessage = "Soru güncellenirken bir hata oluştu.";
+        if (error.code === 'P2021') {
+            errorMessage = "Hata: Veritabanında 'questions' tablosu bulunamadı. Lütfen 'npx prisma db push' komutunu çalıştırın.";
+        } else if (error.message) {
+            errorMessage = `Hata: ${error.message}`;
+        }
+
+        return { success: false, error: errorMessage };
     }
 }
 
@@ -62,9 +79,17 @@ export async function deleteQuestion(id: number) {
 
         revalidatePath("/admin/questions");
         return { success: true };
-    } catch (error) {
+    } catch (error: any) {
         console.error("Error deleting question:", error);
-        return { success: false, error: "Soru silinirken bir hata oluştu." };
+
+        let errorMessage = "Soru silinirken bir hata oluştu.";
+        if (error.code === 'P2021') {
+            errorMessage = "Hata: Veritabanında 'questions' tablosu bulunamadı. Lütfen 'npx prisma db push' komutunu çalıştırın.";
+        } else if (error.message) {
+            errorMessage = `Hata: ${error.message}`;
+        }
+
+        return { success: false, error: errorMessage };
     }
 }
 
@@ -78,9 +103,17 @@ export async function getAllQuestions() {
         });
 
         return { success: true, questions };
-    } catch (error) {
+    } catch (error: any) {
         console.error("Error fetching questions:", error);
-        return { success: false, error: "Sorular yüklenirken bir hata oluştu." };
+
+        let errorMessage = "Sorular yüklenirken bir hata oluştu.";
+        if (error.code === 'P2021') {
+            errorMessage = "Hata: Veritabanında 'questions' tablosu bulunamadı. Lütfen 'npx prisma db push' komutunu çalıştırın.";
+        } else if (error.message) {
+            errorMessage = `Hata: ${error.message}`;
+        }
+
+        return { success: true, questions: [], error: errorMessage }; // Return empty array on error but include message
     }
 }
 
@@ -105,8 +138,16 @@ export async function getAllExamResults() {
         });
 
         return { success: true, attempts };
-    } catch (error) {
+    } catch (error: any) {
         console.error("Error fetching exam results:", error);
-        return { success: false, error: "Sınav sonuçları yüklenirken bir hata oluştu." };
+
+        let errorMessage = "Sınav sonuçları yüklenirken bir hata oluştu.";
+        if (error.code === 'P2021') {
+            errorMessage = "Hata: Veritabanında 'exam_attempts' tablosu bulunamadı. Lütfen 'npx prisma db push' komutunu çalıştırın.";
+        } else if (error.message) {
+            errorMessage = `Hata: ${error.message}`;
+        }
+
+        return { success: false, error: errorMessage };
     }
 }

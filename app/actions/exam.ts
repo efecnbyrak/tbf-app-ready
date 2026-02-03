@@ -20,9 +20,17 @@ export async function getRandomQuestions() {
         const selectedQuestions = shuffled.slice(0, 20);
 
         return { success: true, questions: selectedQuestions };
-    } catch (error) {
+    } catch (error: any) {
         console.error("Error fetching random questions:", error);
-        return { success: false, error: "Sorular yüklenirken bir hata oluştu." };
+
+        let errorMessage = "Sorular yüklenirken bir hata oluştu.";
+        if (error.code === 'P2021') {
+            errorMessage = "Hata: Veritabanında 'questions' tablosu bulunamadı. Lütfen 'npx prisma db push' komutunu çalıştırın.";
+        } else if (error.message) {
+            errorMessage = `Hata: ${error.message}`;
+        }
+
+        return { success: false, error: errorMessage };
     }
 }
 
@@ -58,9 +66,17 @@ export async function submitExam(
 
         revalidatePath("/referee/results");
         return { success: true, attempt };
-    } catch (error) {
+    } catch (error: any) {
         console.error("Error submitting exam:", error);
-        return { success: false, error: "Sınav gönderilirken bir hata oluştu." };
+
+        let errorMessage = "Sınav gönderilirken bir hata oluştu.";
+        if (error.code === 'P2021') {
+            errorMessage = "Hata: Veritabanında 'exam_attempts' tablosu bulunamadı. Lütfen 'npx prisma db push' komutunu çalıştırın.";
+        } else if (error.message) {
+            errorMessage = `Hata: ${error.message}`;
+        }
+
+        return { success: false, error: errorMessage };
     }
 }
 
@@ -78,9 +94,17 @@ export async function getUserExamHistory(refereeId: number) {
         });
 
         return { success: true, attempts };
-    } catch (error) {
+    } catch (error: any) {
         console.error("Error fetching exam history:", error);
-        return { success: false, error: "Sınav geçmişi yüklenirken bir hata oluştu." };
+
+        let errorMessage = "Sınav geçmişi yüklenirken bir hata oluştu.";
+        if (error.code === 'P2021') {
+            errorMessage = "Hata: Veritabanında 'exam_attempts' tablosu bulunamadı. Lütfen 'npx prisma db push' komutunu çalıştırın.";
+        } else if (error.message) {
+            errorMessage = `Hata: ${error.message}`;
+        }
+
+        return { success: false, error: errorMessage };
     }
 }
 
@@ -105,8 +129,16 @@ export async function getExamAttemptDetails(attemptId: number) {
         }
 
         return { success: true, attempt };
-    } catch (error) {
+    } catch (error: any) {
         console.error("Error fetching exam attempt details:", error);
-        return { success: false, error: "Sınav detayları yüklenirken bir hata oluştu." };
+
+        let errorMessage = "Sınav detayları yüklenirken bir hata oluştu.";
+        if (error.code === 'P2021') {
+            errorMessage = "Hata: Veritabanında 'exam_attempts' tablosu bulunamadı. Lütfen 'npx prisma db push' komutunu çalıştırın.";
+        } else if (error.message) {
+            errorMessage = `Hata: ${error.message}`;
+        }
+
+        return { success: false, error: errorMessage };
     }
 }
