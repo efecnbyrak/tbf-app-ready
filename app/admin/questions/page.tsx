@@ -20,6 +20,8 @@ const CATEGORIES = [
     "Hakemler, Masa Görevlileri, Komiser: Görevleri ve Yetkileri"
 ];
 
+const DIFFICULTIES = ["Kolay", "Orta", "Zor"];
+
 interface Question {
     id: number;
     questionText: string;
@@ -29,6 +31,7 @@ interface Question {
     optionD: string;
     correctAnswer: string;
     category?: string;
+    difficulty: string;
 }
 
 export default function QuestionsPage() {
@@ -36,7 +39,8 @@ export default function QuestionsPage() {
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
     const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
-    const [selectedFilter, setSelectedFilter] = useState<string>("Tümü");
+    const [selectedCategory, setSelectedCategory] = useState<string>("Tümü");
+    const [selectedDifficulty, setSelectedDifficulty] = useState<string>("Tümü");
     const [formData, setFormData] = useState({
         questionText: "",
         optionA: "",
@@ -45,6 +49,7 @@ export default function QuestionsPage() {
         optionD: "",
         correctAnswer: "A",
         category: CATEGORIES[0],
+        difficulty: "Orta",
     });
 
     useEffect(() => {
@@ -71,6 +76,7 @@ export default function QuestionsPage() {
                 optionD: question.optionD,
                 correctAnswer: question.correctAnswer,
                 category: question.category || CATEGORIES[0],
+                difficulty: question.difficulty || "Orta",
             });
         } else {
             setEditingQuestion(null);
@@ -82,6 +88,7 @@ export default function QuestionsPage() {
                 optionD: "",
                 correctAnswer: "A",
                 category: CATEGORIES[0],
+                difficulty: "Orta",
             });
         }
         setShowModal(true);
@@ -123,9 +130,19 @@ export default function QuestionsPage() {
         }
     };
 
-    const filteredQuestions = selectedFilter === "Tümü"
-        ? questions
-        : questions.filter(q => q.category === selectedFilter);
+    const filteredQuestions = questions.filter(q => {
+        const catMatch = selectedCategory === "Tümü" || q.category === selectedCategory;
+        const diffMatch = selectedDifficulty === "Tümü" || q.difficulty === selectedDifficulty;
+        return catMatch && diffMatch;
+    });
+
+    const getDifficultyColor = (diff: string) => {
+        switch (diff) {
+            case "Kolay": return "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400";
+            case "Zor": return "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400";
+            default: return "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400";
+        }
+    };
 
     if (loading) {
         return (
@@ -136,124 +153,167 @@ export default function QuestionsPage() {
     }
 
     return (
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-7xl mx-auto px-4 py-8">
             {/* Header */}
-            <div className="mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-6 bg-white dark:bg-zinc-900 p-6 rounded-2xl shadow-sm border border-zinc-200 dark:border-zinc-800">
                 <div>
-                    <h1 className="text-2xl md:text-3xl font-bold text-zinc-900 dark:text-zinc-100 mb-2">
-                        Soru Havuzu Yönetimi
+                    <h1 className="text-3xl font-extrabold text-zinc-900 dark:text-white mb-2 tracking-tight">
+                        Soru Havuzu
                     </h1>
-                    <p className="text-zinc-600 dark:text-zinc-400">
-                        Toplam {questions.length} soru - Her sınavda 20 rastgele soru seçilir
+                    <p className="text-zinc-500 dark:text-zinc-400 font-medium">
+                        Toplam <span className="text-red-600 font-bold">{questions.length}</span> soru yönetiliyor.
                     </p>
                 </div>
                 <button
                     onClick={() => handleOpenModal()}
-                    className="flex items-center gap-2 px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium shadow-md hover:shadow-lg"
+                    className="flex items-center justify-center gap-2 px-8 py-3.5 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-all font-bold shadow-lg shadow-red-200 dark:shadow-none hover:scale-105 active:scale-95"
                 >
-                    <Plus className="w-5 h-5" />
+                    <Plus className="w-5 h-5 stroke-[3]" />
                     Yeni Soru Ekle
                 </button>
             </div>
 
-            {/* Filter Bar */}
-            <div className="mb-6 overflow-x-auto pb-2">
-                <div className="flex gap-2 min-w-max">
-                    <button
-                        onClick={() => setSelectedFilter("Tümü")}
-                        className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${selectedFilter === "Tümü"
-                            ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-900"
-                            : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700"
-                            }`}
-                    >
-                        Tümü ({questions.length})
-                    </button>
-                    {CATEGORIES.map(cat => {
-                        const count = questions.filter(q => q.category === cat).length;
-                        return (
+            {/* Combined Filter Bar */}
+            <div className="mb-8 space-y-4">
+                {/* Category Filter */}
+                <div className="bg-white dark:bg-zinc-900 p-4 rounded-xl border border-zinc-200 dark:border-zinc-800">
+                    <h3 className="text-sm font-bold text-zinc-400 uppercase tracking-widest mb-3 px-2">Kategoriler</h3>
+                    <div className="flex flex-wrap gap-2">
+                        <button
+                            onClick={() => setSelectedCategory("Tümü")}
+                            className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${selectedCategory === "Tümü"
+                                    ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 shadow-md"
+                                    : "bg-zinc-50 text-zinc-600 hover:bg-zinc-100 dark:bg-zinc-800 dark:text-zinc-400"
+                                }`}
+                        >
+                            Tümü
+                        </button>
+                        {CATEGORIES.map(cat => (
                             <button
                                 key={cat}
-                                onClick={() => setSelectedFilter(cat)}
-                                className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${selectedFilter === cat
-                                    ? "bg-red-600 text-white"
-                                    : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700"
+                                onClick={() => setSelectedCategory(cat)}
+                                className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${selectedCategory === cat
+                                        ? "bg-red-600 text-white shadow-md shadow-red-100"
+                                        : "bg-zinc-50 text-zinc-600 hover:bg-zinc-100 dark:bg-zinc-800 dark:text-zinc-400"
                                     }`}
                             >
-                                {cat} ({count})
+                                {cat}
                             </button>
-                        );
-                    })}
+                        ))}
+                    </div>
+                </div>
+
+                {/* Difficulty Filter */}
+                <div className="bg-white dark:bg-zinc-900 p-4 rounded-xl border border-zinc-200 dark:border-zinc-800">
+                    <h3 className="text-sm font-bold text-zinc-400 uppercase tracking-widest mb-3 px-2">Zorluk Seviyesi</h3>
+                    <div className="flex gap-2">
+                        <button
+                            onClick={() => setSelectedDifficulty("Tümü")}
+                            className={`px-6 py-2 rounded-lg text-sm font-bold transition-all ${selectedDifficulty === "Tümü"
+                                    ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 shadow-md"
+                                    : "bg-zinc-50 text-zinc-600 hover:bg-zinc-100 dark:bg-zinc-800 dark:text-zinc-400"
+                                }`}
+                        >
+                            Hepsi
+                        </button>
+                        {DIFFICULTIES.map(diff => (
+                            <button
+                                key={diff}
+                                onClick={() => setSelectedDifficulty(diff)}
+                                className={`px-6 py-2 rounded-lg text-sm font-bold transition-all ${selectedDifficulty === diff
+                                        ? getDifficultyColor(diff).replace("bg-opacity-30", "shadow-md")
+                                        : "bg-zinc-50 text-zinc-600 hover:bg-zinc-100 dark:bg-zinc-800 dark:text-zinc-400"
+                                    }`}
+                            >
+                                {diff}
+                            </button>
+                        ))}
+                    </div>
                 </div>
             </div>
 
-            {/* Questions List */}
-            <div className="space-y-4">
+            {/* Questions Grid/List */}
+            <div className="space-y-6">
                 {filteredQuestions.length === 0 ? (
-                    <div className="bg-white dark:bg-zinc-900 rounded-lg shadow p-8 text-center border border-zinc-200 dark:border-zinc-800">
-                        <p className="text-zinc-600 dark:text-zinc-400">
-                            {selectedFilter === "Tümü"
-                                ? "Henüz soru eklenmemiş. Yukarıdaki butondan soru ekleyin."
-                                : `${selectedFilter} kategorisinde henüz soru yok.`}
+                    <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-sm p-12 text-center border border-zinc-200 dark:border-zinc-800">
+                        <div className="w-16 h-16 bg-zinc-50 dark:bg-zinc-800 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <XCircle className="w-8 h-8 text-zinc-400" />
+                        </div>
+                        <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-1">Eşleşen soru bulunamadı</h3>
+                        <p className="text-zinc-500 dark:text-zinc-400 italic">
+                            Filtrelerinizi değiştirerek tekrar deneyin.
                         </p>
                     </div>
                 ) : (
                     filteredQuestions.map((question, index) => (
                         <div
                             key={question.id}
-                            className="bg-white dark:bg-zinc-900 rounded-lg shadow p-6 border border-zinc-200 dark:border-zinc-800 hover:shadow-md transition-shadow"
+                            className="bg-white dark:bg-zinc-900 rounded-2xl shadow-sm p-6 border border-zinc-200 dark:border-zinc-800 hover:border-red-200 dark:hover:border-red-900/30 transition-all group"
                         >
-                            <div className="flex items-start justify-between gap-4">
+                            <div className="flex items-start justify-between gap-6">
                                 <div className="flex-1 min-w-0">
-                                    <div className="flex items-center gap-2 mb-2">
-                                        <span className="bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-400 px-2 py-1 rounded text-sm font-bold">
-                                            Soru #{index + 1}
+                                    <div className="flex flex-wrap items-center gap-2 mb-4">
+                                        <span className="bg-zinc-900 text-white dark:bg-zinc-700 px-3 py-1 rounded-full text-xs font-black tracking-tighter">
+                                            #{index + 1}
+                                        </span>
+                                        <span className={`px-3 py-1 rounded-full text-xs font-bold ${getDifficultyColor(question.difficulty)}`}>
+                                            {question.difficulty}
                                         </span>
                                         {question.category && (
-                                            <span className="bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 px-2 py-1 rounded text-xs">
+                                            <span className="bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 px-3 py-1 rounded-full text-xs font-bold">
                                                 {question.category}
                                             </span>
                                         )}
                                     </div>
-                                    <p className="text-zinc-900 dark:text-zinc-100 font-medium mb-3 break-words">
+                                    <h3 className="text-lg md:text-xl font-bold text-zinc-900 dark:text-zinc-100 leading-tight mb-6">
                                         {question.questionText}
-                                    </p>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
-                                        <div className="flex items-start gap-2">
-                                            <span className={`font-bold ${question.correctAnswer === 'A' ? 'text-green-600 dark:text-green-400' : 'text-zinc-500'}`}>
-                                                A)
-                                            </span>
-                                            <span className="text-zinc-700 dark:text-zinc-300">{question.optionA}</span>
-                                        </div>
-                                        <div className="flex items-start gap-2">
-                                            <span className={`font-bold ${question.correctAnswer === 'B' ? 'text-green-600 dark:text-green-400' : 'text-zinc-500'}`}>
-                                                B)
-                                            </span>
-                                            <span className="text-zinc-700 dark:text-zinc-300">{question.optionB}</span>
-                                        </div>
-                                        <div className="flex items-start gap-2">
-                                            <span className={`font-bold ${question.correctAnswer === 'C' ? 'text-green-600 dark:text-green-400' : 'text-zinc-500'}`}>
-                                                C)
-                                            </span>
-                                            <span className="text-zinc-700 dark:text-zinc-300">{question.optionC}</span>
-                                        </div>
-                                        <div className="flex items-start gap-2">
-                                            <span className={`font-bold ${question.correctAnswer === 'D' ? 'text-green-600 dark:text-green-400' : 'text-zinc-500'}`}>
-                                                D)
-                                            </span>
-                                            <span className="text-zinc-700 dark:text-zinc-300">{question.optionD}</span>
-                                        </div>
+                                    </h3>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        {[
+                                            { key: 'A', val: question.optionA },
+                                            { key: 'B', val: question.optionB },
+                                            { key: 'C', val: question.optionC },
+                                            { key: 'D', val: question.optionD }
+                                        ].map((opt) => (
+                                            <div
+                                                key={opt.key}
+                                                className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${question.correctAnswer === opt.key
+                                                        ? 'bg-green-50 border-green-200 dark:bg-green-900/10 dark:border-green-800'
+                                                        : 'bg-zinc-50 border-zinc-100 dark:bg-zinc-800/50 dark:border-zinc-800'
+                                                    }`}
+                                            >
+                                                <span className={`flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center font-black ${question.correctAnswer === opt.key
+                                                        ? 'bg-green-600 text-white'
+                                                        : 'bg-zinc-200 text-zinc-500 dark:bg-zinc-700 dark:text-zinc-400'
+                                                    }`}>
+                                                    {opt.key}
+                                                </span>
+                                                <span className={`text-sm font-medium ${question.correctAnswer === opt.key
+                                                        ? 'text-green-700 dark:text-green-400'
+                                                        : 'text-zinc-600 dark:text-zinc-400'
+                                                    }`}>
+                                                    {opt.val}
+                                                </span>
+                                                {question.correctAnswer === opt.key && (
+                                                    <CheckCircle className="w-5 h-5 text-green-600 ml-auto flex-shrink-0" />
+                                                )}
+                                            </div>
+                                        ))}
                                     </div>
                                 </div>
-                                <div className="flex flex-col sm:flex-row gap-2">
+                                <div className="flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                     <button
                                         onClick={() => handleOpenModal(question)}
-                                        className="p-2 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors"
+                                        className="p-3 bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400 rounded-xl hover:bg-blue-100 transition-colors"
+                                        title="Düzenle"
                                     >
                                         <Edit className="w-5 h-5" />
                                     </button>
                                     <button
                                         onClick={() => handleDelete(question.id)}
-                                        className="p-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
+                                        className="p-3 bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400 rounded-xl hover:bg-red-100 transition-colors"
+                                        title="Sil"
                                     >
                                         <Trash2 className="w-5 h-5" />
                                     </button>
@@ -266,123 +326,100 @@ export default function QuestionsPage() {
 
             {/* Modal */}
             {showModal && (
-                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                    <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-                        <div className="p-6 border-b border-zinc-200 dark:border-zinc-800">
-                            <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">
-                                {editingQuestion ? "Soru Düzenle" : "Yeni Soru Ekle"}
+                <div className="fixed inset-0 bg-zinc-950/40 backdrop-blur-md z-[100] flex items-center justify-center p-4">
+                    <div className="bg-white dark:bg-zinc-900 rounded-3xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-zinc-200 dark:border-zinc-800 animate-in fade-in zoom-in duration-200">
+                        <div className="p-8 border-b border-zinc-100 dark:border-zinc-800 flex items-center justify-between">
+                            <h2 className="text-2xl font-black text-zinc-900 dark:text-white tracking-tight">
+                                {editingQuestion ? "Soruyu Düzenle" : "Yeni Soru Ekle"}
                             </h2>
+                            <button onClick={() => setShowModal(false)} className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full transition-colors">
+                                <XCircle className="w-6 h-6 text-zinc-400" />
+                            </button>
                         </div>
-                        <form onSubmit={handleSubmit} className="p-6 space-y-4">
-                            <div>
-                                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
-                                    Soru Metni *
+                        <form onSubmit={handleSubmit} className="p-8 space-y-6">
+                            <div className="space-y-2">
+                                <label className="text-sm font-bold text-zinc-500 uppercase tracking-widest pl-1">
+                                    Soru Metni
                                 </label>
                                 <textarea
                                     required
                                     value={formData.questionText}
                                     onChange={(e) => setFormData({ ...formData, questionText: e.target.value })}
-                                    className="w-full px-4 py-2 border border-zinc-300 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100"
-                                    rows={3}
+                                    className="w-full px-5 py-4 border-2 border-zinc-100 dark:border-zinc-800 rounded-2xl bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-white focus:border-red-600 dark:focus:border-red-600 transition-all outline-none min-h-[120px]"
+                                    placeholder="Soruyu buraya yazın..."
                                 />
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
-                                        Kategori *
-                                    </label>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="space-y-2">
+                                    <label className="text-sm font-bold text-zinc-500 uppercase tracking-widest pl-1">Kategori</label>
                                     <select
                                         required
                                         value={formData.category}
                                         onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                                        className="w-full px-4 py-2 border border-zinc-300 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100"
+                                        className="w-full px-4 py-3 border-2 border-zinc-100 dark:border-zinc-800 rounded-xl bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-white focus:border-red-600 outline-none transition-all"
                                     >
                                         {CATEGORIES.map(cat => (
                                             <option key={cat} value={cat}>{cat}</option>
                                         ))}
                                     </select>
                                 </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
-                                        Doğru Cevap *
-                                    </label>
+                                <div className="space-y-2">
+                                    <label className="text-sm font-bold text-zinc-500 uppercase tracking-widest pl-1">Zorluk</label>
                                     <select
                                         required
-                                        value={formData.correctAnswer}
-                                        onChange={(e) => setFormData({ ...formData, correctAnswer: e.target.value })}
-                                        className="w-full px-4 py-2 border border-zinc-300 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100"
+                                        value={formData.difficulty}
+                                        onChange={(e) => setFormData({ ...formData, difficulty: e.target.value })}
+                                        className="w-full px-4 py-3 border-2 border-zinc-100 dark:border-zinc-800 rounded-xl bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-white focus:border-red-600 outline-none transition-all"
                                     >
-                                        <option value="A">A</option>
-                                        <option value="B">B</option>
-                                        <option value="C">C</option>
-                                        <option value="D">D</option>
+                                        {DIFFICULTIES.map(diff => (
+                                            <option key={diff} value={diff}>{diff}</option>
+                                        ))}
                                     </select>
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
-                                        Seçenek A *
-                                    </label>
-                                    <input
-                                        required
-                                        type="text"
-                                        value={formData.optionA}
-                                        onChange={(e) => setFormData({ ...formData, optionA: e.target.value })}
-                                        className="w-full px-4 py-2 border border-zinc-300 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
-                                        Seçenek B *
-                                    </label>
-                                    <input
-                                        required
-                                        type="text"
-                                        value={formData.optionB}
-                                        onChange={(e) => setFormData({ ...formData, optionB: e.target.value })}
-                                        className="w-full px-4 py-2 border border-zinc-300 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
-                                        Seçenek C *
-                                    </label>
-                                    <input
-                                        required
-                                        type="text"
-                                        value={formData.optionC}
-                                        onChange={(e) => setFormData({ ...formData, optionC: e.target.value })}
-                                        className="w-full px-4 py-2 border border-zinc-300 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
-                                        Seçenek D *
-                                    </label>
-                                    <input
-                                        required
-                                        type="text"
-                                        value={formData.optionD}
-                                        onChange={(e) => setFormData({ ...formData, optionD: e.target.value })}
-                                        className="w-full px-4 py-2 border border-zinc-300 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100"
-                                    />
+                            <div className="space-y-2">
+                                <label className="text-sm font-bold text-zinc-500 uppercase tracking-widest pl-1">Seçenekler</label>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    {['A', 'B', 'C', 'D'].map(key => (
+                                        <div key={key} className="flex gap-2">
+                                            <div className="flex-1">
+                                                <input
+                                                    required
+                                                    type="text"
+                                                    value={formData[`option${key}` as keyof typeof formData]}
+                                                    onChange={(e) => setFormData({ ...formData, [`option${key}`]: e.target.value })}
+                                                    className="w-full px-4 py-3 border-2 border-zinc-100 dark:border-zinc-800 rounded-xl bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-white focus:border-red-600 outline-none transition-all"
+                                                    placeholder={`Seçenek ${key}`}
+                                                />
+                                            </div>
+                                            <button
+                                                type="button"
+                                                onClick={() => setFormData({ ...formData, correctAnswer: key })}
+                                                className={`w-12 h-12 rounded-xl border-2 flex items-center justify-center font-black transition-all ${formData.correctAnswer === key
+                                                        ? "bg-green-600 border-green-600 text-white shadow-lg shadow-green-200"
+                                                        : "bg-zinc-100 border-zinc-200 text-zinc-400 dark:bg-zinc-800 dark:border-zinc-700"
+                                                    }`}
+                                            >
+                                                {key}
+                                            </button>
+                                        </div>
+                                    ))}
                                 </div>
                             </div>
 
-                            <div className="flex gap-3 pt-4">
+                            <div className="flex gap-4 pt-4">
                                 <button
                                     type="submit"
-                                    className="flex-1 px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
+                                    className="flex-1 px-8 py-4 bg-red-600 text-white rounded-2xl hover:bg-red-700 transition-all font-black text-lg shadow-xl shadow-red-200 dark:shadow-none hover:scale-[1.02] active:scale-[0.98]"
                                 >
-                                    {editingQuestion ? "Güncelle" : "Ekle"}
+                                    {editingQuestion ? "Değişiklikleri Kaydet" : "Soruyu Havuza Ekle"}
                                 </button>
                                 <button
                                     type="button"
                                     onClick={() => setShowModal(false)}
-                                    className="flex-1 px-6 py-3 bg-zinc-200 dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100 rounded-lg hover:bg-zinc-300 dark:hover:bg-zinc-600 transition-colors font-medium"
+                                    className="px-8 py-4 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 rounded-2xl hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-all font-bold"
                                 >
                                     İptal
                                 </button>

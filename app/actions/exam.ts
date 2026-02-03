@@ -5,14 +5,18 @@ import { revalidatePath } from "next/cache";
 
 // Get random questions for an exam (20 questions from the pool)
 // Attempts to pick questions from various categories for a balanced exam
-export async function getRandomQuestions() {
+export async function getRandomQuestions(difficulty: string = "Orta") {
     try {
-        const allQuestions = await db.question.findMany();
+        const allQuestions = await db.question.findMany({
+            where: {
+                difficulty: difficulty
+            }
+        });
 
         if (allQuestions.length < 20) {
             return {
                 success: false,
-                error: `Soru havuzunda yeterli soru yok. En az 20 soru gerekli. Mevcut soru sayısı: ${allQuestions.length}`
+                error: `Soru havuzunda ${difficulty} seviyesinde yeterli soru yok. En az 20 soru gerekli. Mevcut soru sayısı: ${allQuestions.length}`
             };
         }
 
@@ -70,7 +74,8 @@ export async function getRandomQuestions() {
 // Submit exam answers
 export async function submitExam(
     refereeId: number,
-    answers: Array<{ questionId: number; questionText: string; selectedAnswer: string; correctAnswer: string }>
+    answers: Array<{ questionId: number; questionText: string; selectedAnswer: string; correctAnswer: string }>,
+    difficulty: string = "Orta"
 ) {
     try {
         // Calculate score
@@ -82,6 +87,7 @@ export async function submitExam(
                 refereeId,
                 score: correctCount,
                 totalQuestions: answers.length,
+                difficulty,
                 answers: {
                     create: answers.map(a => ({
                         questionId: a.questionId,

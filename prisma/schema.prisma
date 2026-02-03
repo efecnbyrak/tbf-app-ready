@@ -144,6 +144,7 @@ model Question {
   optionD       String
   correctAnswer String   // "A", "B", "C", or "D"
   category      String?  // Optional categorization
+  difficulty    String   @default("Orta") // "Kolay", "Orta", "Zor"
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   
@@ -156,6 +157,7 @@ model ExamAttempt {
   refereeId      Int
   score          Int      // Score out of 20
   totalQuestions Int      @default(20)
+  difficulty     String?  // Difficulty level taken: "Kolay", "Orta", "Zor"
   answers        UserAnswer[]
   createdAt      DateTime @default(now())
   

@@ -12,6 +12,7 @@ export async function createQuestion(data: {
     optionD: string;
     correctAnswer: string;
     category?: string;
+    difficulty: string;
 }) {
     try {
         const question = await db.question.create({
@@ -46,6 +47,7 @@ export async function updateQuestion(
         optionD: string;
         correctAnswer: string;
         category?: string;
+        difficulty: string;
     }
 ) {
     try {

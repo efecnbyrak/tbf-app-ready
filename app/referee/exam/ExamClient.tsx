@@ -1,10 +1,11 @@
+// ExamClient.tsx
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { getRandomQuestions, submitExam } from "@/app/actions/exam";
 import { QuizCard } from "@/components/referee/QuizCard";
-import { Loader2, CheckCircle, XCircle } from "lucide-react";
+import { Loader2, CheckCircle, XCircle, Brain, Trophy, Zap } from "lucide-react";
 
 interface Question {
     id: number;
@@ -20,22 +21,22 @@ export default function ExamClient({ refereeId }: { refereeId: number }) {
     const router = useRouter();
     const [questions, setQuestions] = useState<Question[]>([]);
     const [answers, setAnswers] = useState<Record<number, string>>({});
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [examStarted, setExamStarted] = useState(false);
+    const [selectedDifficulty, setSelectedDifficulty] = useState<string>("Orta");
 
-    useEffect(() => {
-        loadQuestions();
-    }, []);
-
-    const loadQuestions = async () => {
+    const startExam = async (difficulty: string) => {
+        setSelectedDifficulty(difficulty);
         setLoading(true);
         setError(null);
 
-        const result = await getRandomQuestions();
+        const result = await getRandomQuestions(difficulty);
 
         if (result.success && result.questions) {
             setQuestions(result.questions as Question[]);
+            setExamStarted(true);
         } else {
             setError(result.error || "Sorular yüklenemedi");
         }
@@ -51,7 +52,6 @@ export default function ExamClient({ refereeId }: { refereeId: number }) {
     };
 
     const handleSubmit = async () => {
-        // Check if all questions are answered
         const unanswered = questions.filter((q) => !answers[q.id]);
 
         if (unanswered.length > 0) {
@@ -72,7 +72,7 @@ export default function ExamClient({ refereeId }: { refereeId: number }) {
             correctAnswer: q.correctAnswer,
         }));
 
-        const result = await submitExam(refereeId, examAnswers);
+        const result = await submitExam(refereeId, examAnswers, selectedDifficulty);
 
         if (result.success) {
             alert("Sınav başarıyla gönderildi!");
@@ -88,10 +88,63 @@ export default function ExamClient({ refereeId }: { refereeId: number }) {
 
     if (loading) {
         return (
-            <div className="flex items-center justify-center min-h-[400px]">
-                <div className="text-center">
-                    <Loader2 className="w-12 h-12 animate-spin text-red-600 mx-auto mb-4" />
-                    <p className="text-zinc-600 dark:text-zinc-400">Sorular yükleniyor...</p>
+            <div className="flex items-center justify-center min-h-[500px]">
+                <div className="text-center bg-white dark:bg-zinc-900 p-8 rounded-3xl shadow-xl border border-zinc-200 dark:border-zinc-800">
+                    <Loader2 className="w-16 h-16 animate-spin text-red-600 mx-auto mb-4" />
+                    <p className="text-xl font-bold text-zinc-900 dark:text-white mb-2">Sınav Hazırlanıyor</p>
+                    <p className="text-zinc-500 dark:text-zinc-400 font-medium">Lütfen bekleyin, {selectedDifficulty} seviyesinde sorular getiriliyor...</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (!examStarted) {
+        return (
+            <div className="max-w-4xl mx-auto px-4 py-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <div className="text-center mb-12">
+                    <h1 className="text-4xl font-black text-zinc-900 dark:text-white mb-4 tracking-tight">Eğitim Sınavı</h1>
+                    <p className="text-xl text-zinc-500 font-medium">Becerilerini test etmek için bir zorluk seviyesi seç ve başla!</p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    {/* Easy */}
+                    <button
+                        onClick={() => startExam("Kolay")}
+                        className="group bg-white dark:bg-zinc-900 p-8 rounded-3xl border-2 border-zinc-100 dark:border-zinc-800 hover:border-green-500 transition-all text-center shadow-xl hover:shadow-green-100 dark:hover:shadow-green-900/10 hover:-translate-y-2"
+                    >
+                        <div className="w-20 h-20 bg-green-50 dark:bg-green-900/20 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
+                            <Zap className="w-10 h-10 text-green-600" />
+                        </div>
+                        <h3 className="text-2xl font-black text-zinc-900 dark:text-white mb-2">Kolay</h3>
+                        <p className="text-zinc-500 font-medium mb-6">Temel kurallar ve basit oyun durumları.</p>
+                        <div className="py-3 bg-zinc-50 dark:bg-zinc-800 rounded-xl text-green-700 dark:text-green-400 font-bold">BAŞLA</div>
+                    </button>
+
+                    {/* Medium */}
+                    <button
+                        onClick={() => startExam("Orta")}
+                        className="group bg-white dark:bg-zinc-900 p-8 rounded-3xl border-2 border-zinc-100 dark:border-zinc-800 hover:border-blue-500 transition-all text-center shadow-xl hover:shadow-blue-100 dark:hover:shadow-blue-900/10 hover:-translate-y-2"
+                    >
+                        <div className="w-20 h-20 bg-blue-50 dark:bg-blue-900/20 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
+                            <Brain className="w-10 h-10 text-blue-600" />
+                        </div>
+                        <h3 className="text-2xl font-black text-zinc-900 dark:text-white mb-2">Orta</h3>
+                        <p className="text-zinc-500 font-medium mb-6">Detaylı kurallar ve karmaşık pozisyonlar.</p>
+                        <div className="py-3 bg-zinc-50 dark:bg-zinc-800 rounded-xl text-blue-700 dark:text-blue-400 font-bold">BAŞLA</div>
+                    </button>
+
+                    {/* Hard */}
+                    <button
+                        onClick={() => startExam("Zor")}
+                        className="group bg-white dark:bg-zinc-900 p-8 rounded-3xl border-2 border-zinc-100 dark:border-zinc-800 hover:border-red-500 transition-all text-center shadow-xl hover:shadow-red-100 dark:hover:shadow-red-900/10 hover:-translate-y-2"
+                    >
+                        <div className="w-20 h-20 bg-red-50 dark:bg-red-900/20 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
+                            <Trophy className="w-10 h-10 text-red-600" />
+                        </div>
+                        <h3 className="text-2xl font-black text-zinc-900 dark:text-white mb-2">Zor</h3>
+                        <p className="text-zinc-500 font-medium mb-6">Dünya standartlarında kural yorumlama.</p>
+                        <div className="py-3 bg-zinc-50 dark:bg-zinc-800 rounded-xl text-red-700 dark:text-red-400 font-bold">BAŞLA</div>
+                    </button>
                 </div>
             </div>
         );
@@ -99,54 +152,78 @@ export default function ExamClient({ refereeId }: { refereeId: number }) {
 
     if (error) {
         return (
-            <div className="max-w-2xl mx-auto">
-                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-6 text-center">
-                    <XCircle className="w-12 h-12 text-red-600 dark:text-red-400 mx-auto mb-4" />
-                    <h2 className="text-xl font-bold text-red-900 dark:text-red-100 mb-2">Hata</h2>
-                    <p className="text-red-700 dark:text-red-300 mb-4">{error}</p>
-                    <button
-                        onClick={loadQuestions}
-                        className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-                    >
-                        Tekrar Dene
-                    </button>
+            <div className="max-w-2xl mx-auto py-12 px-4">
+                <div className="bg-white dark:bg-zinc-900 border-2 border-red-100 dark:border-red-900/30 rounded-3xl p-12 text-center shadow-2xl">
+                    <div className="w-20 h-20 bg-red-50 dark:bg-red-900/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <XCircle className="w-10 h-10 text-red-600 dark:text-red-400" />
+                    </div>
+                    <h2 className="text-2xl font-black text-zinc-900 dark:text-white mb-4">Üzgünüz!</h2>
+                    <p className="text-lg text-zinc-500 dark:text-zinc-400 font-medium mb-8">{error}</p>
+                    <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                        <button
+                            onClick={() => startExam(selectedDifficulty)}
+                            className="px-8 py-4 bg-red-600 text-white rounded-2xl hover:bg-red-700 transition-all font-bold shadow-lg shadow-red-200 dark:shadow-none"
+                        >
+                            Tekrar Dene
+                        </button>
+                        <button
+                            onClick={() => setExamStarted(false)}
+                            className="px-8 py-4 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 rounded-2xl hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-all font-bold"
+                        >
+                            Geri Dön
+                        </button>
+                    </div>
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-4xl mx-auto px-4 py-8">
             {/* Header */}
-            <div className="mb-6">
-                <h1 className="text-2xl md:text-3xl font-bold text-zinc-900 dark:text-zinc-100 mb-2">
-                    Hakem Sınavı
-                </h1>
-                <p className="text-zinc-600 dark:text-zinc-400">
-                    Tüm soruları cevaplayın ve sınavı gönderin
-                </p>
+            <div className="mb-10 flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white dark:bg-zinc-900 p-6 rounded-2xl shadow-sm border border-zinc-100 dark:border-zinc-800">
+                <div>
+                    <div className="flex items-center gap-2 mb-1">
+                        <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${selectedDifficulty === "Kolay" ? "bg-green-100 text-green-700" :
+                                selectedDifficulty === "Zor" ? "bg-red-100 text-red-700" :
+                                    "bg-blue-100 text-blue-700"
+                            }`}>
+                            {selectedDifficulty} SEVİYE
+                        </span>
+                    </div>
+                    <h1 className="text-3xl font-black text-zinc-900 dark:text-white tracking-tight">Eğitim Sınavı</h1>
+                </div>
+                <div className="flex items-center gap-6">
+                    <div className="text-right">
+                        <p className="text-sm font-bold text-zinc-400 uppercase tracking-widest leading-none mb-1">Kalan Soru</p>
+                        <p className="text-2xl font-black text-red-600">{20 - answeredCount}</p>
+                    </div>
+                </div>
             </div>
 
             {/* Progress Bar */}
-            <div className="mb-6 bg-white dark:bg-zinc-900 rounded-lg shadow p-4 border border-zinc-200 dark:border-zinc-800">
-                <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-                        İlerleme
-                    </span>
-                    <span className="text-sm font-bold text-red-600 dark:text-red-400">
-                        {answeredCount} / 20
-                    </span>
-                </div>
-                <div className="w-full bg-zinc-200 dark:bg-zinc-700 rounded-full h-3">
-                    <div
-                        className="bg-gradient-to-r from-red-600 to-red-500 h-3 rounded-full transition-all duration-300"
-                        style={{ width: `${progress}%` }}
-                    />
+            <div className="mb-10 sticky top-4 z-20">
+                <div className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl p-4 rounded-2xl shadow-xl border border-white dark:border-zinc-800">
+                    <div className="flex items-center justify-between mb-2 px-2">
+                        <span className="text-xs font-black text-zinc-400 uppercase tracking-widest">
+                            İlerleme Durumu
+                        </span>
+                        <span className="text-xs font-black text-red-600">
+                            %{Math.round(progress)}
+                        </span>
+                    </div>
+                    <div className="w-full bg-zinc-100 dark:bg-zinc-800 rounded-full h-3 overflow-hidden">
+                        <div
+                            className={`h-full transition-all duration-500 ease-out rounded-full ${progress === 100 ? "bg-green-500" : "bg-red-600"
+                                }`}
+                            style={{ width: `${progress}%` }}
+                        />
+                    </div>
                 </div>
             </div>
 
             {/* Questions */}
-            <div className="space-y-6 mb-6">
+            <div className="space-y-8 mb-12">
                 {questions.map((question, index) => (
                     <QuizCard
                         key={question.id}
@@ -163,27 +240,27 @@ export default function ExamClient({ refereeId }: { refereeId: number }) {
             </div>
 
             {/* Submit Button */}
-            <div className="sticky bottom-4 bg-white dark:bg-zinc-900 rounded-lg shadow-xl p-4 border-2 border-zinc-200 dark:border-zinc-800">
+            <div className=" sticky bottom-6 z-30">
                 <button
                     onClick={handleSubmit}
                     disabled={submitting || answeredCount < 20}
-                    className={`w-full py-4 rounded-lg font-bold text-lg transition-all ${submitting || answeredCount < 20
-                            ? "bg-zinc-300 dark:bg-zinc-700 text-zinc-500 dark:text-zinc-500 cursor-not-allowed"
-                            : "bg-red-600 text-white hover:bg-red-700 shadow-lg hover:shadow-xl"
+                    className={`w-full py-6 rounded-3xl font-black text-xl transition-all shadow-2xl flex items-center justify-center gap-3 ${submitting || answeredCount < 20
+                            ? "bg-zinc-200 dark:bg-zinc-800 text-zinc-400 dark:text-zinc-600 cursor-not-allowed border-2 border-zinc-100 dark:border-zinc-700"
+                            : "bg-red-600 text-white hover:bg-red-700 hover:scale-[1.02] active:scale-[0.98] shadow-red-200 dark:shadow-none"
                         }`}
                 >
                     {submitting ? (
-                        <span className="flex items-center justify-center gap-2">
-                            <Loader2 className="w-5 h-5 animate-spin" />
-                            Gönderiliyor...
-                        </span>
+                        <>
+                            <Loader2 className="w-6 h-6 animate-spin" />
+                            GÖNDERİLİYOR...
+                        </>
                     ) : answeredCount < 20 ? (
-                        `Tüm Soruları Cevaplayın (${answeredCount}/20)`
+                        <>EKSİKLER VAR ({answeredCount}/20)</>
                     ) : (
-                        <span className="flex items-center justify-center gap-2">
-                            <CheckCircle className="w-5 h-5" />
-                            Sınavı Gönder
-                        </span>
+                        <>
+                            <CheckCircle className="w-6 h-6" />
+                            SINAVI BİTİR VE GÖNDER
+                        </>
                     )}
                 </button>
             </div>
