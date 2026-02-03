@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 
 // Get random questions for an exam (20 questions from the pool)
+// Attempts to pick questions from various categories for a balanced exam
 export async function getRandomQuestions() {
     try {
         const allQuestions = await db.question.findMany();
@@ -11,15 +12,47 @@ export async function getRandomQuestions() {
         if (allQuestions.length < 20) {
             return {
                 success: false,
-                error: "Soru havuzunda yeterli soru yok. En az 20 soru gerekli."
+                error: `Soru havuzunda yeterli soru yok. En az 20 soru gerekli. Mevcut soru sayısı: ${allQuestions.length}`
             };
         }
 
-        // Shuffle and take 20 questions
-        const shuffled = allQuestions.sort(() => Math.random() - 0.5);
-        const selectedQuestions = shuffled.slice(0, 20);
+        // 1. Group questions by category
+        const categorizedQuestions: Record<string, typeof allQuestions> = {};
+        allQuestions.forEach(q => {
+            const cat = q.category || "General";
+            if (!categorizedQuestions[cat]) categorizedQuestions[cat] = [];
+            categorizedQuestions[cat].push(q);
+        });
 
-        return { success: true, questions: selectedQuestions };
+        const categories = Object.keys(categorizedQuestions);
+        const selectedQuestions: typeof allQuestions = [];
+        const poolCopy = [...allQuestions];
+
+        // 2. Try to pick at least one from each category if possible to ensure "her birinden" selection
+        categories.forEach(cat => {
+            if (selectedQuestions.length < 20) {
+                const catPool = categorizedQuestions[cat];
+                const randomIndex = Math.floor(Math.random() * catPool.length);
+                const picked = catPool.splice(randomIndex, 1)[0];
+                selectedQuestions.push(picked);
+
+                // Remove from general pool copy as well
+                const poolIndex = poolCopy.findIndex(q => q.id === picked.id);
+                if (poolIndex > -1) poolCopy.splice(poolIndex, 1);
+            }
+        });
+
+        // 3. Fill the rest randomly from the remaining pool
+        while (selectedQuestions.length < 20 && poolCopy.length > 0) {
+            const randomIndex = Math.floor(Math.random() * poolCopy.length);
+            const picked = poolCopy.splice(randomIndex, 1)[0];
+            selectedQuestions.push(picked);
+        }
+
+        // Final shuffle of the 20 selected questions
+        const finalSelection = selectedQuestions.sort(() => Math.random() - 0.5);
+
+        return { success: true, questions: finalSelection };
     } catch (error: any) {
         console.error("Error fetching random questions:", error);
 
