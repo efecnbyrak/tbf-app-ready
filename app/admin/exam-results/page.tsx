@@ -16,7 +16,7 @@ interface ExamAttempt {
     id: number;
     score: number;
     totalQuestions: number;
-    createdAt: string;
+    createdAt: Date;
     referee: {
         firstName: string;
         lastName: string;
@@ -173,8 +173,8 @@ export default function ExamResultsPage() {
                                                                 <div
                                                                     key={answer.id}
                                                                     className={`p-3 rounded text-sm ${answer.isCorrect
-                                                                            ? "bg-green-50 dark:bg-green-900/10 border-l-4 border-green-500"
-                                                                            : "bg-red-50 dark:bg-red-900/10 border-l-4 border-red-500"
+                                                                        ? "bg-green-50 dark:bg-green-900/10 border-l-4 border-green-500"
+                                                                        : "bg-red-50 dark:bg-red-900/10 border-l-4 border-red-500"
                                                                         }`}
                                                                 >
                                                                     <div className="font-medium text-zinc-900 dark:text-zinc-100 mb-1">
@@ -258,8 +258,8 @@ export default function ExamResultsPage() {
                                                 <div
                                                     key={answer.id}
                                                     className={`p-3 rounded text-sm ${answer.isCorrect
-                                                            ? "bg-green-50 dark:bg-green-900/10"
-                                                            : "bg-red-50 dark:bg-red-900/10"
+                                                        ? "bg-green-50 dark:bg-green-900/10"
+                                                        : "bg-red-50 dark:bg-red-900/10"
                                                         }`}
                                                 >
                                                     <div className="font-medium text-zinc-900 dark:text-zinc-100 mb-1 text-xs">

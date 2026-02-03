@@ -17,7 +17,7 @@ interface ExamAttempt {
     id: number;
     score: number;
     totalQuestions: number;
-    createdAt: string;
+    createdAt: Date;
     answers: UserAnswer[];
 }
 
@@ -184,8 +184,8 @@ export default function ResultsClient({ refereeId }: { refereeId: number }) {
                                                 <div
                                                     key={answer.id}
                                                     className={`p-4 rounded-lg border-2 ${answer.isCorrect
-                                                            ? "bg-green-50 dark:bg-green-900/10 border-green-300 dark:border-green-800"
-                                                            : "bg-red-50 dark:bg-red-900/10 border-red-300 dark:border-red-800"
+                                                        ? "bg-green-50 dark:bg-green-900/10 border-green-300 dark:border-green-800"
+                                                        : "bg-red-50 dark:bg-red-900/10 border-red-300 dark:border-red-800"
                                                         }`}
                                                 >
                                                     <div className="flex items-start gap-3">
@@ -206,8 +206,8 @@ export default function ResultsClient({ refereeId }: { refereeId: number }) {
                                                                     <span className="text-zinc-600 dark:text-zinc-400">Cevabınız: </span>
                                                                     <span
                                                                         className={`font-bold ${answer.isCorrect
-                                                                                ? "text-green-700 dark:text-green-400"
-                                                                                : "text-red-700 dark:text-red-400"
+                                                                            ? "text-green-700 dark:text-green-400"
+                                                                            : "text-red-700 dark:text-red-400"
                                                                             }`}
                                                                     >
                                                                         {answer.selectedAnswer}
