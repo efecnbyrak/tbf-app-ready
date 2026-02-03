@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { logout } from "@/app/actions/auth";
-import { Users, Calendar, LayoutDashboard, Settings, LogOut, Menu, X, Briefcase } from "lucide-react";
+import { Users, Calendar, LayoutDashboard, Settings, LogOut, Menu, X, Briefcase, FileText, Trophy } from "lucide-react";
 
 export default function AdminLayout({
     children,
@@ -96,6 +96,28 @@ export default function AdminLayout({
                         >
                             <Calendar className="w-4 h-4" />
                             Uygunluklar
+                        </Link>
+                        <Link
+                            href="/admin/questions"
+                            onClick={() => setIsOpen(false)}
+                            className={`flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-all ${isActive("/admin/questions")
+                                ? "bg-red-600 text-white shadow-md border-l-4 border-red-800"
+                                : "hover:bg-zinc-800/50 text-zinc-400 hover:text-white"
+                                }`}
+                        >
+                            <FileText className="w-4 h-4" />
+                            Soru Havuzu
+                        </Link>
+                        <Link
+                            href="/admin/exam-results"
+                            onClick={() => setIsOpen(false)}
+                            className={`flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-all ${isActive("/admin/exam-results")
+                                ? "bg-red-600 text-white shadow-md border-l-4 border-red-800"
+                                : "hover:bg-zinc-800/50 text-zinc-400 hover:text-white"
+                                }`}
+                        >
+                            <Trophy className="w-4 h-4" />
+                            Sınav Sonuçları
                         </Link>
                         <Link
                             href="/admin/settings"

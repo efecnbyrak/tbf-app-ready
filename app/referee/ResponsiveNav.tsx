@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { User, Calendar, FileText, Menu, X, LogOut, BookOpen } from "lucide-react";
+import { User, Calendar, FileText, Menu, X, LogOut, BookOpen, Trophy, Sparkles } from "lucide-react";
 import { SignOutButton } from "@/components/auth/SignOutButton";
 
 interface ResponsiveNavProps {
@@ -122,6 +122,45 @@ export function ResponsiveNav({ refereeName, roleType, basePath = "/referee", ti
                         >
                             <BookOpen className="w-5 h-5" />
                             Kural Kitabı
+                        </Link>
+
+                        {/* Exam */}
+                        <Link
+                            href={`${basePath}/exam`}
+                            onClick={() => setIsOpen(false)}
+                            className={`flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-all ${isActive(`${basePath}/exam`)
+                                ? "bg-red-700 text-white shadow-md border-l-4 border-red-900"
+                                : "hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-200"
+                                }`}
+                        >
+                            <FileText className="w-5 h-5" />
+                            Sınav
+                        </Link>
+
+                        {/* Results */}
+                        <Link
+                            href={`${basePath}/results`}
+                            onClick={() => setIsOpen(false)}
+                            className={`flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-all ${isActive(`${basePath}/results`)
+                                ? "bg-red-700 text-white shadow-md border-l-4 border-red-900"
+                                : "hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-200"
+                                }`}
+                        >
+                            <Trophy className="w-5 h-5" />
+                            Sonuçlar
+                        </Link>
+
+                        {/* Training */}
+                        <Link
+                            href={`${basePath}/training`}
+                            onClick={() => setIsOpen(false)}
+                            className={`flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-all ${isActive(`${basePath}/training`)
+                                ? "bg-red-700 text-white shadow-md border-l-4 border-red-900"
+                                : "hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-200"
+                                }`}
+                        >
+                            <Sparkles className="w-5 h-5" />
+                            Eğitim
                         </Link>
                     </nav>
 

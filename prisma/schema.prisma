@@ -57,6 +57,7 @@ model Referee {
   regions        Region[]
   forms          AvailabilityForm[]
   assignments    MatchAssignment[]
+  examAttempts   ExamAttempt[]
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
@@ -132,4 +133,44 @@ model LoginAttempt {
   blockedUntil DateTime?
 
   @@map("login_attempts")
+}
+
+model Question {
+  id            Int      @id @default(autoincrement())
+  questionText  String
+  optionA       String
+  optionB       String
+  optionC       String
+  optionD       String
+  correctAnswer String   // "A", "B", "C", or "D"
+  category      String?  // Optional categorization
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  @@map("questions")
+}
+
+model ExamAttempt {
+  id             Int      @id @default(autoincrement())
+  referee        Referee  @relation(fields: [refereeId], references: [id], onDelete: Cascade)
+  refereeId      Int
+  score          Int      // Score out of 20
+  totalQuestions Int      @default(20)
+  answers        UserAnswer[]
+  createdAt      DateTime @default(now())
+  
+  @@map("exam_attempts")
+}
+
+model UserAnswer {
+  id             Int          @id @default(autoincrement())
+  attempt        ExamAttempt  @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  attemptId      Int
+  questionId     Int          // Store question ID to track which question was answered
+  questionText   String       // Store snapshot of question
+  selectedAnswer String       // "A", "B", "C", or "D"
+  correctAnswer  String       // Snapshot of correct answer
+  isCorrect      Boolean
+  
+  @@map("user_answers")
 }
