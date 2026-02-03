@@ -16,6 +16,7 @@ interface ExamAttempt {
     id: number;
     score: number;
     totalQuestions: number;
+    difficulty: string | null;
     createdAt: Date;
     referee: {
         firstName: string;
@@ -101,6 +102,9 @@ export default function ExamResultsPage() {
                                         Skor
                                     </th>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-zinc-700 dark:text-zinc-300 uppercase tracking-wider">
+                                        Zorluk
+                                    </th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-zinc-700 dark:text-zinc-300 uppercase tracking-wider">
                                         Başarı Oranı
                                     </th>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-zinc-700 dark:text-zinc-300 uppercase tracking-wider">
@@ -138,6 +142,14 @@ export default function ExamResultsPage() {
                                                     </span>
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap">
+                                                    <span className={`px-2 py-1 text-[10px] font-black rounded-full uppercase tracking-tighter ${attempt.difficulty === "Kolay" ? "bg-green-100 text-green-700" :
+                                                        attempt.difficulty === "Zor" ? "bg-red-100 text-red-700" :
+                                                            "bg-blue-100 text-blue-700"
+                                                        }`}>
+                                                        {attempt.difficulty || "Orta"}
+                                                    </span>
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap">
                                                     <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getScoreBgColor(attempt.score, attempt.totalQuestions)}`}>
                                                         <span className={getScoreColor(attempt.score, attempt.totalQuestions)}>
                                                             %{percentage.toFixed(0)}
@@ -164,11 +176,16 @@ export default function ExamResultsPage() {
                                             </tr>
                                             {isExpanded && (
                                                 <tr>
-                                                    <td colSpan={6} className="px-6 py-4 bg-zinc-50 dark:bg-zinc-800/50">
+                                                    <td colSpan={7} className="px-6 py-4 bg-zinc-50 dark:bg-zinc-800/50">
                                                         <div className="space-y-2">
-                                                            <h4 className="font-semibold text-sm mb-3 text-zinc-900 dark:text-zinc-100">
-                                                                Cevap Detayları:
-                                                            </h4>
+                                                            <div className="flex items-center justify-between mb-3">
+                                                                <h4 className="font-semibold text-sm text-zinc-900 dark:text-zinc-100">
+                                                                    Cevap Detayları:
+                                                                </h4>
+                                                                <span className="text-xs font-bold text-zinc-500 italic">
+                                                                    Seviye: {attempt.difficulty || "Orta"}
+                                                                </span>
+                                                            </div>
                                                             {attempt.answers.map((answer, idx) => (
                                                                 <div
                                                                     key={answer.id}
@@ -222,8 +239,15 @@ export default function ExamResultsPage() {
                                                     <div className="font-semibold text-zinc-900 dark:text-zinc-100">
                                                         {attempt.referee.firstName} {attempt.referee.lastName}
                                                     </div>
-                                                    <div className="text-xs text-zinc-500 dark:text-zinc-400">
-                                                        {attempt.referee.classification}
+                                                    <div className="text-xs text-zinc-500 dark:text-zinc-400 flex items-center gap-2">
+                                                        <span>{attempt.referee.classification}</span>
+                                                        <span className="w-1 h-1 bg-zinc-300 rounded-full" />
+                                                        <span className={`font-black uppercase tracking-tighter ${attempt.difficulty === "Kolay" ? "text-green-600" :
+                                                            attempt.difficulty === "Zor" ? "text-red-600" :
+                                                                "text-blue-600"
+                                                            }`}>
+                                                            {attempt.difficulty || "Orta"}
+                                                        </span>
                                                     </div>
                                                 </div>
                                             </div>

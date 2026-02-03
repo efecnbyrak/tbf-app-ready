@@ -17,6 +17,7 @@ interface ExamAttempt {
     id: number;
     score: number;
     totalQuestions: number;
+    difficulty: string | null;
     createdAt: Date;
     answers: UserAnswer[];
 }
@@ -39,7 +40,7 @@ export default function ResultsClient({ refereeId }: { refereeId: number }) {
         const result = await getUserExamHistory(refereeId);
 
         if (result.success && result.attempts) {
-            setAttempts(result.attempts as ExamAttempt[]);
+            setAttempts(result.attempts as any[]);
         } else {
             setError(result.error || "Sonuçlar yüklenemedi");
         }
@@ -139,16 +140,24 @@ export default function ResultsClient({ refereeId }: { refereeId: number }) {
                                 >
                                     <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                                         <div className="flex-1">
-                                            <div className="flex items-center gap-2 mb-2">
-                                                <Calendar className="w-4 h-4 text-zinc-600 dark:text-zinc-400" />
-                                                <span className="text-sm text-zinc-600 dark:text-zinc-400">
-                                                    {new Date(attempt.createdAt).toLocaleDateString("tr-TR", {
-                                                        year: "numeric",
-                                                        month: "long",
-                                                        day: "numeric",
-                                                        hour: "2-digit",
-                                                        minute: "2-digit",
-                                                    })}
+                                            <div className="flex items-center gap-4 mb-2">
+                                                <div className="flex items-center gap-2">
+                                                    <Calendar className="w-4 h-4 text-zinc-600 dark:text-zinc-400" />
+                                                    <span className="text-sm text-zinc-600 dark:text-zinc-400">
+                                                        {new Date(attempt.createdAt).toLocaleDateString("tr-TR", {
+                                                            year: "numeric",
+                                                            month: "long",
+                                                            day: "numeric",
+                                                            hour: "2-digit",
+                                                            minute: "2-digit",
+                                                        })}
+                                                    </span>
+                                                </div>
+                                                <span className={`px-2 py-0.5 text-[10px] font-black rounded-full uppercase tracking-widest ${attempt.difficulty === "Kolay" ? "bg-green-100 text-green-700" :
+                                                        attempt.difficulty === "Zor" ? "bg-red-100 text-red-700" :
+                                                            "bg-blue-100 text-blue-700"
+                                                    }`}>
+                                                    {attempt.difficulty || "Orta"}
                                                 </span>
                                             </div>
                                             <div className="flex items-baseline gap-3">
