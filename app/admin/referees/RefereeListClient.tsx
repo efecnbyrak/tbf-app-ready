@@ -9,19 +9,30 @@ interface RefereeListClientProps {
     refereeTypeMap: Record<string, string>;
 }
 
-const CLASSIFICATIONS = [
-    "Belirtilmemiş",
-    "A Klasmanı",
-    "B Klasmanı",
-    "C Klasmanı",
-    "İl Hakemi",
-    "Aday Hakem"
+// Mapping of database values to UI display labels
+const CLASSIFICATION_MAP: Record<string, string> = {
+    "BELIRLENMEMIS": "Belirtilmemiş",
+    "A": "A Klasmanı",
+    "B": "B Klasmanı",
+    "C": "C Klasmanı",
+    "IL_HAKEMI": "İl Hakemi",
+    "ADAY_HAKEM": "Aday Hakem"
+};
+
+// Sort order for classifications
+const ORDERED_CLASSIFICATIONS = [
+    "BELIRLENMEMIS",
+    "A",
+    "B",
+    "C",
+    "IL_HAKEMI",
+    "ADAY_HAKEM"
 ];
 
 export function RefereeListClient({ initialReferees, refereeTypeMap }: RefereeListClientProps) {
     const [searchQuery, setSearchQuery] = useState("");
 
-    // Filter and group referees
+    // Filter referees based on search query
     const filteredReferees = initialReferees.filter(ref => {
         const fullName = `${ref.firstName} ${ref.lastName}`.toLowerCase();
         const tckn = ref.tckn.toLowerCase();
@@ -29,13 +40,18 @@ export function RefereeListClient({ initialReferees, refereeTypeMap }: RefereeLi
         return fullName.includes(query) || tckn.includes(query);
     });
 
-    // Grouping logic
-    const grouped = CLASSIFICATIONS.reduce((acc, classification) => {
-        acc[classification] = filteredReferees.filter(ref => {
-            if (classification === "Belirtilmemiş") {
-                return !ref.classification || ref.classification === "" || ref.classification === "Belirtilmemiş";
+    // Grouping logic with robust catch-all for "Belirtilmemiş"
+    const grouped = ORDERED_CLASSIFICATIONS.reduce((acc, code) => {
+        const label = CLASSIFICATION_MAP[code];
+        acc[label] = filteredReferees.filter(ref => {
+            // For the "Belirtilmemiş" group, catch null, empty, or explicit BELIRLENMEMIS codes
+            if (code === "BELIRLENMEMIS") {
+                return !ref.classification ||
+                    ref.classification === "" ||
+                    ref.classification === "BELIRLENMEMIS" ||
+                    !CLASSIFICATION_MAP[ref.classification]; // Catch any unrecognized codes here too
             }
-            return ref.classification === classification;
+            return ref.classification === code;
         });
         return acc;
     }, {} as Record<string, any[]>);
@@ -69,17 +85,20 @@ export function RefereeListClient({ initialReferees, refereeTypeMap }: RefereeLi
 
             {/* Grouped Content */}
             <div className="space-y-16">
-                {CLASSIFICATIONS.map(classification => {
-                    const groupReferees = grouped[classification];
+                {ORDERED_CLASSIFICATIONS.map(code => {
+                    const label = CLASSIFICATION_MAP[code];
+                    const groupReferees = grouped[label];
+
+                    // Don't show empty sections if there's a search occurring, 
+                    // except if it's the "Belirtilmemiş" section and not searching
                     if (groupReferees.length === 0 && searchQuery !== "") return null;
-                    if (groupReferees.length === 0 && classification !== "Belirtilmemiş") return null;
-                    if (groupReferees.length === 0 && classification === "Belirtilmemiş") return null;
+                    if (groupReferees.length === 0 && code !== "BELIRLENMEMIS") return null;
 
                     return (
-                        <section key={classification} className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                        <section key={code} className="animate-in fade-in slide-in-from-bottom-4 duration-500">
                             <div className="flex items-center gap-4 mb-8">
                                 <h3 className="text-2xl font-black text-zinc-900 dark:text-white tracking-tighter">
-                                    {classification}
+                                    {label}
                                 </h3>
                                 <div className="h-px flex-1 bg-gradient-to-r from-zinc-200 dark:from-zinc-800 to-transparent" />
                                 <span className="px-4 py-1 bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 rounded-full text-xs font-black">
