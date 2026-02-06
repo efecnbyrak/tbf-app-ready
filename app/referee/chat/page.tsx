@@ -26,7 +26,11 @@ export default async function ChatPage() {
     return (
         <div className="container mx-auto p-4 max-w-4xl h-full">
             <ChatInterface
-                initialMessages={chatSession?.messages || []}
+                initialMessages={chatSession?.messages.map(m => ({
+                    ...m,
+                    createdAt: m.createdAt, // Ensure it's passed as Date
+                    role: m.role as "user" | "assistant"
+                })) || []}
                 sessionId={chatSession?.id || ""}
                 userId={session.userId}
             />

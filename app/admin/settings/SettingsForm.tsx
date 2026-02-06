@@ -1,3 +1,5 @@
+"use client";
+
 import { updateSystemSetting, advanceWeek } from "@/app/actions/settings";
 import { useState } from "react";
 import { Loader2, CalendarClock, ChevronRight } from "lucide-react";

@@ -25,7 +25,23 @@ const initialState: { error: string | undefined; success: boolean } = {
 };
 
 export function OfficialAvailabilityForm({ referee, days, existingForm, isLocked, deadline, startDate, endDate, customRoleLabel, customRoleTitle }: OfficialAvailabilityFormProps) {
+    const [state, formAction, isPending] = useActionState(saveAvailability, initialState);
     const [clientError, setClientError] = useState<string>("");
+
+    const isRegionSelected = (region: string) => {
+        return referee.regions?.some((r: any) => r.name === region);
+    };
+
+    const getDayData = (day: Date) => {
+        if (!existingForm?.days) return null;
+        // Compare dates safely
+        return existingForm.days.find((d: any) => {
+            const dDate = new Date(d.date);
+            return dDate.getDate() === day.getDate() &&
+                dDate.getMonth() === day.getMonth() &&
+                dDate.getFullYear() === day.getFullYear();
+        });
+    };
 
     const handleSubmit = (formData: FormData) => {
         setClientError("");

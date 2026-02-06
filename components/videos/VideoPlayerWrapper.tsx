@@ -6,7 +6,7 @@ import { updateVideoProgress } from "@/app/actions/video";
 import { Loader2, CheckCircle } from "lucide-react";
 
 // Dynamic import to avoid SSR issues with ReactPlayer
-const ReactPlayer = dynamic(() => import("react-player/lazy"), { ssr: false });
+const ReactPlayer = dynamic(() => import("react-player"), { ssr: false });
 
 interface VideoPlayerWrapperProps {
     videoId: number;
@@ -14,6 +14,8 @@ interface VideoPlayerWrapperProps {
     initialProgress?: number;
     isWatched?: boolean;
 }
+
+const ReactPlayerAny = ReactPlayer as any;
 
 export function VideoPlayerWrapper({ videoId, url, initialProgress = 0, isWatched = false }: VideoPlayerWrapperProps) {
     const [hasMounted, setHasMounted] = useState(false);
@@ -62,20 +64,20 @@ export function VideoPlayerWrapper({ videoId, url, initialProgress = 0, isWatche
     return (
         <div className="space-y-4">
             <div className="relative aspect-video bg-black rounded-xl overflow-hidden shadow-2xl border border-zinc-800">
-                <ReactPlayer
+                <ReactPlayerAny
                     ref={playerRef}
                     url={url}
                     width="100%"
                     height="100%"
                     controls
-                    onProgress={handleProgress}
+                    onProgress={(state: any) => handleProgress(state)}
                     onDuration={handleDuration}
                     onReady={handleSearchTo}
                     config={{
                         youtube: {
                             playerVars: { showinfo: 1 }
                         }
-                    }}
+                    } as any}
                 />
             </div>
 
