@@ -1,9 +1,8 @@
-"use client";
-
-import { useActionState, useEffect } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Modal } from "@/components/ui/modal";
-import { login } from "@/app/actions/auth";
+import { login, verify2FA } from "@/app/actions/auth";
+import { Loader2 } from "lucide-react";
 
 interface LoginModalProps {
     isOpen: boolean;
@@ -14,67 +13,128 @@ interface LoginModalProps {
 const initialState = {
     error: undefined as string | undefined,
     success: false,
+    requireVerification: false,
+    userId: undefined as number | undefined
 };
 
 export function LoginModal({ isOpen, onClose, onSwitchToRegister }: LoginModalProps) {
     const [state, formAction, isPending] = useActionState(login, initialState);
+    const [verifyCode, setVerifyCode] = useState("");
+    const [verifying, setVerifying] = useState(false);
+    const [verifyError, setVerifyError] = useState("");
+
+    // Derived state for showing verification step
+    // We check if state.requireVerification came back true
+    const showVerify = state.requireVerification && state.userId;
+
     const router = useRouter();
 
     useEffect(() => {
-        if (state.success && state.redirectTo) {
+        // If login full success (no verify needed or after verify flow if we were using same action - but we aren't)
+        if (state.success && state.redirectTo && !state.requireVerification) {
             router.push(state.redirectTo);
+            onClose();
         }
-    }, [state.success, state.redirectTo, router]);
+    }, [state.success, state.redirectTo, state.requireVerification, router, onClose]);
+
+    const handleVerify = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setVerifying(true);
+        setVerifyError("");
+        if (!state.userId) return;
+
+        const res = await verify2FA(state.userId, verifyCode);
+        setVerifying(false);
+
+        if (res.success && res.redirectTo) {
+            router.push(res.redirectTo);
+            onClose();
+        } else {
+            setVerifyError(res.error || "Doğrulama başarısız.");
+        }
+    };
 
     return (
-        <Modal isOpen={isOpen} onClose={onClose} title="Giriş Yap">
-            <form action={formAction} className="space-y-4">
-                <div>
-                    <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
-                        TC Kimlik No / Kullanıcı Adı
-                    </label>
-                    <input
-                        type="text"
-                        name="identifier"
-                        required
-                        className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-600 focus:border-transparent outline-none dark:bg-zinc-800 dark:border-zinc-700"
-                        placeholder="TCKN veya Kullanıcı Adı"
-                    />
-                </div>
-                <div>
-                    <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
-                        Şifre
-                    </label>
-                    <input
-                        type="password"
-                        name="password"
-                        required
-                        className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-600 focus:border-transparent outline-none dark:bg-zinc-800 dark:border-zinc-700"
-                        placeholder="Şifre giriniz.."
-                    />
-                </div>
+        <Modal isOpen={isOpen} onClose={onClose} title={showVerify ? "Doğrulama Kodu" : "Giriş Yap"}>
+            {!showVerify ? (
+                <form action={formAction} className="space-y-4">
+                    <div>
+                        <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+                            TC Kimlik No / Kullanıcı Adı
+                        </label>
+                        <input
+                            type="text"
+                            name="identifier"
+                            required
+                            className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-600 focus:border-transparent outline-none dark:bg-zinc-800 dark:border-zinc-700"
+                            placeholder="TCKN veya Kullanıcı Adı"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+                            Şifre
+                        </label>
+                        <input
+                            type="password"
+                            name="password"
+                            required
+                            className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-600 focus:border-transparent outline-none dark:bg-zinc-800 dark:border-zinc-700"
+                            placeholder="Şifre giriniz.."
+                        />
+                    </div>
 
-                {state?.error && <p className="text-red-500 text-sm">{state.error}</p>}
+                    {state?.error && <p className="text-red-500 text-sm">{state.error}</p>}
 
-                <button
-                    type="submit"
-                    disabled={isPending}
-                    className="w-full bg-red-700 text-white font-semibold py-2 rounded-lg hover:bg-red-800 transition-colors disabled:opacity-50"
-                >
-                    {isPending ? "Giriş Yapılıyor..." : "Giriş Yap"}
-                </button>
-
-                <div className="text-center text-sm text-zinc-500 mt-4">
-                    Hesabınız yok mu?{" "}
                     <button
-                        type="button"
-                        onClick={onSwitchToRegister}
-                        className="text-red-700 font-medium hover:underline"
+                        type="submit"
+                        disabled={isPending}
+                        className="w-full bg-red-700 text-white font-semibold py-2 rounded-lg hover:bg-red-800 transition-colors disabled:opacity-50 flex justify-center"
                     >
-                        Kayıt Ol
+                        {isPending ? <Loader2 className="animate-spin" /> : "Giriş Yap"}
                     </button>
-                </div>
-            </form>
+
+                    <div className="text-center text-sm text-zinc-500 mt-4">
+                        Hesabınız yok mu?{" "}
+                        <button
+                            type="button"
+                            onClick={onSwitchToRegister}
+                            className="text-red-700 font-medium hover:underline"
+                        >
+                            Kayıt Ol
+                        </button>
+                    </div>
+                </form>
+            ) : (
+                <form onSubmit={handleVerify} className="space-y-4">
+                    <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg text-sm text-blue-700 dark:text-blue-300">
+                        Sisteme kayıtlı E-posta adresinize gönderilen 6 haneli doğrulama kodunu giriniz.
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+                            Doğrulama Kodu
+                        </label>
+                        <input
+                            type="text"
+                            value={verifyCode}
+                            onChange={(e) => setVerifyCode(e.target.value)}
+                            required
+                            maxLength={6}
+                            className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-600 focus:border-transparent outline-none dark:bg-zinc-800 dark:border-zinc-700 text-center text-2xl tracking-widest font-mono"
+                            placeholder="123456"
+                        />
+                    </div>
+
+                    {verifyError && <p className="text-red-500 text-sm">{verifyError}</p>}
+
+                    <button
+                        type="submit"
+                        disabled={verifying}
+                        className="w-full bg-red-700 text-white font-semibold py-2 rounded-lg hover:bg-red-800 transition-colors disabled:opacity-50 flex justify-center"
+                    >
+                        {verifying ? <Loader2 className="animate-spin" /> : "Doğrula ve Giriş Yap"}
+                    </button>
+                </form>
+            )}
         </Modal>
     );
 }

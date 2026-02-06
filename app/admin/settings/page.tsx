@@ -7,6 +7,7 @@ export default async function SettingsPage() {
     // Fetch settings
     const modeSetting = await db.systemSetting.findUnique({ where: { key: "AVAILABILITY_MODE" } });
     const seasonSetting = await db.systemSetting.findUnique({ where: { key: "CURRENT_SEASON" } });
+    const targetDateSetting = await db.systemSetting.findUnique({ where: { key: "AVAILABILITY_TARGET_DATE" } });
 
     return (
         <div>
@@ -14,6 +15,7 @@ export default async function SettingsPage() {
             <SettingsForm
                 initialMode={modeSetting?.value || "AUTO"}
                 initialSeason={seasonSetting?.value || "2025-2026"}
+                initialTargetDate={targetDateSetting?.value || ""}
             />
         </div>
     );

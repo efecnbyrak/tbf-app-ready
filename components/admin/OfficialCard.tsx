@@ -71,7 +71,9 @@ export function OfficialCard({ official }: OfficialCardProps) {
 
             {/* Actions */}
             <div className="w-full mt-auto pt-2 border-t border-zinc-100 dark:border-zinc-800 flex justify-between items-center">
-                <span className="text-xs text-zinc-400 font-mono">{official.tckn}</span>
+                <span className="text-xs text-zinc-400 font-mono">
+                    {official.tckn ? `${official.tckn.substring(0, 2)}*******${official.tckn.substring(9, 11)}` : ''}
+                </span>
                 <DeleteRefereeButton refereeId={official.id} />
             </div>
         </div>

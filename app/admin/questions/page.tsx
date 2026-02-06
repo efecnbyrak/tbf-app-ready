@@ -182,8 +182,8 @@ export default function QuestionsPage() {
                         <button
                             onClick={() => setSelectedCategory("Tümü")}
                             className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${selectedCategory === "Tümü"
-                                    ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 shadow-md"
-                                    : "bg-zinc-50 text-zinc-600 hover:bg-zinc-100 dark:bg-zinc-800 dark:text-zinc-400"
+                                ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 shadow-md"
+                                : "bg-zinc-50 text-zinc-600 hover:bg-zinc-100 dark:bg-zinc-800 dark:text-zinc-400"
                                 }`}
                         >
                             Tümü
@@ -193,8 +193,8 @@ export default function QuestionsPage() {
                                 key={cat}
                                 onClick={() => setSelectedCategory(cat)}
                                 className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${selectedCategory === cat
-                                        ? "bg-red-600 text-white shadow-md shadow-red-100"
-                                        : "bg-zinc-50 text-zinc-600 hover:bg-zinc-100 dark:bg-zinc-800 dark:text-zinc-400"
+                                    ? "bg-red-600 text-white shadow-md shadow-red-100"
+                                    : "bg-zinc-50 text-zinc-600 hover:bg-zinc-100 dark:bg-zinc-800 dark:text-zinc-400"
                                     }`}
                             >
                                 {cat}
@@ -206,12 +206,12 @@ export default function QuestionsPage() {
                 {/* Difficulty Filter */}
                 <div className="bg-white dark:bg-zinc-900 p-4 rounded-xl border border-zinc-200 dark:border-zinc-800">
                     <h3 className="text-sm font-bold text-zinc-400 uppercase tracking-widest mb-3 px-2">Zorluk Seviyesi</h3>
-                    <div className="flex gap-2">
+                    <div className="hidden md:flex gap-2">
                         <button
                             onClick={() => setSelectedDifficulty("Tümü")}
                             className={`px-6 py-2 rounded-lg text-sm font-bold transition-all ${selectedDifficulty === "Tümü"
-                                    ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 shadow-md"
-                                    : "bg-zinc-50 text-zinc-600 hover:bg-zinc-100 dark:bg-zinc-800 dark:text-zinc-400"
+                                ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 shadow-md"
+                                : "bg-zinc-50 text-zinc-600 hover:bg-zinc-100 dark:bg-zinc-800 dark:text-zinc-400"
                                 }`}
                         >
                             Hepsi
@@ -221,13 +221,26 @@ export default function QuestionsPage() {
                                 key={diff}
                                 onClick={() => setSelectedDifficulty(diff)}
                                 className={`px-6 py-2 rounded-lg text-sm font-bold transition-all ${selectedDifficulty === diff
-                                        ? getDifficultyColor(diff).replace("bg-opacity-30", "shadow-md")
-                                        : "bg-zinc-50 text-zinc-600 hover:bg-zinc-100 dark:bg-zinc-800 dark:text-zinc-400"
+                                    ? getDifficultyColor(diff).replace("bg-opacity-30", "shadow-md")
+                                    : "bg-zinc-50 text-zinc-600 hover:bg-zinc-100 dark:bg-zinc-800 dark:text-zinc-400"
                                     }`}
                             >
                                 {diff}
                             </button>
                         ))}
+                    </div>
+                    {/* Mobile Dropdown */}
+                    <div className="md:hidden">
+                        <select
+                            value={selectedDifficulty}
+                            onChange={(e) => setSelectedDifficulty(e.target.value)}
+                            className="w-full px-4 py-3 rounded-xl text-sm font-bold bg-zinc-50 dark:bg-zinc-950 border-2 border-zinc-100 dark:border-zinc-800 outline-none focus:border-red-600 text-zinc-900 dark:text-white appearance-none"
+                        >
+                            <option value="Tümü">Tüm Zorluklar</option>
+                            {DIFFICULTIES.map(diff => (
+                                <option key={diff} value={diff}>{diff}</option>
+                            ))}
+                        </select>
                     </div>
                 </div>
             </div>
@@ -279,19 +292,19 @@ export default function QuestionsPage() {
                                             <div
                                                 key={opt.key}
                                                 className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${question.correctAnswer === opt.key
-                                                        ? 'bg-green-50 border-green-200 dark:bg-green-900/10 dark:border-green-800'
-                                                        : 'bg-zinc-50 border-zinc-100 dark:bg-zinc-800/50 dark:border-zinc-800'
+                                                    ? 'bg-green-50 border-green-200 dark:bg-green-900/10 dark:border-green-800'
+                                                    : 'bg-zinc-50 border-zinc-100 dark:bg-zinc-800/50 dark:border-zinc-800'
                                                     }`}
                                             >
                                                 <span className={`flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center font-black ${question.correctAnswer === opt.key
-                                                        ? 'bg-green-600 text-white'
-                                                        : 'bg-zinc-200 text-zinc-500 dark:bg-zinc-700 dark:text-zinc-400'
+                                                    ? 'bg-green-600 text-white'
+                                                    : 'bg-zinc-200 text-zinc-500 dark:bg-zinc-700 dark:text-zinc-400'
                                                     }`}>
                                                     {opt.key}
                                                 </span>
                                                 <span className={`text-sm font-medium ${question.correctAnswer === opt.key
-                                                        ? 'text-green-700 dark:text-green-400'
-                                                        : 'text-zinc-600 dark:text-zinc-400'
+                                                    ? 'text-green-700 dark:text-green-400'
+                                                    : 'text-zinc-600 dark:text-zinc-400'
                                                     }`}>
                                                     {opt.val}
                                                 </span>
@@ -302,7 +315,7 @@ export default function QuestionsPage() {
                                         ))}
                                     </div>
                                 </div>
-                                <div className="flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <div className="flex flex-col gap-2 transition-opacity">
                                     <button
                                         onClick={() => handleOpenModal(question)}
                                         className="p-3 bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400 rounded-xl hover:bg-blue-100 transition-colors"
@@ -398,8 +411,8 @@ export default function QuestionsPage() {
                                                 type="button"
                                                 onClick={() => setFormData({ ...formData, correctAnswer: key })}
                                                 className={`w-12 h-12 rounded-xl border-2 flex items-center justify-center font-black transition-all ${formData.correctAnswer === key
-                                                        ? "bg-green-600 border-green-600 text-white shadow-lg shadow-green-200"
-                                                        : "bg-zinc-100 border-zinc-200 text-zinc-400 dark:bg-zinc-800 dark:border-zinc-700"
+                                                    ? "bg-green-600 border-green-600 text-white shadow-lg shadow-green-200"
+                                                    : "bg-zinc-100 border-zinc-200 text-zinc-400 dark:bg-zinc-800 dark:border-zinc-700"
                                                     }`}
                                             >
                                                 {key}

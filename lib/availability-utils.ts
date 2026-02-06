@@ -6,36 +6,52 @@ import { db } from "@/lib/db";
 export async function getAvailabilityWindow() {
     const today = new Date();
 
-    // The cycle starts on Saturday (Day 6) and ends on Friday (Day 5 of next week)
-    // We want the window for NEXT week's assignments
-    // Example: Current cycle is Sat Jan 25 - Fri Jan 31
-    // The window for this cycle opens Sun Jan 26 15:00 and closes Tue Jan 28 22:00
+    // Determine the "Anchor" week.
+    // If we are in week X, we are filling for week X+1.
+    // Week starts Saturday.
+    // If today is Sunday (Feb 1), previous Sat is Jan 31. This is Current Week.
+    // We are filling for Next Week: Starts Feb 7.
 
-    // 0 Sun ... 6 Sat
-    const currentDay = getDay(today);
-
-    // Saturday is day 0 of our logic
+    // 1. Get Current Cycle Start (Most recent Saturday)
+    const currentDay = getDay(today); // 0=Sun, 6=Sat
+    // If today is Sat (6), daysSince=0. If Sun(0), daysSince=1.
     const daysSinceSaturday = (currentDay + 1) % 7;
 
-    const startOfCycle = new Date(today);
-    startOfCycle.setDate(today.getDate() - daysSinceSaturday);
-    startOfCycle.setHours(0, 0, 0, 0);
+    const currentCycleStart = new Date(today);
+    currentCycleStart.setDate(today.getDate() - daysSinceSaturday);
+    currentCycleStart.setHours(0, 0, 0, 0);
 
-    const endOfCycle = new Date(startOfCycle);
-    endOfCycle.setDate(startOfCycle.getDate() + 6); // Sat + 6 = Fri
-    endOfCycle.setHours(23, 59, 59, 999);
+    // 2. Check for manual override in settings
+    let targetWeekStart = new Date(currentCycleStart);
+    targetWeekStart.setDate(currentCycleStart.getDate() + 7); // Default: Target is Next Saturday
 
-    // Window Open: Sunday 15:00 of this cycle
-    const openTime = new Date(startOfCycle);
-    openTime.setDate(startOfCycle.getDate() + 1); // Sunday
+    try {
+        const s = await db.systemSetting.findUnique({ where: { key: "AVAILABILITY_TARGET_DATE" } });
+        if (s && s.value) {
+            targetWeekStart = new Date(s.value);
+        }
+    } catch (e) {
+        // Fallback to auto
+    }
+
+    // 3. Calculate Window based on Target Week
+    // Target is Saturday (e.g., Feb 7).
+    // Window Opens: Sunday prior (Feb 1) = Target - 6 days @ 15:00
+    // Window Closes: Tuesday prior (Feb 3) = Target - 4 days @ 22:00
+
+    const openTime = new Date(targetWeekStart);
+    openTime.setDate(targetWeekStart.getDate() - 6);
     openTime.setHours(15, 0, 0, 0);
 
-    // Deadline: Tuesday 22:00 of this cycle.
-    const deadline = new Date(startOfCycle);
-    deadline.setDate(startOfCycle.getDate() + 3); // Tuesday
+    const deadline = new Date(targetWeekStart);
+    deadline.setDate(targetWeekStart.getDate() - 4);
     deadline.setHours(22, 0, 0, 0);
 
-    // Check Settings
+    const targetWeekEnd = new Date(targetWeekStart);
+    targetWeekEnd.setDate(targetWeekStart.getDate() + 6); // Friday
+    targetWeekEnd.setHours(23, 59, 59, 999);
+
+    // 4. Check Lock Mode
     let setting = "AUTO";
     try {
         const s = await db.systemSetting.findUnique({ where: { key: "AVAILABILITY_MODE" } });
@@ -44,15 +60,14 @@ export async function getAvailabilityWindow() {
         // Fallback
     }
 
-    // Logic for AUTO: Closed before Sun 15:00 OR after Tue 22:00
     let isLocked = today < openTime || today > deadline;
 
     if (setting === "OPEN") isLocked = false;
     if (setting === "CLOSED") isLocked = true;
 
     return {
-        startDate: startOfCycle,
-        endDate: endOfCycle,
+        startDate: targetWeekStart, // This is the ID for the form
+        endDate: targetWeekEnd,
         deadline,
         openTime,
         isLocked,

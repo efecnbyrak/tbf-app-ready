@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { User, Calendar, FileText, Menu, X, LogOut, BookOpen, Trophy, Sparkles } from "lucide-react";
+import { User, Calendar, FileText, Menu, X, LogOut, BookOpen, Trophy, Sparkles, PlayCircle } from "lucide-react";
 import { SignOutButton } from "@/components/auth/SignOutButton";
 
 interface ResponsiveNavProps {
@@ -150,17 +150,31 @@ export function ResponsiveNav({ refereeName, roleType, basePath = "/referee", ti
                             Sonuçlar
                         </Link>
 
-                        {/* Training */}
+                        {/* Training Videos */}
                         <Link
-                            href={`${basePath}/training`}
+                            href={`${basePath}/videos`}
                             onClick={() => setIsOpen(false)}
-                            className={`flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-all ${isActive(`${basePath}/training`)
+                            className={`flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-all ${isActive(`${basePath}/videos`)
                                 ? "bg-red-700 text-white shadow-md border-l-4 border-red-900"
                                 : "hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-200"
                                 }`}
                         >
+                            <PlayCircle className="w-5 h-5" />
+                            Eğitim Videoları
+                        </Link>
+
+                        {/* AI Assistant */}
+                        <Link
+                            href={`${basePath}/chat`}
+                            // Highlight special item
+                            onClick={() => setIsOpen(false)}
+                            className={`flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-all ${isActive(`${basePath}/chat`)
+                                ? "bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-md"
+                                : "hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-200"
+                                }`}
+                        >
                             <Sparkles className="w-5 h-5" />
-                            Eğitim
+                            AI Asistanı
                         </Link>
                     </nav>
 

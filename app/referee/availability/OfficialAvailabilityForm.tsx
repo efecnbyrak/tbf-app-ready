@@ -3,7 +3,7 @@
 import { saveAvailability } from "@/app/actions/availability";
 import { Info, Lock, Save, AlertTriangle } from "lucide-react";
 import { DayRow } from "./DayRow";
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { formatClassification } from "@/lib/format-utils";
 import { Referee, Region, AvailabilityForm as AvailabilityFormType, AvailabilityDay } from "@prisma/client";
 
@@ -25,25 +25,48 @@ const initialState: { error: string | undefined; success: boolean } = {
 };
 
 export function OfficialAvailabilityForm({ referee, days, existingForm, isLocked, deadline, startDate, endDate, customRoleLabel, customRoleTitle }: OfficialAvailabilityFormProps) {
-    const [state, formAction, isPending] = useActionState(saveAvailability, initialState);
+    const [clientError, setClientError] = useState<string>("");
 
-    // Helper to get day data
-    const getDayData = (date: Date) => {
-        if (!existingForm) return null;
-        const target = date.toISOString().split('T')[0];
-        return (existingForm.days as AvailabilityDay[]).find((d: AvailabilityDay) => {
-            const dayDate = d.date instanceof Date ? d.date.toISOString().split('T')[0] : (d.date as unknown as string).split('T')[0];
-            return dayDate === target;
-        });
+    const handleSubmit = (formData: FormData) => {
+        setClientError("");
+
+        // 1. Validate Regions
+        const regions = formData.getAll("regions");
+        if (regions.length === 0) {
+            setClientError("Lütfen en az bir görev bölgesi seçiniz.");
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            return;
+        }
+
+        // 2. Validate Availability
+        // We need to check if at least one day has a status other than "Uygun Değil" (or empty)
+        let hasAvailability = false;
+        const entries = Array.from(formData.entries());
+        for (const [key, value] of entries) {
+            if (key.startsWith("day_") && key.endsWith("_slot")) {
+                if (value !== "Uygun Değil" && value !== "") {
+                    hasAvailability = true;
+                    break;
+                }
+            }
+        }
+
+        if (!hasAvailability) {
+            setClientError("En az bir gün için uygunluk (UYGUNUM veya saat) belirtmelisiniz.");
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            return;
+        }
+
+        // Proceed
+        formAction(formData);
     };
 
-    const isRegionSelected = (rName: string) => referee.regions.some((r: Region) => r.name === rName);
-
     return (
-        <form action={formAction} className="space-y-8">
-            {state?.error && (
-                <div className="bg-red-100 border border-red-200 text-red-700 px-4 py-3 rounded relative">
-                    {state.error}
+        <form action={handleSubmit} className="space-y-8">
+            {(state?.error || clientError) && (
+                <div className="bg-red-100 border border-red-200 text-red-700 px-4 py-3 rounded relative flex items-center gap-2">
+                    <AlertTriangle className="w-5 h-5" />
+                    <span>{state?.error || clientError}</span>
                 </div>
             )}
 

@@ -22,6 +22,11 @@ model User {
   referee  Referee?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  verificationCode String?
+  verificationCodeExpiresAt DateTime?
+  isVerified Boolean @default(false)
+  videoProgress VideoProgress[]
+  chats ChatSession[]
 
   @@map("users")
 }
@@ -51,6 +56,8 @@ model Referee {
   lastName       String
   email          String   @unique
   phone          String
+  address        String?
+  job            String?
   classification String // "A", "B", "C", "IL_HAKEMI", "ADAY_HAKEM"
   officialType   String   @default("REFEREE") // "REFEREE", "TABLE", "OBSERVER", "HEALTH", "STATISTICIAN"
   imageUrl       String?
@@ -175,4 +182,56 @@ model UserAnswer {
   isCorrect      Boolean
   
   @@map("user_answers")
+}
+
+model Video {
+  id          Int      @id @default(autoincrement())
+  title       String
+  url         String   // YouTube URL
+  description String?
+  category    String?
+  duration    Int      // Duration in seconds (optional, fetched from API or manual)
+  
+  progress    VideoProgress[]
+  createdAt   DateTime @default(now())
+
+  @@map("videos")
+}
+
+model VideoProgress {
+  id             Int      @id @default(autoincrement())
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId         Int
+  video          Video    @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  videoId        Int
+  
+  watched        Boolean  @default(false)
+  lastPosition   Int      @default(0) // Seconds
+  updatedAt      DateTime @updatedAt
+
+  @@unique([userId, videoId])
+  @@map("video_progress")
+}
+
+model ChatSession {
+  id        String    @id @default(uuid())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    Int
+  messages  Message[]
+  title     String?   @default("Yeni Sohbet")
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@map("chat_sessions")
+}
+
+model Message {
+  id        String      @id @default(uuid())
+  session   ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  sessionId String
+  role      String      // "user" or "assistant"
+  content   String      @db.Text
+  createdAt DateTime    @default(now())
+
+  @@map("messages")
 }

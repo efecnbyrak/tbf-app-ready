@@ -145,6 +145,45 @@ export function RegisterModal({ isOpen, onClose, onSwitchToLogin }: RegisterModa
                     {state.errors?.roleType && <p className="text-red-500 text-xs mt-1">{state.errors.roleType}</p>}
                 </div>
 
+                <div className="grid grid-cols-2 gap-4">
+                    <div>
+                        <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+                            Meslek
+                        </label>
+                        <input
+                            type="text"
+                            name="job"
+                            className={`w-full px-3 py-2 border rounded-lg focus:ring-2 outline-none dark:bg-zinc-800 dark:border-zinc-700 ${state.errors?.job ? 'border-red-500 ring-red-200' : 'focus:ring-red-600 focus:border-transparent'}`}
+                            placeholder="Mühendis, Öğrenci..."
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+                            Adres
+                        </label>
+                        <textarea
+                            name="address"
+                            rows={1}
+                            className={`w-full px-3 py-2 border rounded-lg focus:ring-2 outline-none dark:bg-zinc-800 dark:border-zinc-700 resize-none ${state.errors?.address ? 'border-red-500 ring-red-200' : 'focus:ring-red-600 focus:border-transparent'}`}
+                            placeholder="İlçe / İl"
+                        />
+                    </div>
+                </div>
+
+                <div className="flex items-start gap-3 p-3 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg border border-zinc-200 dark:border-zinc-700">
+                    <input
+                        type="checkbox"
+                        name="kvkk"
+                        required
+                        id="kvkk"
+                        className="mt-1 w-4 h-4 text-red-600 rounded focus:ring-red-600"
+                    />
+                    <label htmlFor="kvkk" className="text-xs text-zinc-600 dark:text-zinc-400 cursor-pointer">
+                        <span className="font-semibold text-zinc-900 dark:text-zinc-200 hover:underline">KVKK Aydınlatma Metni</span>'ni ve <span className="font-semibold text-zinc-900 dark:text-zinc-200 hover:underline">Açık Rıza Metni</span>'ni okudum, kişisel verilerimin işlenmesini kabul ediyorum.
+                    </label>
+                </div>
+
+
                 {state?.error && (
                     <div className="p-3 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm border border-red-200 dark:border-red-800">
                         {state.error}

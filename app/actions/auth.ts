@@ -12,6 +12,8 @@ export interface ActionState {
     success: boolean;
     username?: string;
     redirectTo?: string;
+    requireVerification?: boolean;
+    userId?: number;
     errors?: {
         firstName?: string;
         lastName?: string;
@@ -20,6 +22,8 @@ export interface ActionState {
         phone?: string;
         password?: string;
         roleType?: string;
+        job?: string;
+        address?: string;
     };
 }
 
@@ -80,10 +84,66 @@ export async function login(prevState: ActionState, formData: FormData): Promise
             await db.loginAttempt.delete({ where: { ipAddress: ip } });
         }
 
-        // 3. Create Session
+        // 2FA Logic
+        // Generate Code
+        const code = Math.floor(100000 + Math.random() * 900000).toString();
+        const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 mins
+
+        await db.user.update({
+            where: { id: user.id },
+            data: {
+                verificationCode: code,
+                verificationCodeExpiresAt: expiresAt
+            }
+        });
+
+        // Send Email (Mock)
+        // In production, use nodemailer or similar
+        console.log(`[EMAIL SEND] To: ${user.referee?.email || 'System'}, Code: ${code}`);
+
+        return { success: false, requireVerification: true, userId: user.id, error: undefined };
+
+    } catch (error) {
+        console.error("Login error:", error);
+        const errMsg = (error as any)?.message || "Bilinmeyen hata";
+        console.error("Login Error Details:", errMsg);
+        return { error: "Giriş yapılırken bir hata oluştu.", success: false };
+    }
+}
+
+export async function verify2FA(userId: number, code: string): Promise<ActionState> {
+    if (!userId || !code) return { error: "Geçersiz istek.", success: false };
+
+    try {
+        const user = await db.user.findUnique({
+            where: { id: userId },
+            include: { role: true, referee: true }
+        });
+
+        if (!user) return { error: "Kullanıcı bulunamadı.", success: false };
+
+        if (user.verificationCode !== code) {
+            return { error: "Hatalı doğrulama kodu.", success: false };
+        }
+
+        if (!user.verificationCodeExpiresAt || user.verificationCodeExpiresAt < new Date()) {
+            return { error: "Doğrulama kodunun süresi dolmuş. Lütfen tekrar giriş yapın.", success: false };
+        }
+
+        // Clear code and mark verified
+        await db.user.update({
+            where: { id: user.id },
+            data: {
+                verificationCode: null,
+                verificationCodeExpiresAt: null,
+                isVerified: true
+            }
+        });
+
+        // Create Session
         await createSession(user.id, user.role.name);
 
-        // 4. Determine redirect path
+        // Redirect
         let redirectTo = "/";
         if (user.role.name === "ADMIN") {
             redirectTo = "/admin";
@@ -93,14 +153,10 @@ export async function login(prevState: ActionState, formData: FormData): Promise
             redirectTo = "/general";
         }
 
-        console.log('[LOGIN DEBUG] Success! Redirecting to:', redirectTo);
-
         return { success: true, redirectTo };
-    } catch (error) {
-        console.error("Login error:", error);
-        const errMsg = (error as any)?.message || "Bilinmeyen hata";
-        console.error("Login Error Details:", errMsg);
-        return { error: "Giriş yapılırken bir hata oluştu.", success: false };
+    } catch (e) {
+        console.error(e);
+        return { error: "Doğrulama hatası.", success: false };
     }
 }
 
@@ -112,6 +168,9 @@ export async function register(prevState: ActionState, formData: FormData): Prom
     const phone = formData.get("phone") as string;
     const password = formData.get("password") as string;
     const roleType = formData.get("roleType") as string;
+    const job = formData.get("job") as string;
+    const address = formData.get("address") as string;
+    const kvkk = formData.get("kvkk");
 
     const errors: ActionState['errors'] = {};
 
@@ -122,6 +181,7 @@ export async function register(prevState: ActionState, formData: FormData): Prom
     if (!phone) errors.phone = "Telefon gerekli.";
     if (!password) errors.password = "Şifre gerekli.";
     if (!roleType) errors.roleType = "Görev seçimi gerekli.";
+    if (!kvkk) return { error: "KVKK ve Aydınlatma Metni'ni onaylamanız gerekmektedir.", success: false };
 
     if (Object.keys(errors).length > 0) {
         return { error: "Lütfen işaretli alanları kontrol edin.", errors, success: false };
@@ -135,7 +195,7 @@ export async function register(prevState: ActionState, formData: FormData): Prom
         // 1. Hash password
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        // 2. Check existing user MANUALLY first to give better error messages
+        // 2. Check existing user
         const existingTckn = await db.user.findFirst({ where: { tckn } });
         if (existingTckn) {
             return { error: "Bu TCKN ile kayıtlı bir kullanıcı zaten var.", errors: { tckn: "Bu TCKN zaten kullanımda." }, success: false };
@@ -152,17 +212,8 @@ export async function register(prevState: ActionState, formData: FormData): Prom
             refereeRole = await db.role.create({ data: { name: "REFEREE" } });
         }
 
-        // 4. Generate Username (e.g. efe.can.bayrak.5462)
-        const cleanName = (str: string) => str.toLowerCase()
-            .replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ş/g, 's')
-            .replace(/ı/g, 'i').replace(/ö/g, 'o').replace(/ç/g, 'c')
-            .replace(/\s+/g, '.').replace(/[^a-z0-9.]/g, '');
-
-        const slugFirst = cleanName(firstName);
-        const slugLast = cleanName(lastName);
-        const randomSuffix = Math.floor(1000 + Math.random() * 9000); // 4 digit random
-
-        const generatedUsername = `${slugFirst}.${slugLast}${randomSuffix}`;
+        // 4. Username = TCKN (Requested by user)
+        const generatedUsername = tckn;
 
         let createdUser;
 
@@ -177,12 +228,31 @@ export async function register(prevState: ActionState, formData: FormData): Prom
                 }
             });
 
-            // Use Raw SQL to bypass stale Prisma Client validation for officialType
-            await tx.$executeRaw`
-                INSERT INTO referees ("userId", tckn, "firstName", "lastName", email, phone, classification, "officialType", "createdAt", "updatedAt")
-                VALUES (${createdUser.id}, ${tckn}, ${firstName}, ${lastName}, ${email}, ${phone}, 'BELIRLENMEMIS', ${roleType}, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-            `;
+            // Use Raw SQL to bypass stale Prisma Client validation for officialType and new fields
+            // NOTE: job/address might be null, handle strings properly in SQL
+            // ${job} if null might be issue? No, prisma sql template handles it?
+            // Safer to use empty string if null, or verify prisma raw sql support for null.
+            // Raw SQL with Prisma handles values.
+            await tx.referee.create({
+                data: {
+                    userId: createdUser.id,
+                    tckn: tckn,
+                    firstName: firstName,
+                    lastName: lastName,
+                    email: email,
+                    phone: phone,
+                    classification: 'BELIRLENMEMIS',
+                    officialType: roleType,
+                    job: job || null,
+                    address: address || null
+                }
+            });
         });
+
+        // 6. Direct Login (Skip verification for registration? Or require it?)
+        // User said: "Require verification code ... log in yapamasın".
+        // They should Login explicitly to get the code.
+        // Return username so they know what to use.
 
         return { success: true, username: generatedUsername, error: undefined };
 
@@ -199,8 +269,7 @@ export async function register(prevState: ActionState, formData: FormData): Prom
                     return { error: "Bu E-posta zaten kullanımda.", errors: { email: "Zaten kayıtlı." }, success: false };
                 }
                 if (target.includes('username')) {
-                    // Retry logic could be here, but highly unlikely
-                    return { error: "Sistem hatası (Kullanıcı adı çakışması). Lütfen tekrar deneyin.", success: false };
+                    return { error: "Bu TCKN ile kayıtlı bir kullanıcı zaten var.", success: false };
                 }
             }
         }
