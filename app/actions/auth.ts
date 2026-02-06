@@ -97,9 +97,15 @@ export async function login(prevState: ActionState, formData: FormData): Promise
             }
         });
 
-        // Send Email (Mock)
-        // In production, use nodemailer or similar
-        console.log(`[EMAIL SEND] To: ${user.referee?.email || 'System'}, Code: ${code}`);
+        // Send Email
+        try {
+            const { sendVerificationEmail } = await import("@/lib/email");
+            await sendVerificationEmail(user.referee?.email || user.username, code);
+        } catch (emailError) {
+            console.error("Failed to send email:", emailError);
+            // Optional: return error to user? For now, we continue but maybe warn?
+            // "Giriş başarılı ancak kod gönderilemedi."
+        }
 
         return { success: false, requireVerification: true, userId: user.id, error: undefined };
 

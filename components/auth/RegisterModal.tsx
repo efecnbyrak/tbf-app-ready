@@ -1,8 +1,7 @@
-"use client";
-
-import { useActionState, useEffect } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { Modal } from "@/components/ui/modal";
 import { register } from "@/app/actions/auth";
+import { ISTANBUL_DISTRICTS } from "@/lib/constants";
 
 interface RegisterModalProps {
     isOpen: boolean;
@@ -19,6 +18,13 @@ const initialState: { error?: string; success: boolean; username?: string; error
 
 export function RegisterModal({ isOpen, onClose, onSwitchToLogin }: RegisterModalProps) {
     const [state, formAction, isPending] = useActionState(register, initialState);
+
+    // Address State
+    const [district, setDistrict] = useState("");
+    const [details, setDetails] = useState("");
+
+    // Derived address string for the hidden input
+    const fullAddress = district ? `${district} / İstanbul - ${details}` : details;
 
     useEffect(() => {
         if (state.success && isOpen) {
@@ -75,7 +81,6 @@ export function RegisterModal({ isOpen, onClose, onSwitchToLogin }: RegisterModa
                             e.target.value = e.target.value.replace(/\D/g, '');
                         }}
                     />
-                    {state.errors?.tckn && <p className="text-red-500 text-xs mt-1">{state.errors.tckn}</p>}
                     {state.errors?.tckn && <p className="text-red-500 text-xs mt-1">{state.errors.tckn}</p>}
                 </div>
 
@@ -157,18 +162,53 @@ export function RegisterModal({ isOpen, onClose, onSwitchToLogin }: RegisterModa
                             placeholder="Mühendis, Öğrenci..."
                         />
                     </div>
+                    {/* Address Fields */}
                     <div>
                         <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
-                            Adres
+                            İl
                         </label>
-                        <textarea
-                            name="address"
-                            rows={1}
-                            className={`w-full px-3 py-2 border rounded-lg focus:ring-2 outline-none dark:bg-zinc-800 dark:border-zinc-700 resize-none ${state.errors?.address ? 'border-red-500 ring-red-200' : 'focus:ring-red-600 focus:border-transparent'}`}
-                            placeholder="İlçe / İl"
+                        <select
+                            disabled
+                            className="w-full px-3 py-2 border rounded-lg bg-zinc-100 dark:bg-zinc-800 dark:border-zinc-700 text-zinc-500 cursor-not-allowed"
+                        >
+                            <option>İstanbul</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                    <div>
+                        <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+                            İlçe
+                        </label>
+                        <select
+                            value={district}
+                            onChange={(e) => setDistrict(e.target.value)}
+                            required
+                            className="w-full px-3 py-2 border rounded-lg focus:ring-2 outline-none dark:bg-zinc-800 dark:border-zinc-700 bg-white"
+                        >
+                            <option value="">İlçe Seçiniz</option>
+                            {ISTANBUL_DISTRICTS.map(d => (
+                                <option key={d} value={d}>{d}</option>
+                            ))}
+                        </select>
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+                            Açık Adres Detayı
+                        </label>
+                        <input
+                            type="text"
+                            value={details}
+                            onChange={(e) => setDetails(e.target.value)}
+                            placeholder="Mahalle, Sokak, No..."
+                            className="w-full px-3 py-2 border rounded-lg focus:ring-2 outline-none dark:bg-zinc-800 dark:border-zinc-700"
                         />
                     </div>
                 </div>
+
+                {/* Hidden Address Input to Aggregate Data */}
+                <input type="hidden" name="address" value={fullAddress} />
 
                 <div className="flex items-start gap-3 p-3 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg border border-zinc-200 dark:border-zinc-700">
                     <input
