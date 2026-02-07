@@ -81,6 +81,16 @@ export default function AdminRulesPage() {
 
             console.log("Response status:", res.status);
             console.log("Response ok:", res.ok);
+            console.log("Response content-type:", res.headers.get("content-type"));
+
+            // Check if response is JSON
+            const contentType = res.headers.get("content-type");
+            if (!contentType || !contentType.includes("application/json")) {
+                const textResponse = await res.text();
+                console.error("Non-JSON response:", textResponse);
+                alert(`Sunucu hatası: ${textResponse.substring(0, 200)}`);
+                return;
+            }
 
             if (res.ok) {
                 const responseData = await res.json();

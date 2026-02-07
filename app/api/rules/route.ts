@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { put } from '@vercel/blob';
 
 // Force dynamic rendering to avoid build-time errors with pdf-parse
 export const dynamic = 'force-dynamic';
@@ -60,22 +59,43 @@ export async function POST(req: Request) {
             extractedText = "PDF içeriği okunamadı.";
         }
 
-        // Upload to Vercel Blob Storage (works in serverless environment)
-        const filename = `rules/${Date.now()}-${file.name.replace(/\s+/g, '-')}`;
-        console.log("[API] Uploading to Vercel Blob Storage:", filename);
+        let fileUrl: string;
 
-        const blob = await put(filename, buffer, {
-            access: 'public',
-            contentType: 'application/pdf',
-        });
+        // Check if we have Vercel Blob token
+        const hasBlob = process.env.BLOB_READ_WRITE_TOKEN;
+        console.log("[API] Has BLOB token:", !!hasBlob);
 
-        console.log("[API] File uploaded to Blob Storage:", blob.url);
+        if (hasBlob) {
+            try {
+                // Production: Use Vercel Blob Storage
+                console.log("[API] Attempting Vercel Blob Storage upload...");
+                const { put } = await import('@vercel/blob');
+                const filename = `rules/${Date.now()}-${file.name.replace(/\s+/g, '-')}`;
+
+                const blob = await put(filename, buffer, {
+                    access: 'public',
+                    contentType: 'application/pdf',
+                });
+
+                fileUrl = blob.url;
+                console.log("[API] File uploaded to Blob Storage:", fileUrl);
+            } catch (blobError: any) {
+                console.error("[API] Blob upload failed, falling back to local:", blobError.message);
+                // Fallback to local if blob fails
+                hasBlob && console.log("[API] Using local filesystem as fallback");
+                fileUrl = await saveToLocalFilesystem(buffer, file.name);
+            }
+        } else {
+            // Development: Use local filesystem
+            console.log("[API] BLOB_READ_WRITE_TOKEN not found, using local filesystem");
+            fileUrl = await saveToLocalFilesystem(buffer, file.name);
+        }
 
         // Create rule with extracted text
         const rule = await db.ruleBook.create({
             data: {
                 title,
-                url: blob.url, // Vercel Blob URL
+                url: fileUrl,
                 content: extractedText,
                 category,
                 description
@@ -87,9 +107,29 @@ export async function POST(req: Request) {
         return NextResponse.json(rule);
     } catch (error: any) {
         console.error("[API] Error saving rule:", error);
+        console.error("[API] Error stack:", error.stack);
         return NextResponse.json({
             error: "İşlem başarısız.",
             details: error.message
         }, { status: 500 });
     }
+}
+
+// Helper function to save to local filesystem
+async function saveToLocalFilesystem(buffer: Buffer, filename: string): Promise<string> {
+    const fs = require('fs');
+    const path = require('path');
+    const sanitizedFilename = `${Date.now()}-${filename.replace(/\s+/g, '-')}`;
+    const uploadDir = path.join(process.cwd(), 'public', 'uploads', 'rules');
+
+    if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir, { recursive: true });
+    }
+
+    const filePath = path.join(uploadDir, sanitizedFilename);
+    fs.writeFileSync(filePath, buffer);
+    const url = `/uploads/rules/${sanitizedFilename}`;
+
+    console.log("[API] File saved locally to:", filePath);
+    return url;
 }
