@@ -62,6 +62,9 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: "Bu kategori adı zaten mevcut." }, { status: 400 });
         }
 
-        return NextResponse.json({ error: "Kategori oluşturulurken bir hata oluştu." }, { status: 500 });
+        return NextResponse.json({
+            error: "Kategori oluşturulurken bir hata oluştu.",
+            details: error.message
+        }, { status: 500 });
     }
 }

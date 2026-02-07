@@ -67,8 +67,11 @@ export async function POST(req: Request) {
         });
 
         return NextResponse.json(rule);
-    } catch (error) {
+    } catch (error: any) {
         console.error("Error saving rule:", error);
-        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+        return NextResponse.json({
+            error: "İşlem başarısız.",
+            details: error.message
+        }, { status: 500 });
     }
 }

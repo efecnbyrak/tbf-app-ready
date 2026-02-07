@@ -1,24 +1,12 @@
 
-import { Folder, Key, Video, BookOpen, Zap, MessageSquare } from "lucide-react";
+import { Folder, Key, Video, BookOpen, Zap } from "lucide-react";
 import Link from "next/link";
-import { db } from "@/lib/db";
 import { getSession } from "@/lib/session";
-import { ChatInterface } from "@/components/chat/ChatInterface";
 
 export const dynamic = 'force-dynamic';
 
 export default async function RulesPage() {
     const session = await getSession();
-
-    // Fetch Chat Session
-    let chatSession = null;
-    if (session?.userId) {
-        chatSession = await db.chatSession.findFirst({
-            where: { userId: session.userId },
-            orderBy: { updatedAt: 'desc' },
-            include: { messages: { orderBy: { createdAt: 'asc' } } }
-        });
-    }
 
     return (
         <div className="space-y-6">
@@ -63,30 +51,6 @@ export default async function RulesPage() {
                 </Link>
             </div>
 
-            {/* AI Assistant Section */}
-            <div className="mt-12 pt-8 border-t border-zinc-200 dark:border-zinc-800">
-                <div className="flex items-center gap-3 mb-6">
-                    <div className="p-3 bg-indigo-100 dark:bg-indigo-900/20 rounded-xl">
-                        <MessageSquare className="w-8 h-8 text-indigo-600 dark:text-indigo-400" />
-                    </div>
-                    <div>
-                        <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">AI Kural Asistanı</h2>
-                        <p className="text-zinc-500">FIBA ve TBF kuralları hakkında sorularını sor.</p>
-                    </div>
-                </div>
-
-                <div className="bg-zinc-50 dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 h-[600px] overflow-hidden shadow-inner">
-                    <ChatInterface
-                        initialMessages={chatSession?.messages.map((m: any) => ({
-                            ...m,
-                            createdAt: m.createdAt,
-                            role: m.role as "user" | "assistant"
-                        })) || []}
-                        sessionId={chatSession?.id || ""}
-                        userId={session?.userId || 0}
-                    />
-                </div>
-            </div>
         </div>
     );
 }

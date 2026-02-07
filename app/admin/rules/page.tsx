@@ -81,7 +81,8 @@ export default function AdminRulesPage() {
                 setFile(null);
                 fetchRules();
             } else {
-                alert("İşlem başarısız.");
+                const data = await res.json();
+                alert(data.error + (data.details ? `\nDetay: ${data.details}` : "") || "İşlem başarısız.");
             }
         } catch (error) {
             console.error("Error saving rule:", error);
