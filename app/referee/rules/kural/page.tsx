@@ -72,8 +72,8 @@ export default function KuralPage() {
                         key={rule.id}
                         onClick={() => setSelectedRule(rule)}
                         className={`p-4 rounded-xl border-2 text-left transition-all ${selectedRule?.id === rule.id
-                                ? "border-red-600 bg-red-50 dark:bg-red-900/10"
-                                : "border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700"
+                            ? "border-red-600 bg-red-50 dark:bg-red-900/10"
+                            : "border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700"
                             }`}
                     >
                         <div className="flex items-start gap-3">
@@ -116,12 +116,23 @@ export default function KuralPage() {
                         </p>
                     )}
 
-                    <div className="bg-zinc-100 dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden shadow-sm" style={{ height: "calc(100vh - 400px)", minHeight: "500px" }}>
-                        <iframe
-                            src={selectedRule.url}
+                    <div className="bg-zinc-100 dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden shadow-sm h-[800px]">
+                        <object
+                            data={selectedRule.url}
+                            type="application/pdf"
                             className="w-full h-full"
-                            title={selectedRule.title}
-                        />
+                        >
+                            <div className="flex flex-col items-center justify-center h-full text-zinc-500">
+                                <p>PDF görüntülenemiyor.</p>
+                                <a
+                                    href={selectedRule.url}
+                                    target="_blank"
+                                    className="mt-2 text-red-600 hover:underline"
+                                >
+                                    Dosyayı İndir / Görüntüle
+                                </a>
+                            </div>
+                        </object>
                     </div>
                 </div>
             )}
