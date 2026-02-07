@@ -81,13 +81,22 @@ export async function POST(req: NextRequest) {
             parts: [{ text: message }]
         });
 
+        // Check API Key
+        const apiKey = process.env.GEMINI_API_KEY;
+        if (!apiKey) {
+            console.error("GEMINI_API_KEY is missing in environment variables");
+            return NextResponse.json({
+                error: "Sistem yapılandırma hatası: API anahtarı bulunamadı.",
+                details: "Sunucu tarafında GEMINI_API_KEY tanımlanmamış."
+            }, { status: 500 });
+        }
+
         // Call Gemini with improved config
+        // Using gemini-pro as it is more stable for general availability free tier
         const model = genAI.getGenerativeModel({
-            model: "gemini-1.5-flash",
+            model: "gemini-pro",
             generationConfig: {
-                temperature: 0.7,
-                topP: 0.9,
-                maxOutputTokens: 2048,
+                maxOutputTokens: 1000,
             }
         });
 
@@ -111,13 +120,22 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ response: responseText });
 
     } catch (error: any) {
-        console.error("AI Chat Error:", error);
+        console.error("AI Chat Error Details:", error);
 
         // More helpful error messaging
-        const errorMessage = error?.message || "Bir hata oluştu";
+        const errorMessage = error?.message || "Bilinmeyen bir hata oluştu";
+
+        // Check for specific Google AI errors
+        let userMessage = "AI yanıt oluşturamadı. Lütfen tekrar deneyin.";
+        if (errorMessage.includes("API key not valid")) {
+            userMessage = "API anahtarı geçersiz. Lütfen sistem yöneticisi ile iletişime geçin.";
+        } else if (errorMessage.includes("quota")) {
+            userMessage = "Sistem kotası doldu. Lütfen daha sonra tekrar deneyin.";
+        }
+
         return NextResponse.json({
-            error: "AI yanıt oluşturamadı. Lütfen tekrar deneyin.",
-            details: errorMessage
+            error: userMessage,
+            details: errorMessage // Return actual error for debugging
         }, { status: 500 });
     }
 }

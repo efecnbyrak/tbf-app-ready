@@ -53,9 +53,11 @@ export function ChatInterface({ initialMessages, sessionId, userId }: ChatInterf
                 body: JSON.stringify({ message: userMessage.content, sessionId: currentSessionId })
             });
 
-            if (!res.ok) throw new Error("Failed to send message");
-
             const data = await res.json();
+
+            if (!res.ok) {
+                throw new Error(data.error || "İletişim hatası oluştu.");
+            }
 
             if (data.sessionId) {
                 setCurrentSessionId(data.sessionId);
@@ -69,12 +71,12 @@ export function ChatInterface({ initialMessages, sessionId, userId }: ChatInterf
             };
 
             setMessages(prev => [...prev, botMessage]);
-        } catch (error) {
-            console.error(error);
+        } catch (error: any) {
+            console.error("Chat Error:", error);
             setMessages(prev => [...prev, {
                 id: Date.now().toString() + "_error",
                 role: "assistant",
-                content: "Üzgünüm, şu anda yanıt veremiyorum. Lütfen daha sonra tekrar deneyin.",
+                content: error.message || "Üzgünüm, şu anda yanıt veremiyorum. Lütfen daha sonra tekrar deneyin.",
                 createdAt: new Date().toISOString()
             }]);
         } finally {
