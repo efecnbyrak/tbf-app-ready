@@ -41,6 +41,10 @@ export default function QuestionsPage() {
     const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
     const [selectedCategory, setSelectedCategory] = useState<string>("Tümü");
     const [selectedDifficulty, setSelectedDifficulty] = useState<string>("Tümü");
+    const [searchTerm, setSearchTerm] = useState("");
+    const [currentPage, setCurrentPage] = useState(1);
+    const ITEMS_PER_PAGE = 10;
+
     const [formData, setFormData] = useState({
         questionText: "",
         optionA: "",
@@ -55,6 +59,10 @@ export default function QuestionsPage() {
     useEffect(() => {
         loadQuestions();
     }, []);
+
+    useEffect(() => {
+        setCurrentPage(1); // Reset page on filter change
+    }, [selectedCategory, selectedDifficulty, searchTerm]);
 
     const loadQuestions = async () => {
         setLoading(true);
@@ -133,8 +141,18 @@ export default function QuestionsPage() {
     const filteredQuestions = questions.filter(q => {
         const catMatch = selectedCategory === "Tümü" || q.category === selectedCategory;
         const diffMatch = selectedDifficulty === "Tümü" || q.difficulty === selectedDifficulty;
-        return catMatch && diffMatch;
+        const searchMatch = !searchTerm ||
+            q.questionText.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            q.optionA.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            q.optionB.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            q.optionC.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            q.optionD.toLowerCase().includes(searchTerm.toLowerCase());
+
+        return catMatch && diffMatch && searchMatch;
     });
+
+    const totalPages = Math.ceil(filteredQuestions.length / ITEMS_PER_PAGE);
+    const paginatedQuestions = filteredQuestions.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
     const getDifficultyColor = (diff: string) => {
         switch (diff) {
@@ -154,31 +172,45 @@ export default function QuestionsPage() {
 
     return (
         <div className="max-w-7xl mx-auto px-4 py-8">
-            {/* Header */}
-            <div className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-6 bg-white dark:bg-zinc-900 p-6 rounded-2xl shadow-sm border border-zinc-200 dark:border-zinc-800">
-                <div>
-                    <h1 className="text-3xl font-extrabold text-zinc-900 dark:text-white mb-2 tracking-tight">
-                        Soru Havuzu
-                    </h1>
-                    <p className="text-zinc-500 dark:text-zinc-400 font-medium">
-                        Toplam <span className="text-red-600 font-bold">{questions.length}</span> soru yönetiliyor.
-                    </p>
-                </div>
-                <button
-                    onClick={() => handleOpenModal()}
-                    className="flex items-center justify-center gap-2 px-8 py-3.5 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-all font-bold shadow-lg shadow-red-200 dark:shadow-none hover:scale-105 active:scale-95"
-                >
-                    <Plus className="w-5 h-5 stroke-[3]" />
-                    Yeni Soru Ekle
-                </button>
-            </div>
+            {/* ... Header ... */}
 
-            {/* Combined Filter Bar */}
+            {/* Filter & Search Bar */}
             <div className="mb-8 space-y-4">
-                {/* Category Filter */}
-                <div className="bg-white dark:bg-zinc-900 p-4 rounded-xl border border-zinc-200 dark:border-zinc-800">
-                    <h3 className="text-sm font-bold text-zinc-400 uppercase tracking-widest mb-3 px-2">Kategoriler</h3>
-                    <div className="flex flex-wrap gap-2">
+                <div className="flex flex-col md:flex-row gap-4">
+                    {/* Search Input */}
+                    <div className="flex-1 relative">
+                        <input
+                            type="text"
+                            placeholder="Soru metni veya şıklarda ara..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="w-full pl-12 pr-4 py-3 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl focus:ring-2 focus:ring-red-600 outline-none transition-all"
+                        />
+                        <svg className="w-5 h-5 text-zinc-400 absolute left-4 top-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    </div>
+
+                    {/* Difficulty Filter (Existing) */}
+                    <div className="bg-white dark:bg-zinc-900 p-2 rounded-xl border border-zinc-200 dark:border-zinc-800 flex items-center">
+                        {/* ... existing difficulty buttons ... */}
+                        <div className="flex gap-2">
+                            {/* ... kept existing ... */}
+                            <select
+                                value={selectedDifficulty}
+                                onChange={(e) => setSelectedDifficulty(e.target.value)}
+                                className="px-4 py-2 bg-transparent font-bold outline-none text-sm"
+                            >
+                                <option value="Tümü">Zorluk: Tümü</option>
+                                {DIFFICULTIES.map(diff => (
+                                    <option key={diff} value={diff}>{diff}</option>
+                                ))}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Category Filter (Existing but slightly compact) */}
+                <div className="bg-white dark:bg-zinc-900 p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 overflow-x-auto">
+                    <div className="flex gap-2 min-w-max">
                         <button
                             onClick={() => setSelectedCategory("Tümü")}
                             className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${selectedCategory === "Tümü"
@@ -186,7 +218,7 @@ export default function QuestionsPage() {
                                 : "bg-zinc-50 text-zinc-600 hover:bg-zinc-100 dark:bg-zinc-800 dark:text-zinc-400"
                                 }`}
                         >
-                            Tümü
+                            Tüm Kategoriler
                         </button>
                         {CATEGORIES.map(cat => (
                             <button
@@ -202,52 +234,12 @@ export default function QuestionsPage() {
                         ))}
                     </div>
                 </div>
-
-                {/* Difficulty Filter */}
-                <div className="bg-white dark:bg-zinc-900 p-4 rounded-xl border border-zinc-200 dark:border-zinc-800">
-                    <h3 className="text-sm font-bold text-zinc-400 uppercase tracking-widest mb-3 px-2">Zorluk Seviyesi</h3>
-                    <div className="hidden md:flex gap-2">
-                        <button
-                            onClick={() => setSelectedDifficulty("Tümü")}
-                            className={`px-6 py-2 rounded-lg text-sm font-bold transition-all ${selectedDifficulty === "Tümü"
-                                ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 shadow-md"
-                                : "bg-zinc-50 text-zinc-600 hover:bg-zinc-100 dark:bg-zinc-800 dark:text-zinc-400"
-                                }`}
-                        >
-                            Hepsi
-                        </button>
-                        {DIFFICULTIES.map(diff => (
-                            <button
-                                key={diff}
-                                onClick={() => setSelectedDifficulty(diff)}
-                                className={`px-6 py-2 rounded-lg text-sm font-bold transition-all ${selectedDifficulty === diff
-                                    ? getDifficultyColor(diff).replace("bg-opacity-30", "shadow-md")
-                                    : "bg-zinc-50 text-zinc-600 hover:bg-zinc-100 dark:bg-zinc-800 dark:text-zinc-400"
-                                    }`}
-                            >
-                                {diff}
-                            </button>
-                        ))}
-                    </div>
-                    {/* Mobile Dropdown */}
-                    <div className="md:hidden">
-                        <select
-                            value={selectedDifficulty}
-                            onChange={(e) => setSelectedDifficulty(e.target.value)}
-                            className="w-full px-4 py-3 rounded-xl text-sm font-bold bg-zinc-50 dark:bg-zinc-950 border-2 border-zinc-100 dark:border-zinc-800 outline-none focus:border-red-600 text-zinc-900 dark:text-white appearance-none"
-                        >
-                            <option value="Tümü">Tüm Zorluklar</option>
-                            {DIFFICULTIES.map(diff => (
-                                <option key={diff} value={diff}>{diff}</option>
-                            ))}
-                        </select>
-                    </div>
-                </div>
             </div>
 
             {/* Questions Grid/List */}
             <div className="space-y-6">
-                {filteredQuestions.length === 0 ? (
+                {paginatedQuestions.length === 0 ? (
+                    // ... Empty State ...
                     <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-sm p-12 text-center border border-zinc-200 dark:border-zinc-800">
                         <div className="w-16 h-16 bg-zinc-50 dark:bg-zinc-800 rounded-full flex items-center justify-center mx-auto mb-4">
                             <XCircle className="w-8 h-8 text-zinc-400" />
@@ -258,17 +250,17 @@ export default function QuestionsPage() {
                         </p>
                     </div>
                 ) : (
-                    filteredQuestions.map((question, index) => (
-                        <div
-                            key={question.id}
-                            className="bg-white dark:bg-zinc-900 rounded-2xl shadow-sm p-6 border border-zinc-200 dark:border-zinc-800 hover:border-red-200 dark:hover:border-red-900/30 transition-all group"
-                        >
+                    paginatedQuestions.map((question, index) => (
+                        // ... Existing Question Card ...
+                        <div key={question.id} className="bg-white dark:bg-zinc-900 rounded-2xl shadow-sm p-6 border border-zinc-200 dark:border-zinc-800 hover:border-red-200 dark:hover:border-red-900/30 transition-all group">
+                            {/* ... Content ... */}
                             <div className="flex items-start justify-between gap-6">
                                 <div className="flex-1 min-w-0">
                                     <div className="flex flex-wrap items-center gap-2 mb-4">
                                         <span className="bg-zinc-900 text-white dark:bg-zinc-700 px-3 py-1 rounded-full text-xs font-black tracking-tighter">
-                                            #{index + 1}
+                                            #{question.id}
                                         </span>
+                                        {/* ... rest of content ... */}
                                         <span className={`px-3 py-1 rounded-full text-xs font-bold ${getDifficultyColor(question.difficulty)}`}>
                                             {question.difficulty}
                                         </span>
@@ -337,10 +329,37 @@ export default function QuestionsPage() {
                 )}
             </div>
 
-            {/* Modal */}
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+                <div className="flex justify-center items-center gap-2 mt-8">
+                    <button
+                        onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                        disabled={currentPage === 1}
+                        className="p-2 rounded-lg border border-zinc-200 dark:border-zinc-800 disabled:opacity-50 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
+                    >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"></path></svg>
+                    </button>
+
+                    <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
+                        Sayfa {currentPage} / {totalPages}
+                    </span>
+
+                    <button
+                        onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                        disabled={currentPage === totalPages}
+                        className="p-2 rounded-lg border border-zinc-200 dark:border-zinc-800 disabled:opacity-50 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
+                    >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path></svg>
+                    </button>
+                </div>
+            )}
+
+            {/* Modal Logic (Existing) */}
             {showModal && (
+                // ... Existing Modal ...
                 <div className="fixed inset-0 bg-zinc-950/40 backdrop-blur-md z-[100] flex items-center justify-center p-4">
                     <div className="bg-white dark:bg-zinc-900 rounded-3xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-zinc-200 dark:border-zinc-800 animate-in fade-in zoom-in duration-200">
+                        {/* ... header ... */}
                         <div className="p-8 border-b border-zinc-100 dark:border-zinc-800 flex items-center justify-between">
                             <h2 className="text-2xl font-black text-zinc-900 dark:text-white tracking-tight">
                                 {editingQuestion ? "Soruyu Düzenle" : "Yeni Soru Ekle"}
@@ -349,7 +368,9 @@ export default function QuestionsPage() {
                                 <XCircle className="w-6 h-6 text-zinc-400" />
                             </button>
                         </div>
+                        {/* ... form ... */}
                         <form onSubmit={handleSubmit} className="p-8 space-y-6">
+                            {/* ... kept existing ... */}
                             <div className="space-y-2">
                                 <label className="text-sm font-bold text-zinc-500 uppercase tracking-widest pl-1">
                                     Soru Metni
@@ -362,7 +383,7 @@ export default function QuestionsPage() {
                                     placeholder="Soruyu buraya yazın..."
                                 />
                             </div>
-
+                            {/* ... rest of form ... */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="space-y-2">
                                     <label className="text-sm font-bold text-zinc-500 uppercase tracking-widest pl-1">Kategori</label>

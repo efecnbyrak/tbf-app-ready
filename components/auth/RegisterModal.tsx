@@ -129,6 +129,19 @@ export function RegisterModal({ isOpen, onClose, onSwitchToLogin }: RegisterModa
 
                 <div>
                     <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+                        Şifre Tekrar
+                    </label>
+                    <input
+                        type="password"
+                        name="passwordConfirm"
+                        required
+                        className={`w-full px-3 py-2 border rounded-lg focus:ring-2 outline-none dark:bg-zinc-800 dark:border-zinc-700 focus:ring-red-600 focus:border-transparent`}
+                        placeholder="Şifrenizi tekrar giriniz.."
+                    />
+                </div>
+
+                <div>
+                    <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
                         Göreviniz
                     </label>
                     <select

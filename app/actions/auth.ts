@@ -196,6 +196,7 @@ export async function register(prevState: ActionState, formData: FormData): Prom
     const email = formData.get("email") as string;
     const phone = formData.get("phone") as string;
     const password = formData.get("password") as string;
+    const passwordConfirm = formData.get("passwordConfirm") as string;
     const roleType = formData.get("roleType") as string;
     const job = formData.get("job") as string;
     const address = formData.get("address") as string;
@@ -209,6 +210,7 @@ export async function register(prevState: ActionState, formData: FormData): Prom
     if (!email) errors.email = "E-posta gerekli.";
     if (!phone) errors.phone = "Telefon gerekli.";
     if (!password) errors.password = "Şifre gerekli.";
+    if (password !== passwordConfirm) errors.password = "Şifreler eşleşmiyor.";
     if (!roleType) errors.roleType = "Görev seçimi gerekli.";
     if (!kvkk) return { error: "KVKK ve Aydınlatma Metni'ni onaylamanız gerekmektedir.", success: false };
 

@@ -1,9 +1,14 @@
+
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { db } from "@/lib/db";
 import { getSession } from "@/lib/session";
 import { NextRequest, NextResponse } from "next/server";
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
+// USER REQUESTED HARDCODED FALLBACK
+const HARDCODED_KEY = "AIzaSyC-a9qa79YwH4xc3dHGYBsFz5RX-_LlMMg";
+const API_KEY = process.env.GEMINI_API_KEY || HARDCODED_KEY;
+
+const genAI = new GoogleGenerativeAI(API_KEY);
 
 const SYSTEM_PROMPT = `
 Sen Türkiye Basketbol Federasyonu (TBF) ve FIBA kuralları konusunda uzmanlaşmış bir yapay zeka asistanısın.
@@ -41,13 +46,13 @@ export async function POST(req: NextRequest) {
     try {
         const session = await getSession();
         if (!session?.userId) {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+            return NextResponse.json({ error: "Oturum açmanız gerekiyor." }, { status: 401 });
         }
 
         const { message, sessionId } = await req.json();
 
         if (!message || !sessionId) {
-            return NextResponse.json({ error: "Message and sessionId required" }, { status: 400 });
+            return NextResponse.json({ error: "Mesaj ve oturum ID gerekli." }, { status: 400 });
         }
 
         // Verify session belongs to user
@@ -57,7 +62,7 @@ export async function POST(req: NextRequest) {
         });
 
         if (!chatSession || chatSession.userId !== session.userId) {
-            return NextResponse.json({ error: "Invalid session" }, { status: 403 });
+            return NextResponse.json({ error: "Geçersiz oturum." }, { status: 403 });
         }
 
         // Save user message
@@ -75,38 +80,22 @@ export async function POST(req: NextRequest) {
             parts: [{ text: m.content }]
         }));
 
-        // Add current user message
-        history.push({
-            role: "user",
-            parts: [{ text: message }]
-        });
+        console.log("Using API Key:", API_KEY.substring(0, 10) + "...");
 
-        // Check API Key
-        const apiKey = process.env.GEMINI_API_KEY;
-        if (!apiKey) {
-            console.error("GEMINI_API_KEY is missing in environment variables");
-            return NextResponse.json({
-                error: "Sistem yapılandırma hatası: API anahtarı bulunamadı.",
-                details: "Sunucu tarafında GEMINI_API_KEY tanımlanmamış."
-            }, { status: 500 });
-        }
-
-        // Call Gemini with improved config
-        // Using gemini-pro as it is more stable for general availability free tier
-        const model = genAI.getGenerativeModel({
-            model: "gemini-pro",
-            generationConfig: {
-                maxOutputTokens: 1000,
-            }
-        });
+        // Call Gemini (Simplified Config)
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
         const chat = model.startChat({
-            history: history.slice(0, -1), // Exclude last message as it will be sent separately
+            history: history,
             systemInstruction: SYSTEM_PROMPT
         });
 
         const result = await chat.sendMessage(message);
         const responseText = result.response.text();
+
+        if (!responseText) {
+            throw new Error("Boş yanıt alındı.");
+        }
 
         // Save Assistant Message
         await db.message.create({
@@ -120,22 +109,15 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ response: responseText });
 
     } catch (error: any) {
-        console.error("AI Chat Error Details:", error);
+        console.error("AI Chat Error (FULL):", error);
 
-        // More helpful error messaging
-        const errorMessage = error?.message || "Bilinmeyen bir hata oluştu";
-
-        // Check for specific Google AI errors
-        let userMessage = "AI yanıt oluşturamadı. Lütfen tekrar deneyin.";
-        if (errorMessage.includes("API key not valid")) {
-            userMessage = "API anahtarı geçersiz. Lütfen sistem yöneticisi ile iletişime geçin.";
-        } else if (errorMessage.includes("quota")) {
-            userMessage = "Sistem kotası doldu. Lütfen daha sonra tekrar deneyin.";
-        }
+        // Return raw error to user for debugging purposes
+        const errorMessage = error?.message || "Bilinmeyen sunucu hatası";
+        const errorDetails = JSON.stringify(error, Object.getOwnPropertyNames(error));
 
         return NextResponse.json({
-            error: userMessage,
-            details: errorMessage // Return actual error for debugging
+            error: `Sistem Hatası: ${errorMessage}`,
+            details: errorDetails
         }, { status: 500 });
     }
 }
