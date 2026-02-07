@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
-const pdf = require("pdf-parse");
+
+// Force dynamic rendering to avoid build-time errors with pdf-parse
+export const dynamic = 'force-dynamic';
 
 // GET /api/rules
 export async function GET() {
@@ -37,6 +39,7 @@ export async function POST(req: Request) {
         // Extract text from PDF
         let extractedText = "";
         try {
+            const pdf = require("pdf-parse");
             const pdfData = await pdf(buffer);
             extractedText = pdfData.text;
         } catch (pdfError) {
