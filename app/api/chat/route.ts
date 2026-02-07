@@ -4,12 +4,13 @@ import { db } from "@/lib/db";
 import { getSession } from "@/lib/session";
 import { NextRequest, NextResponse } from "next/server";
 
-// USER REQUESTED HARDCODED FALLBACK
-const HARDCODED_KEY = "AIzaSyC-a9qa79YwH4xc3dHGYBsFz5RX-_LlMMg";
-const API_KEY = process.env.GEMINI_API_KEY || HARDCODED_KEY;
+// 3. Secure backend setup: Get API Key from Environment
+const API_KEY = process.env.GEMINI_API_KEY;
 
-const genAI = new GoogleGenerativeAI(API_KEY);
+// 1. Initialize Gemini Client
+const genAI = new GoogleGenerativeAI(API_KEY || "");
 
+// System Prompt for TBF Context
 const SYSTEM_PROMPT = `
 Sen Türkiye Basketbol Federasyonu (TBF) ve FIBA kuralları konusunda uzmanlaşmış bir yapay zeka asistanısın.
 Adın "TBF Kural Asistanı".
@@ -42,8 +43,19 @@ Cevap Formatı:
 ÖNEMLİ: Asla "Bu konuda bilgim yok" veya "Cevap veremiyorum" deme. Her zaman basketbol kuralları çerçevesinde yardımcı bir yanıt ver.
 `;
 
+export const maxDuration = 30; // Vercel timeout protection (30s)
+
 export async function POST(req: NextRequest) {
     try {
+        // 5. Error Handling: Check for API Key
+        if (!API_KEY) {
+            console.error("[GEMINI ERROR] API Key is missing in environment variables.");
+            return NextResponse.json({
+                error: "Sistem yapılandırma hatası. (API Key Eksik)"
+            }, { status: 500 });
+        }
+
+        // Authentication Check
         const session = await getSession();
         if (!session?.userId) {
             return NextResponse.json({ error: "Oturum açmanız gerekiyor." }, { status: 401 });
@@ -65,7 +77,7 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: "Geçersiz oturum." }, { status: 403 });
         }
 
-        // Save user message
+        // Save User Message to DB
         await db.message.create({
             data: {
                 sessionId,
@@ -74,19 +86,14 @@ export async function POST(req: NextRequest) {
             }
         });
 
-        // Build conversation history for context
+        // Build History for Context
+        // Note: We inject System Prompt manually for better compatibility across models
         const history = chatSession.messages.map(m => ({
-            role: m.role as "user" | "model",
+            role: m.role === "admin" ? "model" : (m.role === "assistant" ? "model" : "user"),
             parts: [{ text: m.content }]
         }));
 
-        console.log("Using API Key:", API_KEY.substring(0, 10) + "...");
-
-        // Call Gemini (Simplified Config)
-        const model = genAI.getGenerativeModel({ model: "gemini-pro" });
-
-        // Inject SYSTEM_PROMPT manually for gemini-pro compatibility
-        const extendedHistory = [
+        const chatHistory = [
             {
                 role: "user",
                 parts: [{ text: SYSTEM_PROMPT }]
@@ -98,18 +105,33 @@ export async function POST(req: NextRequest) {
             ...history
         ];
 
+        // 2 & 7. Use 'gemini-1.5-flash' for performance and stability
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
         const chat = model.startChat({
-            history: extendedHistory,
+            history: chatHistory,
+            generationConfig: {
+                maxOutputTokens: 1000, // 7. Limit output for performance
+            },
         });
 
-        const result = await chat.sendMessage(message);
+        // 6. Timeout Protection (Manual race)
+        const timeoutPromise = new Promise((_, reject) =>
+            setTimeout(() => reject(new Error("Request timed out")), 25000)
+        );
+
+        const resultPromise = chat.sendMessage(message);
+
+        // Race against timeout
+        const result = await Promise.race([resultPromise, timeoutPromise]) as any;
+
         const responseText = result.response.text();
 
         if (!responseText) {
             throw new Error("Boş yanıt alındı.");
         }
 
-        // Save Assistant Message
+        // Save Assistant Message to DB
         await db.message.create({
             data: {
                 sessionId,
@@ -121,15 +143,26 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ response: responseText });
 
     } catch (error: any) {
-        console.error("AI Chat Error (FULL):", error);
+        console.error("[GEMINI API ERROR]", error);
 
-        // Return raw error to user for debugging purposes
-        const errorMessage = error?.message || "Bilinmeyen sunucu hatası";
-        const errorDetails = JSON.stringify(error, Object.getOwnPropertyNames(error));
+        // 5. Error Handling Logic
+        let userMessage = "Üzgünüm, şu anda yanıt veremiyorum.";
+        let statusCode = 500;
 
+        if (error.message.includes("404")) {
+            console.error("Model bulunamadı (404). Model ismini veya API versiyonunu kontrol edin.");
+        } else if (error.message.includes("400")) {
+            console.error("Geçersiz istek (400). Parametreleri kontrol edin.");
+        } else if (error.message.includes("API key")) {
+            console.error("API Key hatası.");
+        } else if (error.message.includes("timed out")) {
+            console.error("Zaman aşımı.");
+        }
+
+        // Always return generic message to user, but log details on server
         return NextResponse.json({
-            error: `Sistem Hatası: ${errorMessage}`,
-            details: errorDetails
-        }, { status: 500 });
+            error: userMessage,
+            details: error.message // Frontend can choose to show this or not
+        }, { status: statusCode });
     }
 }
