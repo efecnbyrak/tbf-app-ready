@@ -83,11 +83,17 @@ export async function POST(req: NextRequest) {
         console.log("Using API Key:", API_KEY.substring(0, 10) + "...");
 
         // Call Gemini (Simplified Config)
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        // Fix: Pass systemInstruction here with correct object structure
+        const model = genAI.getGenerativeModel({
+            model: "gemini-1.5-flash",
+            systemInstruction: {
+                role: "system",
+                parts: [{ text: SYSTEM_PROMPT }]
+            }
+        });
 
         const chat = model.startChat({
             history: history,
-            systemInstruction: SYSTEM_PROMPT
         });
 
         const result = await chat.sendMessage(message);
