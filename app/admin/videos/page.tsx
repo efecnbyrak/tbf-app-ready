@@ -122,7 +122,8 @@ export default function AdminVideosPage() {
                 fetchCategories();
                 alert("Kategori başarıyla oluşturuldu!");
             } else {
-                alert("Kategori oluşturulamadı.");
+                const data = await res.json();
+                alert(data.error || "Kategori oluşturulamadı.");
             }
         } catch (error) {
             console.error("Error creating category:", error);

@@ -54,8 +54,14 @@ export async function POST(req: Request) {
         });
 
         return NextResponse.json(category);
-    } catch (error) {
+    } catch (error: any) {
         console.error("Error creating video category:", error);
-        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+
+        // Handle unique constraint violation
+        if (error.code === 'P2002') {
+            return NextResponse.json({ error: "Bu kategori adı zaten mevcut." }, { status: 400 });
+        }
+
+        return NextResponse.json({ error: "Kategori oluşturulurken bir hata oluştu." }, { status: 500 });
     }
 }
