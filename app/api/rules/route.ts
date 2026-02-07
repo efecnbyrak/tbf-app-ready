@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
+const pdf = require("pdf-parse");
 
 // GET /api/rules
 export async function GET() {
@@ -16,51 +17,53 @@ export async function GET() {
 // POST /api/rules
 export async function POST(req: Request) {
     try {
-        const contentType = req.headers.get("content-type") || "";
+        const formData = await req.formData();
+        const title = formData.get("title") as string;
+        const category = formData.get("category") as string;
+        const description = formData.get("description") as string;
+        const file = formData.get("file") as File;
 
-        let title, url, category, description;
-
-        if (contentType.includes("multipart/form-data")) {
-            const formData = await req.formData();
-            title = formData.get("title") as string;
-            category = formData.get("category") as string;
-            description = formData.get("description") as string;
-
-            const file = formData.get("file") as File;
-            const externalUrl = formData.get("url") as string;
-
-            if (file) {
-                // File Upload Logic
-                const buffer = Buffer.from(await file.arrayBuffer());
-                const filename = `${Date.now()}-${file.name.replace(/\s+/g, '-')}`;
-                const fs = require('fs');
-                const path = require('path');
-
-                // Ensure directory exists
-                const uploadDir = path.join(process.cwd(), 'public', 'uploads', 'rules');
-                if (!fs.existsSync(uploadDir)) {
-                    fs.mkdirSync(uploadDir, { recursive: true });
-                }
-
-                const filePath = path.join(uploadDir, filename);
-                fs.writeFileSync(filePath, buffer);
-                url = `/uploads/rules/${filename}`;
-            } else {
-                url = externalUrl;
-            }
-        } else {
-            // JSON Logic (Legacy)
-            const body = await req.json();
-            title = body.title;
-            url = body.url;
-            category = body.category;
-            description = body.description;
+        if (!file) {
+            return NextResponse.json({ error: "PDF dosyası gereklidir" }, { status: 400 });
         }
 
+        if (!file.name.toLowerCase().endsWith('.pdf')) {
+            return NextResponse.json({ error: "Sadece PDF dosyaları yüklenebilir" }, { status: 400 });
+        }
+
+        // Read file buffer
+        const buffer = Buffer.from(await file.arrayBuffer());
+
+        // Extract text from PDF
+        let extractedText = "";
+        try {
+            const pdfData = await pdf(buffer);
+            extractedText = pdfData.text;
+        } catch (pdfError) {
+            console.error("PDF text extraction error:", pdfError);
+            extractedText = "PDF içeriği okunamadı.";
+        }
+
+        // Save PDF file
+        const fs = require('fs');
+        const path = require('path');
+        const filename = `${Date.now()}-${file.name.replace(/\s+/g, '-')}`;
+        const uploadDir = path.join(process.cwd(), 'public', 'uploads', 'rules');
+
+        if (!fs.existsSync(uploadDir)) {
+            fs.mkdirSync(uploadDir, { recursive: true });
+        }
+
+        const filePath = path.join(uploadDir, filename);
+        fs.writeFileSync(filePath, buffer);
+        const url = `/uploads/rules/${filename}`;
+
+        // Create rule with extracted text
         const rule = await db.ruleBook.create({
             data: {
                 title,
                 url,
+                content: extractedText,
                 category,
                 description
             }

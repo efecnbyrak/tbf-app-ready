@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Plus, Trash2, Edit, Save, X, FileText } from "lucide-react";
+import { Plus, Trash2, Edit, Save, X, FileText, Upload } from "lucide-react";
 
 interface RuleBook {
     id: number;
@@ -21,10 +21,10 @@ export default function AdminRulesPage() {
     const [editingRule, setEditingRule] = useState<RuleBook | null>(null);
     const [formData, setFormData] = useState({
         title: "",
-        url: "",
         category: "",
         description: ""
     });
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
     useEffect(() => {
         fetchRules();
@@ -46,21 +46,36 @@ export default function AdminRulesPage() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        if (!selectedFile && !editingRule) {
+            alert("Lütfen bir PDF dosyası seçin");
+            return;
+        }
+
         setIsSubmitting(true);
         try {
+            const formDataToSend = new FormData();
+            formDataToSend.append("title", formData.title);
+            formDataToSend.append("category", formData.category);
+            formDataToSend.append("description", formData.description);
+
+            if (selectedFile) {
+                formDataToSend.append("file", selectedFile);
+            }
+
             const endpoint = editingRule ? `/api/rules/${editingRule.id}` : "/api/rules";
             const method = editingRule ? "PUT" : "POST";
 
             const res = await fetch(endpoint, {
                 method,
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(formData)
+                body: formDataToSend
             });
 
             if (res.ok) {
                 setIsModalOpen(false);
                 setEditingRule(null);
-                setFormData({ title: "", url: "", category: "", description: "" });
+                setFormData({ title: "", category: "", description: "" });
+                setSelectedFile(null);
                 fetchRules();
             } else {
                 const data = await res.json();
@@ -89,16 +104,17 @@ export default function AdminRulesPage() {
         setEditingRule(rule);
         setFormData({
             title: rule.title,
-            url: rule.url,
             category: rule.category || "",
             description: rule.description || ""
         });
+        setSelectedFile(null);
         setIsModalOpen(true);
     };
 
     const openAddModal = () => {
         setEditingRule(null);
-        setFormData({ title: "", url: "", category: "", description: "" });
+        setFormData({ title: "", category: "", description: "" });
+        setSelectedFile(null);
         setIsModalOpen(true);
     };
 

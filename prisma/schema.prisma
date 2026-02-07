@@ -259,6 +259,7 @@ model RuleBook {
   title       String
   description String?
   url         String   // URL to PDF or resource
+  content     String?  @db.Text // Extracted PDF text content
   category    String?  // Optional category
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
