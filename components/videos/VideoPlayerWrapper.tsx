@@ -111,7 +111,12 @@ export function VideoPlayerWrapper({ videoId, url, initialProgress = 0, isWatche
                                 rel: 0,
                                 modestbranding: 1,
                                 playsinline: 1,
+                                enablejsapi: 1,
+                                fs: 1,
                                 origin: typeof window !== 'undefined' ? window.location.origin : ''
+                            },
+                            embedOptions: {
+                                host: 'https://www.youtube-nocookie.com'
                             }
                         }
                     } as any}

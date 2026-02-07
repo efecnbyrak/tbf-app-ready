@@ -47,6 +47,11 @@ export default function AdminRulesPage() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
+        console.log("Form submission started");
+        console.log("Selected file:", selectedFile);
+        console.log("Form data:", formData);
+        console.log("Editing rule:", editingRule);
+
         if (!selectedFile && !editingRule) {
             alert("Lütfen bir PDF dosyası seçin");
             return;
@@ -61,17 +66,26 @@ export default function AdminRulesPage() {
 
             if (selectedFile) {
                 formDataToSend.append("file", selectedFile);
+                console.log("File appended to FormData:", selectedFile.name, selectedFile.size, "bytes");
             }
 
             const endpoint = editingRule ? `/api/rules/${editingRule.id}` : "/api/rules";
             const method = editingRule ? "PUT" : "POST";
+
+            console.log("Sending request to:", endpoint, "Method:", method);
 
             const res = await fetch(endpoint, {
                 method,
                 body: formDataToSend
             });
 
+            console.log("Response status:", res.status);
+            console.log("Response ok:", res.ok);
+
             if (res.ok) {
+                const responseData = await res.json();
+                console.log("Success response:", responseData);
+                alert("Kural kitabı başarıyla eklendi!");
                 setIsModalOpen(false);
                 setEditingRule(null);
                 setFormData({ title: "", category: "", description: "" });
@@ -79,10 +93,12 @@ export default function AdminRulesPage() {
                 fetchRules();
             } else {
                 const data = await res.json();
+                console.error("Error response:", data);
                 alert(data.error + (data.details ? `\nDetay: ${data.details}` : "") || "İşlem başarısız.");
             }
         } catch (error) {
             console.error("Error saving rule:", error);
+            alert(`Hata oluştu: ${error instanceof Error ? error.message : 'Bilinmeyen hata'}`);
         } finally {
             setIsSubmitting(false);
         }
