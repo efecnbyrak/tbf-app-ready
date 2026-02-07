@@ -116,23 +116,49 @@ export default function KuralPage() {
                         </p>
                     )}
 
-                    <div className="bg-zinc-100 dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden shadow-sm h-[800px]">
-                        <object
-                            data={selectedRule.url}
-                            type="application/pdf"
+                    <div className="bg-zinc-100 dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden shadow-sm h-[800px] relative">
+                        {/* Try iframe first for better compatibility */}
+                        <iframe
+                            src={selectedRule.url}
                             className="w-full h-full"
+                            title={selectedRule.title}
+                            onError={() => {
+                                // If iframe fails, the fallback message will show
+                                console.error("PDF loading error");
+                            }}
                         >
-                            <div className="flex flex-col items-center justify-center h-full text-zinc-500">
-                                <p>PDF görüntülenemiyor.</p>
-                                <a
-                                    href={selectedRule.url}
-                                    target="_blank"
-                                    className="mt-2 text-red-600 hover:underline"
-                                >
-                                    Dosyayı İndir / Görüntüle
-                                </a>
+                            {/* Fallback for browsers that don't support iframe for PDFs */}
+                            <div className="flex flex-col items-center justify-center h-full p-8 text-center space-y-4">
+                                <FileText className="w-16 h-16 text-zinc-400 mx-auto" />
+                                <div>
+                                    <p className="text-lg font-semibold text-zinc-700 dark:text-zinc-300 mb-2">
+                                        PDF Görüntülenemiyor
+                                    </p>
+                                    <p className="text-sm text-zinc-500 mb-4">
+                                        Tarayıcınız PDF görüntülemeyi desteklemiyor veya dosya erişilemiyor.
+                                    </p>
+                                </div>
+                                <div className="flex flex-col gap-2 w-full max-w-xs">
+                                    <a
+                                        href={selectedRule.url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="w-full px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
+                                    >
+                                        <ExternalLink className="w-5 h-5" />
+                                        Yeni Sekmede Aç
+                                    </a>
+                                    <a
+                                        href={selectedRule.url}
+                                        download
+                                        className="w-full px-6 py-3 bg-zinc-600 hover:bg-zinc-700 text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
+                                    >
+                                        <Download className="w-5 h-5" />
+                                        İndir
+                                    </a>
+                                </div>
                             </div>
-                        </object>
+                        </iframe>
                     </div>
                 </div>
             )}

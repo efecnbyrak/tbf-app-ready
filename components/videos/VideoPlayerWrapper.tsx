@@ -99,7 +99,8 @@ export function VideoPlayerWrapper({ videoId, url, initialProgress = 0, isWatche
                     width="100%"
                     height="100%"
                     controls
-                    playing={false}
+                    playing={true}
+                    playsinline={true}
                     onPlay={handlePlay}
                     onProgress={(state: any) => handleProgress(state)}
                     onDuration={handleDuration}
@@ -109,6 +110,7 @@ export function VideoPlayerWrapper({ videoId, url, initialProgress = 0, isWatche
                             playerVars: {
                                 rel: 0,
                                 modestbranding: 1,
+                                playsinline: 1,
                                 origin: typeof window !== 'undefined' ? window.location.origin : ''
                             }
                         }

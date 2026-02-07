@@ -21,6 +21,7 @@ interface Video {
     videoCategory?: VideoCategory | null;
     category?: string | null;
 }
+import { getYouTubeThumbnail } from "@/lib/youtube-utils";
 
 export default function VideosPage() {
     const [videos, setVideos] = useState<Video[]>([]);
@@ -67,21 +68,6 @@ export default function VideosPage() {
             }
             return newSet;
         });
-    };
-
-    const getThumbnail = (url: string) => {
-        try {
-            let videoId = null;
-            if (url.includes("v=")) {
-                videoId = url.split("v=")[1]?.split("&")[0];
-            } else if (url.includes("youtu.be/")) {
-                videoId = url.split("youtu.be/")[1];
-            }
-            if (videoId) return `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`;
-        } catch (e) {
-            return null;
-        }
-        return null;
     };
 
     // Group videos by category
@@ -131,74 +117,82 @@ export default function VideosPage() {
                 const isExpanded = expandedCategories.has(category.id);
 
                 return (
-                    <div key={category.id} className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden">
+                    <div key={category.id} className="bg-white dark:bg-zinc-900 rounded-2xl border-2 border-zinc-200 dark:border-zinc-800 overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300">
                         <button
                             onClick={() => toggleCategory(category.id)}
-                            className="w-full px-6 py-4 flex items-center justify-between hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors"
+                            className="w-full px-6 py-5 flex items-center justify-between hover:bg-gradient-to-r hover:from-red-50/50 hover:to-transparent dark:hover:from-red-900/10 dark:hover:to-transparent transition-all duration-200"
                         >
-                            <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-lg bg-red-100 dark:bg-red-900/20 flex items-center justify-center">
-                                    <PlayCircle className="w-6 h-6 text-red-600" />
+                            <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center shadow-lg">
+                                    <PlayCircle className="w-7 h-7 text-white" />
                                 </div>
                                 <div className="text-left">
-                                    <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">
+                                    <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">
                                         {category.name}
                                     </h2>
                                     {category.description && (
-                                        <p className="text-sm text-zinc-500">{category.description}</p>
+                                        <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-0.5">{category.description}</p>
                                     )}
                                 </div>
                             </div>
-                            <div className="flex items-center gap-3">
-                                <span className="text-sm text-zinc-500 font-medium">
+                            <div className="flex items-center gap-4">
+                                <span className="text-sm text-zinc-600 dark:text-zinc-400 font-semibold bg-zinc-100 dark:bg-zinc-800 px-3 py-1.5 rounded-lg">
                                     {categoryVideos.length} video
                                 </span>
                                 {isExpanded ? (
-                                    <ChevronUp className="w-5 h-5 text-zinc-400" />
+                                    <ChevronUp className="w-6 h-6 text-red-600 dark:text-red-500" />
                                 ) : (
-                                    <ChevronDown className="w-5 h-5 text-zinc-400" />
+                                    <ChevronDown className="w-6 h-6 text-zinc-400" />
                                 )}
                             </div>
                         </button>
 
                         {isExpanded && (
-                            <div className="px-6 py-4 border-t border-zinc-100 dark:border-zinc-800">
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <div className="px-6 py-5 bg-gradient-to-b from-zinc-50/50 to-transparent dark:from-zinc-800/20 dark:to-transparent border-t border-zinc-100 dark:border-zinc-800">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                                     {categoryVideos.map((video) => (
                                         <Link
                                             key={video.id}
                                             href={`/referee/videos/${video.id}`}
-                                            className="group block bg-zinc-50 dark:bg-zinc-800/50 rounded-xl border border-zinc-200 dark:border-zinc-700 overflow-hidden hover:shadow-lg hover:border-red-200 dark:hover:border-red-900 transition-all"
+                                            className="group block bg-white dark:bg-zinc-900 rounded-2xl border-2 border-zinc-200 dark:border-zinc-800 overflow-hidden hover:shadow-2xl hover:shadow-red-600/10 dark:hover:shadow-red-500/20 hover:border-red-300 dark:hover:border-red-800 transition-all duration-300 transform hover:-translate-y-1"
                                         >
-                                            <div className="aspect-video bg-zinc-200 dark:bg-zinc-700 relative">
-                                                {getThumbnail(video.url) ? (
+                                            <div className="aspect-video bg-gradient-to-br from-zinc-200 to-zinc-300 dark:from-zinc-800 dark:to-zinc-900 relative overflow-hidden">
+                                                {getYouTubeThumbnail(video.url) ? (
                                                     <img
-                                                        src={getThumbnail(video.url)!}
+                                                        src={getYouTubeThumbnail(video.url)!}
                                                         alt={video.title}
-                                                        className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity"
+                                                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                                                     />
                                                 ) : (
                                                     <div className="flex items-center justify-center h-full text-zinc-400">
                                                         <PlayCircle className="w-12 h-12" />
                                                     </div>
                                                 )}
-                                                <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-[2px]">
-                                                    <PlayCircle className="w-12 h-12 text-white fill-red-600" />
+                                                {/* Gradient overlay */}
+                                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                                                {/* Play button overlay */}
+                                                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
+                                                    <div className="bg-red-600 rounded-full p-4 shadow-2xl transform group-hover:scale-110 transition-transform duration-300">
+                                                        <PlayCircle className="w-10 h-10 text-white fill-white" />
+                                                    </div>
                                                 </div>
-                                                <div className="absolute bottom-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded flex items-center gap-1">
+                                                {/* Duration badge */}
+                                                <div className="absolute bottom-3 right-3 bg-black/80 backdrop-blur-sm text-white text-xs font-bold px-2.5 py-1 rounded-md flex items-center gap-1 shadow-lg">
+                                                    <Clock className="w-3 h-3" />
                                                     {Math.floor(video.duration / 60)}:{(video.duration % 60).toString().padStart(2, '0')}
                                                 </div>
-                                                <div className="absolute top-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded flex items-center gap-1">
+                                                {/* View count badge */}
+                                                <div className="absolute top-3 right-3 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-sm text-zinc-800 dark:text-zinc-200 text-xs font-semibold px-2.5 py-1 rounded-md flex items-center gap-1 shadow-lg">
                                                     <Eye className="w-3 h-3" />
                                                     {video.viewCount}
                                                 </div>
                                             </div>
-                                            <div className="p-3">
-                                                <h3 className="font-semibold text-sm line-clamp-2 text-zinc-900 dark:text-zinc-100 group-hover:text-red-700 dark:group-hover:text-red-500 transition-colors">
+                                            <div className="p-4">
+                                                <h3 className="font-bold text-base line-clamp-2 text-zinc-900 dark:text-zinc-100 group-hover:text-red-700 dark:group-hover:text-red-500 transition-colors duration-200 mb-2">
                                                     {video.title}
                                                 </h3>
                                                 {video.description && (
-                                                    <p className="text-xs text-zinc-500 line-clamp-2 mt-1">
+                                                    <p className="text-xs text-zinc-600 dark:text-zinc-400 line-clamp-2 leading-relaxed">
                                                         {video.description}
                                                     </p>
                                                 )}
@@ -224,37 +218,45 @@ export default function VideosPage() {
                                 <Link
                                     key={video.id}
                                     href={`/referee/videos/${video.id}`}
-                                    className="group block bg-zinc-50 dark:bg-zinc-800/50 rounded-xl border border-zinc-200 dark:border-zinc-700 overflow-hidden hover:shadow-lg hover:border-red-200 dark:hover:border-red-900 transition-all"
+                                    className="group block bg-white dark:bg-zinc-900 rounded-2xl border-2 border-zinc-200 dark:border-zinc-800 overflow-hidden hover:shadow-2xl hover:shadow-red-600/10 dark:hover:shadow-red-500/20 hover:border-red-300 dark:hover:border-red-800 transition-all duration-300 transform hover:-translate-y-1"
                                 >
-                                    <div className="aspect-video bg-zinc-200 dark:bg-zinc-700 relative">
-                                        {getThumbnail(video.url) ? (
+                                    <div className="aspect-video bg-gradient-to-br from-zinc-200 to-zinc-300 dark:from-zinc-800 dark:to-zinc-900 relative overflow-hidden">
+                                        {getYouTubeThumbnail(video.url) ? (
                                             <img
-                                                src={getThumbnail(video.url)!}
+                                                src={getYouTubeThumbnail(video.url)!}
                                                 alt={video.title}
-                                                className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity"
+                                                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                                             />
                                         ) : (
                                             <div className="flex items-center justify-center h-full text-zinc-400">
                                                 <PlayCircle className="w-12 h-12" />
                                             </div>
                                         )}
-                                        <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-[2px]">
-                                            <PlayCircle className="w-12 h-12 text-white fill-red-600" />
+                                        {/* Gradient overlay */}
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                                        {/* Play button overlay */}
+                                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
+                                            <div className="bg-red-600 rounded-full p-4 shadow-2xl transform group-hover:scale-110 transition-transform duration-300">
+                                                <PlayCircle className="w-10 h-10 text-white fill-white" />
+                                            </div>
                                         </div>
-                                        <div className="absolute bottom-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded flex items-center gap-1">
+                                        {/* Duration badge */}
+                                        <div className="absolute bottom-3 right-3 bg-black/80 backdrop-blur-sm text-white text-xs font-bold px-2.5 py-1 rounded-md flex items-center gap-1 shadow-lg">
+                                            <Clock className="w-3 h-3" />
                                             {Math.floor(video.duration / 60)}:{(video.duration % 60).toString().padStart(2, '0')}
                                         </div>
-                                        <div className="absolute top-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded flex items-center gap-1">
+                                        {/* View count badge */}
+                                        <div className="absolute top-3 right-3 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-sm text-zinc-800 dark:text-zinc-200 text-xs font-semibold px-2.5 py-1 rounded-md flex items-center gap-1 shadow-lg">
                                             <Eye className="w-3 h-3" />
                                             {video.viewCount}
                                         </div>
                                     </div>
-                                    <div className="p-3">
-                                        <h3 className="font-semibold text-sm line-clamp-2 text-zinc-900 dark:text-zinc-100 group-hover:text-red-700 dark:group-hover:text-red-500 transition-colors">
+                                    <div className="p-4">
+                                        <h3 className="font-bold text-base line-clamp-2 text-zinc-900 dark:text-zinc-100 group-hover:text-red-700 dark:group-hover:text-red-500 transition-colors duration-200 mb-2">
                                             {video.title}
                                         </h3>
                                         {video.description && (
-                                            <p className="text-xs text-zinc-500 line-clamp-2 mt-1">
+                                            <p className="text-xs text-zinc-600 dark:text-zinc-400 line-clamp-2 leading-relaxed">
                                                 {video.description}
                                             </p>
                                         )}

@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Plus, Trash2, Edit, Save, X, Search, Eye, FolderPlus } from "lucide-react";
+import { Plus, Trash2, Edit, Save, X, Search, Eye, FolderPlus, Clock } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { getYouTubeId, getYouTubeThumbnail, timeToSeconds, secondsToTime } from "@/lib/youtube-utils";
 
 interface VideoCategory {
     id: number;
@@ -41,8 +42,9 @@ export default function AdminVideosPage() {
         url: "",
         videoCategoryId: "",
         description: "",
-        duration: 0
+        durationTime: "" // MM:SS format
     });
+    const [isFetchingDuration, setIsFetchingDuration] = useState(false);
 
     // Category Form State
     const [categoryFormData, setCategoryFormData] = useState({
@@ -95,8 +97,42 @@ export default function AdminVideosPage() {
         return videoId ? `https://img.youtube.com/vi/${videoId}/mqdefault.jpg` : null;
     };
 
+    // Auto-fetch duration from YouTube
+    const handleAutoFetchDuration = async () => {
+        if (!formData.url) {
+            alert("Lütfen önce video URL'sini girin");
+            return;
+        }
+
+        const videoId = getYouTubeId(formData.url);
+        if (!videoId) {
+            alert("Geçerli bir YouTube URL'si değil");
+            return;
+        }
+
+        setIsFetchingDuration(true);
+        try {
+            // Currently just guides user to enter manually
+            // Can be enhanced with YouTube API integration
+            alert("Video süresi otomatik çekme özelliği henüz aktif değil. Lütfen YouTube'da video sayfasını açıp süreyi manuel olarak girin (MM:SS formatında).\\n\\nÖrnek: 8:18 veya 1:02:30");
+        } catch (error) {
+            console.error("Error:", error);
+        } finally {
+            setIsFetchingDuration(false);
+        }
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        // Convert time string to seconds
+        const durationInSeconds = formData.durationTime ? timeToSeconds(formData.durationTime) : 0;
+
+        if (durationInSeconds === 0 && formData.durationTime) {
+            alert("Geçersiz süre formatı. Lütfen MM:SS veya HH:MM:SS formatında girin.");
+            return;
+        }
+
         try {
             const endpoint = editingVideo ? `/api/videos/${editingVideo.id}` : "/api/videos";
             const method = editingVideo ? "PUT" : "POST";
@@ -104,13 +140,16 @@ export default function AdminVideosPage() {
             const res = await fetch(endpoint, {
                 method,
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(formData)
+                body: JSON.stringify({
+                    ...formData,
+                    duration: durationInSeconds
+                })
             });
 
             if (res.ok) {
                 setIsModalOpen(false);
                 setEditingVideo(null);
-                setFormData({ title: "", url: "", videoCategoryId: "", description: "", duration: 0 });
+                setFormData({ title: "", url: "", videoCategoryId: "", description: "", durationTime: "" });
                 fetchVideos();
                 fetchCategories(); // Refresh counts
             } else {
@@ -164,14 +203,14 @@ export default function AdminVideosPage() {
             url: video.url,
             videoCategoryId: video.videoCategoryId?.toString() || "",
             description: video.description || "",
-            duration: video.duration
+            durationTime: secondsToTime(video.duration)
         });
         setIsModalOpen(true);
     };
 
     const openAddModal = () => {
         setEditingVideo(null);
-        setFormData({ title: "", url: "", videoCategoryId: "", description: "", duration: 0 });
+        setFormData({ title: "", url: "", videoCategoryId: "", description: "", durationTime: "" });
         setIsModalOpen(true);
     };
 
@@ -224,9 +263,9 @@ export default function AdminVideosPage() {
                     <div key={video.id} className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
                         {/* Thumbnail */}
                         <div className="relative aspect-video bg-zinc-100 dark:bg-zinc-800">
-                            {getThumbnail(video.url) ? (
+                            {getYouTubeThumbnail(video.url) ? (
                                 <Image
-                                    src={getThumbnail(video.url)!}
+                                    src={getYouTubeThumbnail(video.url)!}
                                     alt={video.title}
                                     fill
                                     className="object-cover"
@@ -346,26 +385,37 @@ export default function AdminVideosPage() {
                                 </p>
                             </div>
 
+
                             <div>
                                 <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
-                                    Süre (Saniye)
+                                    Süre (MM:SS)
                                 </label>
                                 <div className="flex gap-2">
                                     <input
-                                        type="number"
-                                        min="0"
-                                        value={formData.duration}
-                                        onChange={(e) => setFormData({ ...formData, duration: parseInt(e.target.value) || 0 })}
+                                        type="text"
+                                        value={formData.durationTime}
+                                        onChange={(e) => setFormData({ ...formData, durationTime: e.target.value })}
                                         className="flex-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 outline-none dark:bg-zinc-800 dark:border-zinc-700"
-                                        placeholder="Saniye cinsinden"
+                                        placeholder="8:18 veya 1:02:30"
                                     />
-                                    <div className="flex items-center px-3 bg-zinc-100 dark:bg-zinc-800 rounded-lg text-zinc-500 text-sm">
-                                        {Math.floor(formData.duration / 60)} dk {formData.duration % 60} sn
-                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={handleAutoFetchDuration}
+                                        disabled={isFetchingDuration || !formData.url}
+                                        className="px-3 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-zinc-300 disabled:cursor-not-allowed text-white rounded-lg transition-colors flex items-center gap-2 text-sm"
+                                    >
+                                        <Clock className="w-4 h-4" />
+                                        {isFetchingDuration ? "..." : "Otomatik"}
+                                    </button>
                                 </div>
                                 <p className="text-xs text-zinc-500 mt-1">
-                                    Direkt saniye giriniz. Örn: 8dk 18sn için 498 giriniz.
+                                    Dakika:Saniye formatında giriniz. Örn: 8:18 veya 1:02:30. "Otomatik" butonu ile YouTube'dan çekilebilir.
                                 </p>
+                                {formData.durationTime && (
+                                    <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
+                                        Toplam: {timeToSeconds(formData.durationTime)} saniye ({secondsToTime(timeToSeconds(formData.durationTime))})
+                                    </p>
+                                )}
                             </div>
 
                             <div>
