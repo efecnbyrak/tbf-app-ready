@@ -30,7 +30,7 @@ export default async function RulesPage() {
                 Basketbol kuralları, yorumları ve eğitim videoları.
             </p>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <Link href="/referee/rules/kural" className="group">
                     <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 hover:shadow-xl transition-all duration-300 transform group-hover:-translate-y-1">
                         <div className="bg-red-50 dark:bg-red-900/20 w-16 h-16 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
@@ -48,16 +48,6 @@ export default async function RulesPage() {
                         </div>
                         <h2 className="text-xl font-bold mb-2">Yorumlar</h2>
                         <p className="text-sm text-zinc-500">Kurallara dair resmi yorumlar ve açıklamalar.</p>
-                    </div>
-                </Link>
-
-                <Link href="/referee/rules/video" className="group">
-                    <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 hover:shadow-xl transition-all duration-300 transform group-hover:-translate-y-1">
-                        <div className="bg-green-50 dark:bg-green-900/20 w-16 h-16 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                            <Video className="w-8 h-8 text-green-700 dark:text-green-500" />
-                        </div>
-                        <h2 className="text-xl font-bold mb-2">Maç & Video</h2>
-                        <p className="text-sm text-zinc-500">Eğitim videoları ve maç analizleri.</p>
                     </div>
                 </Link>
 

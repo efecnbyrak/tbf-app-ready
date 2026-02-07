@@ -7,7 +7,7 @@ export async function PUT(req: Request, props: { params: Promise<{ id: string }>
         const params = await props.params;
         const id = parseInt(params.id);
         const body = await req.json();
-        const { title, url, category, description, duration } = body;
+        const { title, url, category, description, duration, videoCategoryId } = body;
 
         const video = await db.video.update({
             where: { id },
@@ -16,7 +16,11 @@ export async function PUT(req: Request, props: { params: Promise<{ id: string }>
                 url,
                 category,
                 description,
-                duration
+                duration,
+                videoCategoryId: videoCategoryId ? parseInt(videoCategoryId) : null
+            },
+            include: {
+                videoCategory: true
             }
         });
 

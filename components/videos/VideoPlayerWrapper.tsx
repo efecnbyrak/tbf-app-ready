@@ -22,11 +22,24 @@ export function VideoPlayerWrapper({ videoId, url, initialProgress = 0, isWatche
     const [progress, setProgress] = useState(initialProgress);
     const [duration, setDuration] = useState(0);
     const [watched, setWatched] = useState(isWatched);
+    const [viewCounted, setViewCounted] = useState(false);
     const playerRef = useRef<any>(null);
 
     useEffect(() => {
         setHasMounted(true);
     }, []);
+
+    // Track view on first play
+    const handlePlay = async () => {
+        if (!viewCounted) {
+            setViewCounted(true);
+            try {
+                await fetch(`/api/videos/${videoId}/view`, { method: "POST" });
+            } catch (error) {
+                console.error("Failed to track view:", error);
+            }
+        }
+    };
 
     const handleProgress = (state: { playedSeconds: number }) => {
         const currentSeconds = state.playedSeconds;
@@ -70,6 +83,7 @@ export function VideoPlayerWrapper({ videoId, url, initialProgress = 0, isWatche
                     width="100%"
                     height="100%"
                     controls
+                    onPlay={handlePlay}
                     onProgress={(state: any) => handleProgress(state)}
                     onDuration={handleDuration}
                     onReady={handleSearchTo}

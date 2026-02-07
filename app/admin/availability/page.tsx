@@ -6,6 +6,8 @@ import { AvailabilityList } from "./AvailabilityList";
 import Link from "next/link";
 import { User, Users, Table, Shield, Activity, FileSpreadsheet } from "lucide-react";
 import { Prisma } from "@prisma/client";
+import { format } from "date-fns";
+import { tr } from "date-fns/locale";
 
 export const dynamic = 'force-dynamic';
 
@@ -16,6 +18,13 @@ interface PageProps {
 export default async function AvailabilityAdminPage({ searchParams }: PageProps) {
     const params = await searchParams;
     const { startDate, endDate } = await getAvailabilityWindow();
+
+    // Fetch week number
+    const weekNumberSetting = await db.systemSetting.findUnique({ where: { key: "CURRENT_WEEK_NUMBER" } });
+    const currentWeekNumber = weekNumberSetting?.value || "1";
+
+    const formattedStart = format(startDate, "d MMMM", { locale: tr });
+    const formattedEnd = format(endDate, "d MMMM yyyy", { locale: tr });
 
     // Fetch Referee Types manually via Raw Query to bypass stale Prisma Client
     // Table name is "referees" as per schema @@map
@@ -68,11 +77,18 @@ export default async function AvailabilityAdminPage({ searchParams }: PageProps)
 
     return (
         <div className="space-y-6">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold font-sans tracking-tight">Uygunluk Bildirimleri</h1>
-                    <p className="text-zinc-500 mt-1">
-                        {startDate.toLocaleDateString('tr-TR')} - {endDate.toLocaleDateString('tr-TR')} Dönemi
+                    <div className="flex items-center gap-3 mb-2">
+                        <h1 className="text-3xl font-bold text-zinc-900 dark:text-zinc-100">
+                            Uygunluk Formları
+                        </h1>
+                        <span className="px-3 py-1 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded-full text-sm font-bold border border-red-200 dark:border-red-800">
+                            {currentWeekNumber}. Hafta
+                        </span>
+                    </div>
+                    <p className="text-zinc-500 font-medium">
+                        Dönem: {formattedStart} - {formattedEnd}
                     </p>
                 </div>
                 <div className="flex gap-2">

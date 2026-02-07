@@ -1,18 +1,20 @@
 "use client";
 
-import { updateSystemSetting, advanceWeek } from "@/app/actions/settings";
+import { updateSystemSetting, advanceWeek, resetWeekCounter } from "@/app/actions/settings";
 import { useState } from "react";
-import { Loader2, CalendarClock, ChevronRight } from "lucide-react";
+import { Loader2, CalendarClock, ChevronRight, RotateCcw } from "lucide-react";
 
 interface SettingsFormProps {
     initialMode: string;
     initialSeason: string;
     initialTargetDate: string;
+    initialWeekNumber: string;
 }
 
-export function SettingsForm({ initialMode, initialSeason, initialTargetDate }: SettingsFormProps) {
+export function SettingsForm({ initialMode, initialSeason, initialTargetDate, initialWeekNumber }: SettingsFormProps) {
     const [loading, setLoading] = useState(false);
     const [advanceLoading, setAdvanceLoading] = useState(false);
+    const [resetLoading, setResetLoading] = useState(false);
 
     const handleSave = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -27,12 +29,27 @@ export function SettingsForm({ initialMode, initialSeason, initialTargetDate }: 
     };
 
     const handleAdvance = async () => {
-        if (!confirm("Haftayı ilerletmek istediğinize emin misiniz? Bu işlem hedef tarihi 7 gün ileri atar.")) return;
+        if (!confirm("Haftayı ilerletmek istediğinize emin misiniz? Bu işlem hedef tarihi 7 gün ileri atar ve hafta sayacını +1 arttırır.")) return;
         setAdvanceLoading(true);
         const res = await advanceWeek();
         setAdvanceLoading(false);
         if (res.error) alert(res.error);
-        else alert("Hafta ilerletildi!");
+        else {
+            alert("Hafta ilerletildi!");
+            window.location.reload();
+        }
+    };
+
+    const handleReset = async () => {
+        if (!confirm("Hafta sayacını sıfırlamak istediğinize emin misiniz? Bu işlem hafta numarasını 1'e çeker.")) return;
+        setResetLoading(true);
+        const res = await resetWeekCounter();
+        setResetLoading(false);
+        if (res.error) alert(res.error);
+        else {
+            alert("Hafta sayacı sıfırlandı!");
+            window.location.reload();
+        }
     };
 
     const targetDateDisplay = initialTargetDate
@@ -47,6 +64,28 @@ export function SettingsForm({ initialMode, initialSeason, initialTargetDate }: 
                     <CalendarClock className="w-5 h-5 text-red-600" />
                     Uygunluk Haftası Yönetimi
                 </h2>
+
+                {/* Week Number Display */}
+                <div className="mb-4 p-4 bg-gradient-to-r from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20 rounded-lg border-2 border-red-200 dark:border-red-800">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="text-sm font-medium text-red-700 dark:text-red-400">Mevcut Dönem</p>
+                            <p className="text-3xl font-bold text-red-900 dark:text-red-300">{initialWeekNumber}. Hafta</p>
+                        </div>
+                        <button
+                            onClick={handleReset}
+                            disabled={resetLoading}
+                            className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-zinc-800 border-2 border-red-300 dark:border-red-700 text-red-700 dark:text-red-400 rounded-lg font-medium hover:bg-red-50 dark:hover:bg-red-900/30 transition-all disabled:opacity-50"
+                        >
+                            {resetLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <RotateCcw className="w-4 h-4" />}
+                            Sıfırla
+                        </button>
+                    </div>
+                    <p className="text-xs text-red-600 dark:text-red-500 mt-2">
+                        Sıfırla butonu hafta numarasını 1'e çeker. Hedef tarihi değiştirmez.
+                    </p>
+                </div>
+
                 <div className="bg-zinc-50 dark:bg-zinc-800 rounded-lg p-5 flex flex-col md:flex-row items-center justify-between gap-4">
                     <div>
                         <p className="font-bold text-zinc-900 dark:text-white">Hedef Hafta (Maç Tarihleri)</p>
@@ -62,6 +101,9 @@ export function SettingsForm({ initialMode, initialSeason, initialTargetDate }: 
                         Haftayı İlerle
                     </button>
                 </div>
+                <p className="text-xs text-zinc-500 mt-3 ml-1">
+                    💡 "Haftayı İlerle" butonu hem hedef tarihi 7 gün ilerletir hem de hafta sayacını +1 arttırır.
+                </p>
             </div>
 
             <form onSubmit={handleSave} className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 p-6">

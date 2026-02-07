@@ -42,6 +42,21 @@ export default async function RefereeDashboard() {
     const upcomingMatches = assignments.filter(a => new Date(a.match.date) >= new Date());
     const pastMatches = assignments.filter(a => new Date(a.match.date) < new Date());
 
+    // Fetch availability forms
+    const availabilityForms = await db.availabilityForm.findMany({
+        where: { refereeId: referee.id },
+        include: {
+            days: true
+        },
+        orderBy: {
+            weekStartDate: 'desc'
+        },
+        take: 5 // Last 5 forms
+    });
+
+    // Fetch week number setting
+    const weekNumberSetting = await db.systemSetting.findUnique({ where: { key: "CURRENT_WEEK_NUMBER" } });
+
     return (
         <div className="max-w-5xl mx-auto space-y-8">
             <header>
@@ -181,6 +196,82 @@ export default async function RefereeDashboard() {
                                     </div>
                                 )}
                             </>
+                        )}
+                    </div>
+
+                    {/* My Availabilities Section */}
+                    <div className="space-y-6">
+                        <h2 className="text-xl font-bold text-zinc-900 dark:text-white flex items-center gap-2">
+                            <CheckCircle className="w-6 h-6 text-green-600" />
+                            Uygunluklarım
+                        </h2>
+
+                        {availabilityForms.length === 0 ? (
+                            <div className="text-center py-12 bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 border-dashed">
+                                <p className="text-zinc-500">Henüz uygunluk formu göndermediniz.</p>
+                                <Link
+                                    href="/referee/availability"
+                                    className="inline-block mt-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                                >
+                                    İlk Formu Gönder
+                                </Link>
+                            </div>
+                        ) : (
+                            <div className="space-y-4">
+                                {availabilityForms.map((form) => {
+                                    const formattedDate = new Date(form.weekStartDate).toLocaleDateString('tr-TR', {
+                                        day: 'numeric',
+                                        month: 'long',
+                                        year: 'numeric'
+                                    });
+
+                                    const totalSlots = form.days.reduce((acc, day) => {
+                                        if (day.slots) {
+                                            return acc + day.slots.split(',').length;
+                                        }
+                                        return acc;
+                                    }, 0);
+
+                                    const isSubmitted = form.status === "SUBMITTED" || form.status === "LOCKED";
+
+                                    return (
+                                        <div
+                                            key={form.id}
+                                            className="bg-white dark:bg-zinc-900 rounded-lg p-5 border border-zinc-200 dark:border-zinc-800 hover:shadow-md transition-all"
+                                        >
+                                            <div className="flex items-center justify-between mb-3">
+                                                <div>
+                                                    <h3 className="font-semibold text-zinc-900 dark:text-white">
+                                                        {formattedDate} Haftası
+                                                    </h3>
+                                                    <p className="text-sm text-zinc-500">
+                                                        {form.days.length} gün • {totalSlots} zaman dilimi
+                                                    </p>
+                                                </div>
+                                                <div className={`px-3 py-1 rounded-full text-xs font-bold ${isSubmitted
+                                                        ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
+                                                        : "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400"
+                                                    }`}>
+                                                    {isSubmitted ? "Gönderildi" : "Taslak"}
+                                                </div>
+                                            </div>
+
+                                            <div className="flex items-center justify-between text-xs text-zinc-400">
+                                                <span>
+                                                    Son güncelleme: {new Date(form.updatedAt).toLocaleDateString('tr-TR')}
+                                                </span>
+                                                <Link
+                                                    href="/referee/availability"
+                                                    className="text-red-600 hover:text-red-700 font-medium flex items-center gap-1"
+                                                >
+                                                    Görüntüle
+                                                    <ArrowRight className="w-3 h-3" />
+                                                </Link>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
                         )}
                     </div>
                 </div>

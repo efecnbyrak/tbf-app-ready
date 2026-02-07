@@ -50,6 +50,17 @@ export async function advanceWeek() {
         // Add 7 days
         const nextWeek = new Date(currentTarget);
         nextWeek.setDate(currentTarget.getDate() + 7);
+
+        // Increment week counter
+        const weekCounterSetting = await db.systemSetting.findUnique({ where: { key: "CURRENT_WEEK_NUMBER" } });
+        const currentWeekNumber = weekCounterSetting ? parseInt(weekCounterSetting.value) : 1;
+
+        await db.systemSetting.upsert({
+            where: { key: "CURRENT_WEEK_NUMBER" },
+            create: { key: "CURRENT_WEEK_NUMBER", value: String(currentWeekNumber + 1) },
+            update: { value: String(currentWeekNumber + 1) }
+        });
+
         // Ensure it's a string YYYY-MM-DD or ISO
         await db.systemSetting.upsert({
             where: { key: "AVAILABILITY_TARGET_DATE" },
@@ -58,7 +69,28 @@ export async function advanceWeek() {
         });
 
         revalidatePath("/admin/settings");
+        revalidatePath("/admin/availability");
         revalidatePath("/referee/availability");
+        return { success: true };
+    } catch (e) {
+        console.error(e);
+        return { error: "İşlem başarısız" };
+    }
+}
+
+export async function resetWeekCounter() {
+    const session = await verifySession();
+    if (session.role !== "ADMIN") return { error: "Yetkisiz işlem" };
+
+    try {
+        await db.systemSetting.upsert({
+            where: { key: "CURRENT_WEEK_NUMBER" },
+            create: { key: "CURRENT_WEEK_NUMBER", value: "1" },
+            update: { value: "1" }
+        });
+
+        revalidatePath("/admin/settings");
+        revalidatePath("/admin/availability");
         return { success: true };
     } catch (e) {
         console.error(e);

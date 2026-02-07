@@ -184,16 +184,34 @@ model UserAnswer {
   @@map("user_answers")
 }
 
+model VideoCategory {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  description String?
+  displayOrder Int     @default(0) // For sorting categories
+  videos      Video[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("video_categories")
+}
+
 model Video {
   id          Int      @id @default(autoincrement())
   title       String
   url         String   // YouTube URL
   description String?
-  category    String?
+  category    String?  // Legacy field, kept for backward compatibility
   duration    Int      // Duration in seconds (optional, fetched from API or manual)
+  viewCount   Int      @default(0) // Track video views
+  
+  // New category relation
+  videoCategory   VideoCategory? @relation(fields: [videoCategoryId], references: [id], onDelete: SetNull)
+  videoCategoryId Int?
   
   progress    VideoProgress[]
   createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   @@map("videos")
 }

@@ -8,6 +8,7 @@ export default async function SettingsPage() {
     const modeSetting = await db.systemSetting.findUnique({ where: { key: "AVAILABILITY_MODE" } });
     const seasonSetting = await db.systemSetting.findUnique({ where: { key: "CURRENT_SEASON" } });
     const targetDateSetting = await db.systemSetting.findUnique({ where: { key: "AVAILABILITY_TARGET_DATE" } });
+    const weekNumberSetting = await db.systemSetting.findUnique({ where: { key: "CURRENT_WEEK_NUMBER" } });
 
     return (
         <div>
@@ -16,6 +17,7 @@ export default async function SettingsPage() {
                 initialMode={modeSetting?.value || "AUTO"}
                 initialSeason={seasonSetting?.value || "2025-2026"}
                 initialTargetDate={targetDateSetting?.value || ""}
+                initialWeekNumber={weekNumberSetting?.value || "1"}
             />
         </div>
     );
