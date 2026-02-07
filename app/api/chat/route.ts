@@ -4,95 +4,47 @@ import { db } from "@/lib/db";
 import { getSession } from "@/lib/session";
 import { NextRequest, NextResponse } from "next/server";
 
-// 3. Secure backend setup: Get API Key from Environment
-const API_KEY = process.env.GEMINI_API_KEY;
+// 1. Initialize Gemini Client with Robust Fallback (Hardcoded Key)
+// Use process.env if available, otherwise use hardcoded key
+const BACKUP_KEY = "AIzaSyC-a9qa79YwH4xc3dHGYBsFz5RX-_LlMMg";
+const API_KEY = process.env.GEMINI_API_KEY || BACKUP_KEY;
 
-// 1. Initialize Gemini Client
-const genAI = new GoogleGenerativeAI(API_KEY || "");
+const genAI = new GoogleGenerativeAI(API_KEY);
 
-// System Prompt for TBF Context
-const SYSTEM_PROMPT = `
-Sen Türkiye Basketbol Federasyonu (TBF) ve FIBA kuralları konusunda uzmanlaşmış bir yapay zeka asistanısın.
-Adın "TBF Kural Asistanı".
+const SYSTEM_PROMPT = `Sen Türkiye Basketbol Federasyonu (TBF) ve FIBA kuralları konusunda uzmanlaşmış bir yapay zeka asistanısın. Adın "TBF Kural Asistanı". Görevin hakemlere yardımcı olmaktır. Sadece Türkçe cevap ver.`;
 
-Görevin, basketbol hakemlerine, aday hakemlere ve görevlilere kurallar, mekanikler ve talimatlar konusunda yardımcı olmaktır.
-
-ÖNEMLİ TALİMATLAR:
-- SADECE Türkçe cevap ver
-- Basketbol kuralları, hakem mekaniği, foul durumları, oyun prosedürleri hakkında her türlü soruyu cevaplayabilirsin
-- Eğer tam olarak emin değilsen, genel kural çerçevesini açıkla ve kullanıcının daha spesifik olmasını iste
-- "Bilmiyorum" veya "Cevap veremiyorum" GİBİ CEVAPLAR VERME
-- Basketbolla ilgili her soruya FIBA ve TBF kuralları çerçevesinde cevap ver
-- Eğer kural değişikliği olmuş olabilirse, bunu belirt ama gene de en güncel bildiğin kuralı paylaş
-
-Bilgi Alanların:
-✅ FIBA Basketbol Oyun Kuralları (Resmi Yorumlar dahil)
-✅ TBF Oyun Kuralları ve Talimatlar
-✅ Hakem Mekaniği (2 ve 3 Hakem Sistemi)
-✅ Foul Türleri ve Ceza Prosedürleri  
-✅ Masa Görevlileri Prosedürleri
-✅ Gözlemci Değerlendirme Kriterleri
-✅ Basketbol Terminolojisi
-
-Cevap Formatı:
-- Net ve anlaşılır Türkçe kullan
-- Kural maddesini belirt (örn: "Madde 36.1.1'e göre...")
-- Gerekirse örneklerle açıkla
-- Emin değilsen: "Genel kural şudur... ancak spesifik durumunuz için daha detay verirseniz tam cevap verebilirim"
-
-ÖNEMLİ: Asla "Bu konuda bilgim yok" veya "Cevap veremiyorum" deme. Her zaman basketbol kuralları çerçevesinde yardımcı bir yanıt ver.
-`;
-
-export const maxDuration = 30; // Vercel timeout protection (30s)
+export const maxDuration = 60; // Allow longer duration
 
 export async function POST(req: NextRequest) {
     try {
-        // 5. Error Handling: Check for API Key
-        if (!API_KEY) {
-            console.error("[GEMINI ERROR] API Key is missing in environment variables.");
-            return NextResponse.json({
-                error: "Sistem yapılandırma hatası. (API Key Eksik)"
-            }, { status: 500 });
-        }
+        console.log(`[GEMINI API] Key Used: ${API_KEY.substring(0, 10)}...`);
 
         // Authentication Check
         const session = await getSession();
-        if (!session?.userId) {
-            return NextResponse.json({ error: "Oturum açmanız gerekiyor." }, { status: 401 });
-        }
+        if (!session?.userId) return NextResponse.json({ error: "Oturum açın." }, { status: 401 });
 
         const { message, sessionId } = await req.json();
+        if (!message || !sessionId) return NextResponse.json({ error: "Eksik parametre." }, { status: 400 });
 
-        if (!message || !sessionId) {
-            return NextResponse.json({ error: "Mesaj ve oturum ID gerekli." }, { status: 400 });
-        }
-
-        // Verify session belongs to user
+        // Verify session
         const chatSession = await db.chatSession.findUnique({
             where: { id: sessionId },
-            include: { messages: { orderBy: { createdAt: 'asc' }, take: 20 } }
+            include: { messages: { orderBy: { createdAt: 'asc' }, take: 10 } }
         });
 
-        if (!chatSession || chatSession.userId !== session.userId) {
-            return NextResponse.json({ error: "Geçersiz oturum." }, { status: 403 });
-        }
+        if (!chatSession || chatSession.userId !== session.userId) return NextResponse.json({ error: "Geçersiz." }, { status: 403 });
 
-        // Save User Message to DB
-        await db.message.create({
-            data: {
-                sessionId,
-                role: "user",
-                content: message
-            }
-        });
+        // Save User Message
+        await db.message.create({ data: { sessionId, role: "user", content: message } });
 
-        // Build History for Context
-        // Note: We inject System Prompt manually for better compatibility across models
+        // Build History
         const history = chatSession.messages.map(m => ({
-            role: m.role === "admin" ? "model" : (m.role === "assistant" ? "model" : "user"),
+            role: m.role === "assistant" || m.role === "model" ? "model" : "user",
             parts: [{ text: m.content }]
         }));
 
+        // Inject System as History (Most reliable method)
+        // This works for gemini-1.5-flash perfectly without needing systemInstruction config
         const chatHistory = [
             {
                 role: "user",
@@ -100,69 +52,38 @@ export async function POST(req: NextRequest) {
             },
             {
                 role: "model",
-                parts: [{ text: "Anlaşıldı. TBF Kural Asistanı olarak hazırım." }]
+                parts: [{ text: "Anlaşıldı." }]
             },
             ...history
         ];
 
-        // 2 & 7. Use 'gemini-1.5-flash' for performance and stability
+        // STRICTLY USE GEMINI-1.5-FLASH (No fallback)
+        console.log("[GEMINI] Using strict model: gemini-1.5-flash");
         const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
         const chat = model.startChat({
             history: chatHistory,
             generationConfig: {
-                maxOutputTokens: 1000, // 7. Limit output for performance
+                maxOutputTokens: 1000,
+                temperature: 0.7
             },
         });
 
-        // 6. Timeout Protection (Manual race)
-        const timeoutPromise = new Promise((_, reject) =>
-            setTimeout(() => reject(new Error("Request timed out")), 25000)
-        );
-
-        const resultPromise = chat.sendMessage(message);
-
-        // Race against timeout
-        const result = await Promise.race([resultPromise, timeoutPromise]) as any;
-
+        const result = await chat.sendMessage(message);
         const responseText = result.response.text();
 
-        if (!responseText) {
-            throw new Error("Boş yanıt alındı.");
-        }
+        if (!responseText) throw new Error("Boş yanıt.");
 
-        // Save Assistant Message to DB
-        await db.message.create({
-            data: {
-                sessionId,
-                role: "assistant",
-                content: responseText
-            }
-        });
+        // Save Assistant Message
+        await db.message.create({ data: { sessionId, role: "assistant", content: responseText } });
 
         return NextResponse.json({ response: responseText });
 
     } catch (error: any) {
-        console.error("[GEMINI API ERROR]", error);
-
-        // 5. Error Handling Logic
-        let userMessage = "Üzgünüm, şu anda yanıt veremiyorum.";
-        let statusCode = 500;
-
-        if (error.message.includes("404")) {
-            console.error("Model bulunamadı (404). Model ismini veya API versiyonunu kontrol edin.");
-        } else if (error.message.includes("400")) {
-            console.error("Geçersiz istek (400). Parametreleri kontrol edin.");
-        } else if (error.message.includes("API key")) {
-            console.error("API Key hatası.");
-        } else if (error.message.includes("timed out")) {
-            console.error("Zaman aşımı.");
-        }
-
-        // Always return generic message to user, but log details on server
+        console.error("AI FATAL ERROR:", error);
         return NextResponse.json({
-            error: userMessage,
-            details: error.message // Frontend can choose to show this or not
-        }, { status: statusCode });
+            error: "Yapay zeka şu an meşgul, lütfen tekrar deneyin.",
+            details: error?.message
+        }, { status: 500 });
     }
 }
