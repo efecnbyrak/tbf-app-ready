@@ -206,6 +206,7 @@ export default function AdminRulesPage() {
                             </button>
                         </div>
 
+
                         <form onSubmit={handleSubmit} className="p-4 space-y-4">
                             <div>
                                 <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
@@ -221,22 +222,23 @@ export default function AdminRulesPage() {
                                 />
                             </div>
 
+
                             <div>
                                 <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
-                                    Dosya URL (PDF)
+                                    PDF Dosyası
                                 </label>
                                 <input
-                                    type="url"
-                                    required
-                                    value={formData.url}
-                                    onChange={(e) => setFormData({ ...formData, url: e.target.value })}
-                                    className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 outline-none dark:bg-zinc-800 dark:border-zinc-700"
-                                    placeholder="https://..."
+                                    type="file"
+                                    accept=".pdf"
+                                    onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
+                                    className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 outline-none dark:bg-zinc-800 dark:border-zinc-700 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-red-50 file:text-red-700 hover:file:bg-red-100 dark:file:bg-red-900/20 dark:file:text-red-400"
+                                    required={!editingRule}
                                 />
                                 <p className="text-xs text-zinc-500 mt-1">
-                                    Google Drive, Dropbox veya benzeri bir PDF bağlantısı giriniz.
+                                    {selectedFile ? selectedFile.name : editingRule ? "Yeni dosya seçilmedi (mevcut dosya korunacak)" : "Lütfen masaüstünden PDF dosyası seçin"}
                                 </p>
                             </div>
+
 
                             <div>
                                 <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
@@ -254,6 +256,7 @@ export default function AdminRulesPage() {
                                     <option value="Diğer">Diğer</option>
                                 </select>
                             </div>
+
 
                             <div>
                                 <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
