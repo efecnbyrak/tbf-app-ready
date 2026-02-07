@@ -32,7 +32,7 @@ export async function POST(req: Request) {
                 url,
                 category, // Keep for legacy support
                 description,
-                duration: duration || 0,
+                duration: typeof duration === 'string' ? parseInt(duration) : (duration || 0),
                 videoCategoryId: videoCategoryId ? parseInt(videoCategoryId) : null
             },
             include: {

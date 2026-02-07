@@ -82,6 +82,19 @@ export default function AdminVideosPage() {
         }
     };
 
+    // YouTube Utils
+    const getYouTubeId = (url: string) => {
+        if (!url) return null;
+        const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+        const match = url.match(regExp);
+        return (match && match[2].length === 11) ? match[2] : null;
+    };
+
+    const getThumbnail = (url: string) => {
+        const videoId = getYouTubeId(url);
+        return videoId ? `https://img.youtube.com/vi/${videoId}/mqdefault.jpg` : null;
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
@@ -99,6 +112,7 @@ export default function AdminVideosPage() {
                 setEditingVideo(null);
                 setFormData({ title: "", url: "", videoCategoryId: "", description: "", duration: 0 });
                 fetchVideos();
+                fetchCategories(); // Refresh counts
             } else {
                 alert("İşlem başarısız.");
             }
@@ -136,6 +150,7 @@ export default function AdminVideosPage() {
             const res = await fetch(`/api/videos/${id}`, { method: "DELETE" });
             if (res.ok) {
                 fetchVideos();
+                fetchCategories(); // Refresh counts
             }
         } catch (error) {
             console.error("Error deleting video:", error);
@@ -158,22 +173,6 @@ export default function AdminVideosPage() {
         setEditingVideo(null);
         setFormData({ title: "", url: "", videoCategoryId: "", description: "", duration: 0 });
         setIsModalOpen(true);
-    };
-
-    // YouTube Thumbnail Helper
-    const getThumbnail = (url: string) => {
-        try {
-            let videoId = null;
-            if (url.includes("v=")) {
-                videoId = url.split("v=")[1]?.split("&")[0];
-            } else if (url.includes("youtu.be/")) {
-                videoId = url.split("youtu.be/")[1];
-            }
-            if (videoId) return `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`;
-        } catch (e) {
-            return null;
-        }
-        return null;
     };
 
     return (
@@ -351,16 +350,21 @@ export default function AdminVideosPage() {
                                 <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
                                     Süre (Saniye)
                                 </label>
-                                <input
-                                    type="number"
-                                    min="0"
-                                    value={formData.duration}
-                                    onChange={(e) => setFormData({ ...formData, duration: parseInt(e.target.value) || 0 })}
-                                    className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 outline-none dark:bg-zinc-800 dark:border-zinc-700"
-                                    placeholder="Örn: 600 (10dk)"
-                                />
+                                <div className="flex gap-2">
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        value={formData.duration}
+                                        onChange={(e) => setFormData({ ...formData, duration: parseInt(e.target.value) || 0 })}
+                                        className="flex-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 outline-none dark:bg-zinc-800 dark:border-zinc-700"
+                                        placeholder="Saniye cinsinden"
+                                    />
+                                    <div className="flex items-center px-3 bg-zinc-100 dark:bg-zinc-800 rounded-lg text-zinc-500 text-sm">
+                                        {Math.floor(formData.duration / 60)} dk {formData.duration % 60} sn
+                                    </div>
+                                </div>
                                 <p className="text-xs text-zinc-500 mt-1">
-                                    Tahmini süre. 10 dk için 600 yazınız.
+                                    Direkt saniye giriniz. Örn: 8dk 18sn için 498 giriniz.
                                 </p>
                             </div>
 

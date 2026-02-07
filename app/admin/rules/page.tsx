@@ -16,8 +16,6 @@ export default function AdminRulesPage() {
     const [rules, setRules] = useState<RuleBook[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [file, setFile] = useState<File | null>(null);
-    const [uploadType, setUploadType] = useState<"url" | "file">("file");
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingRule, setEditingRule] = useState<RuleBook | null>(null);
@@ -53,32 +51,16 @@ export default function AdminRulesPage() {
             const endpoint = editingRule ? `/api/rules/${editingRule.id}` : "/api/rules";
             const method = editingRule ? "PUT" : "POST";
 
-            let body: any;
-            const headers: Record<string, string> = {};
-
-            if (uploadType === "file" && file) {
-                const formParams = new FormData();
-                formParams.append("title", formData.title);
-                formParams.append("category", formData.category);
-                formParams.append("description", formData.description);
-                formParams.append("file", file);
-                body = formParams;
-            } else {
-                body = JSON.stringify(formData);
-                headers["Content-Type"] = "application/json";
-            }
-
             const res = await fetch(endpoint, {
                 method,
-                headers: Object.keys(headers).length > 0 ? headers : undefined,
-                body
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(formData)
             });
 
             if (res.ok) {
                 setIsModalOpen(false);
                 setEditingRule(null);
                 setFormData({ title: "", url: "", category: "", description: "" });
-                setFile(null);
                 fetchRules();
             } else {
                 const data = await res.json();
@@ -111,15 +93,12 @@ export default function AdminRulesPage() {
             category: rule.category || "",
             description: rule.description || ""
         });
-        setUploadType("url"); // Edit mode defaults to URL display usually
         setIsModalOpen(true);
     };
 
     const openAddModal = () => {
         setEditingRule(null);
         setFormData({ title: "", url: "", category: "", description: "" });
-        setFile(null);
-        setUploadType("file");
         setIsModalOpen(true);
     };
 
@@ -226,58 +205,22 @@ export default function AdminRulesPage() {
                                 />
                             </div>
 
-                            {!editingRule && (
-                                <div className="flex bg-zinc-100 dark:bg-zinc-800 p-1 rounded-lg mb-2">
-                                    <button
-                                        type="button"
-                                        onClick={() => setUploadType("file")}
-                                        className={`flex-1 text-sm font-medium py-1.5 rounded-md transition-colors ${uploadType === "file" ? "bg-white dark:bg-zinc-700 shadow-sm text-zinc-900 dark:text-white" : "text-zinc-500"}`}
-                                    >
-                                        Dosya Yükle
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => setUploadType("url")}
-                                        className={`flex-1 text-sm font-medium py-1.5 rounded-md transition-colors ${uploadType === "url" ? "bg-white dark:bg-zinc-700 shadow-sm text-zinc-900 dark:text-white" : "text-zinc-500"}`}
-                                    >
-                                        Harici Bağlantı
-                                    </button>
-                                </div>
-                            )}
-
-                            {uploadType === "file" && !editingRule ? (
-                                <div>
-                                    <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
-                                        PDF Dosyası
-                                    </label>
-                                    <input
-                                        type="file"
-                                        accept=".pdf"
-                                        required
-                                        onChange={(e) => setFile(e.target.files?.[0] || null)}
-                                        className="w-full text-sm text-zinc-500
-                                        file:mr-4 file:py-2 file:px-4
-                                        file:rounded-full file:border-0
-                                        file:text-sm file:font-semibold
-                                        file:bg-red-50 file:text-red-700
-                                        hover:file:bg-red-100 dark:file:bg-red-900/20"
-                                    />
-                                </div>
-                            ) : (
-                                <div>
-                                    <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
-                                        Dosya URL
-                                    </label>
-                                    <input
-                                        type="text"
-                                        required
-                                        value={formData.url}
-                                        onChange={(e) => setFormData({ ...formData, url: e.target.value })}
-                                        className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 outline-none dark:bg-zinc-800 dark:border-zinc-700"
-                                        placeholder="https://..."
-                                    />
-                                </div>
-                            )}
+                            <div>
+                                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+                                    Dosya URL (PDF)
+                                </label>
+                                <input
+                                    type="url"
+                                    required
+                                    value={formData.url}
+                                    onChange={(e) => setFormData({ ...formData, url: e.target.value })}
+                                    className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 outline-none dark:bg-zinc-800 dark:border-zinc-700"
+                                    placeholder="https://..."
+                                />
+                                <p className="text-xs text-zinc-500 mt-1">
+                                    Google Drive, Dropbox veya benzeri bir PDF bağlantısı giriniz.
+                                </p>
+                            </div>
 
                             <div>
                                 <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">

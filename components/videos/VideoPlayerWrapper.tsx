@@ -64,32 +64,53 @@ export function VideoPlayerWrapper({ videoId, url, initialProgress = 0, isWatche
         // Actually better to just let user start from 0 if they want, or use `onReady` to seek.
     };
 
+    // YouTube Utils
+    const getYouTubeId = (url: string) => {
+        if (!url) return null;
+        const regExp = /^.*(youtu.be\/|v\/|watch\?v=|&v=|embed\/|shorts\/)([^#&?]*).*/;
+        const match = url.match(regExp);
+        return (match && match[2].length === 11) ? match[2] : null;
+    };
+
     const handleSearchTo = () => {
         if (playerRef.current && initialProgress > 0) {
-            playerRef.current.seekTo(initialProgress);
+            playerRef.current.seekTo(initialProgress, 'seconds');
         }
     }
 
     if (!hasMounted) {
-        return <div className="aspect-video bg-zinc-900 flex items-center justify-center text-white"><Loader2 className="animate-spin" /></div>;
+        return (
+            <div className="aspect-video bg-zinc-900 rounded-xl flex flex-col items-center justify-center text-white/50 border border-zinc-800">
+                <Loader2 className="animate-spin w-8 h-8 mb-2" />
+                <span className="text-sm">Video Hazırlanıyor...</span>
+            </div>
+        );
     }
+
+    const videoIdStr = getYouTubeId(url);
+    const finalUrl = videoIdStr ? `https://www.youtube.com/watch?v=${videoIdStr}` : url;
 
     return (
         <div className="space-y-4">
-            <div className="relative aspect-video bg-black rounded-xl overflow-hidden shadow-2xl border border-zinc-800">
+            <div className="relative aspect-video bg-black rounded-xl overflow-hidden shadow-2xl border border-zinc-800 group">
                 <ReactPlayerAny
                     ref={playerRef}
-                    url={url}
+                    url={finalUrl}
                     width="100%"
                     height="100%"
                     controls
+                    playing={false}
                     onPlay={handlePlay}
                     onProgress={(state: any) => handleProgress(state)}
                     onDuration={handleDuration}
                     onReady={handleSearchTo}
                     config={{
                         youtube: {
-                            playerVars: { showinfo: 1 }
+                            playerVars: {
+                                rel: 0,
+                                modestbranding: 1,
+                                origin: typeof window !== 'undefined' ? window.location.origin : ''
+                            }
                         }
                     } as any}
                 />
