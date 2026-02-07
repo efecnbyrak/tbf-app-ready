@@ -1,8 +1,25 @@
 
-import { Folder, Key, Video, BookOpen } from "lucide-react";
+import { Folder, Key, Video, BookOpen, Zap, MessageSquare } from "lucide-react";
 import Link from "next/link";
+import { db } from "@/lib/db";
+import { getSession } from "@/lib/session";
+import { ChatInterface } from "@/components/chat/ChatInterface";
 
-export default function RulesPage() {
+export const dynamic = 'force-dynamic';
+
+export default async function RulesPage() {
+    const session = await getSession();
+
+    // Fetch Chat Session
+    let chatSession = null;
+    if (session?.userId) {
+        chatSession = await db.chatSession.findFirst({
+            where: { userId: session.userId },
+            orderBy: { updatedAt: 'desc' },
+            include: { messages: { orderBy: { createdAt: 'asc' } } }
+        });
+    }
+
     return (
         <div className="space-y-6">
             <h1 className="text-3xl font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-3">
@@ -43,6 +60,42 @@ export default function RulesPage() {
                         <p className="text-sm text-zinc-500">Eğitim videoları ve maç analizleri.</p>
                     </div>
                 </Link>
+
+                {/* Scenario Generator Restored */}
+                <Link href="/referee/training" className="group">
+                    <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 hover:shadow-xl transition-all duration-300 transform group-hover:-translate-y-1">
+                        <div className="bg-purple-50 dark:bg-purple-900/20 w-16 h-16 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                            <Zap className="w-8 h-8 text-purple-700 dark:text-purple-500" />
+                        </div>
+                        <h2 className="text-xl font-bold mb-2">Senaryo Oluşturucu</h2>
+                        <p className="text-sm text-zinc-500">Rastgele pozisyon ve kural senaryoları üret.</p>
+                    </div>
+                </Link>
+            </div>
+
+            {/* AI Assistant Section */}
+            <div className="mt-12 pt-8 border-t border-zinc-200 dark:border-zinc-800">
+                <div className="flex items-center gap-3 mb-6">
+                    <div className="p-3 bg-indigo-100 dark:bg-indigo-900/20 rounded-xl">
+                        <MessageSquare className="w-8 h-8 text-indigo-600 dark:text-indigo-400" />
+                    </div>
+                    <div>
+                        <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">AI Kural Asistanı</h2>
+                        <p className="text-zinc-500">FIBA ve TBF kuralları hakkında sorularını sor.</p>
+                    </div>
+                </div>
+
+                <div className="bg-zinc-50 dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 h-[600px] overflow-hidden shadow-inner">
+                    <ChatInterface
+                        initialMessages={chatSession?.messages.map((m: any) => ({
+                            ...m,
+                            createdAt: m.createdAt,
+                            role: m.role as "user" | "assistant"
+                        })) || []}
+                        sessionId={chatSession?.id || ""}
+                        userId={session?.userId || 0}
+                    />
+                </div>
             </div>
         </div>
     );

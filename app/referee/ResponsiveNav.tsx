@@ -162,20 +162,6 @@ export function ResponsiveNav({ refereeName, roleType, basePath = "/referee", ti
                             <PlayCircle className="w-5 h-5" />
                             Eğitim Videoları
                         </Link>
-
-                        {/* AI Assistant */}
-                        <Link
-                            href={`${basePath}/chat`}
-                            // Highlight special item
-                            onClick={() => setIsOpen(false)}
-                            className={`flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-all ${isActive(`${basePath}/chat`)
-                                ? "bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-md"
-                                : "hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-200"
-                                }`}
-                        >
-                            <Sparkles className="w-5 h-5" />
-                            AI Asistanı
-                        </Link>
                     </nav>
 
                     <div className="mt-auto pt-6 border-t dark:border-zinc-800">
@@ -185,12 +171,14 @@ export function ResponsiveNav({ refereeName, roleType, basePath = "/referee", ti
                         <SignOutButton />
                     </div>
                 </div>
-            </aside>
+            </aside >
 
             {/* Overlay for mobile */}
-            {isOpen && (
-                <div className="fixed inset-0 bg-black/50 z-40 md:hidden backdrop-blur-sm" onClick={() => setIsOpen(false)} />
-            )}
+            {
+                isOpen && (
+                    <div className="fixed inset-0 bg-black/50 z-40 md:hidden backdrop-blur-sm" onClick={() => setIsOpen(false)} />
+                )
+            }
         </>
     );
 }

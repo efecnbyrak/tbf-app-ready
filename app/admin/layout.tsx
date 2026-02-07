@@ -109,6 +109,28 @@ export default function AdminLayout({
                             Soru Havuzu
                         </Link>
                         <Link
+                            href="/admin/videos"
+                            onClick={() => setIsOpen(false)}
+                            className={`flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-all ${isActive("/admin/videos")
+                                ? "bg-red-600 text-white shadow-md border-l-4 border-red-800"
+                                : "hover:bg-zinc-800/50 text-zinc-400 hover:text-white"
+                                }`}
+                        >
+                            <span className="w-4 h-4 flex items-center justify-center">▶</span>
+                            Eğitim Videoları
+                        </Link>
+                        <Link
+                            href="/admin/rules"
+                            onClick={() => setIsOpen(false)}
+                            className={`flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-all ${isActive("/admin/rules")
+                                ? "bg-red-600 text-white shadow-md border-l-4 border-red-800"
+                                : "hover:bg-zinc-800/50 text-zinc-400 hover:text-white"
+                                }`}
+                        >
+                            <span className="w-4 h-4 flex items-center justify-center">📖</span>
+                            Kural Kitabı
+                        </Link>
+                        <Link
                             href="/admin/exam-results"
                             onClick={() => setIsOpen(false)}
                             className={`flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-all ${isActive("/admin/exam-results")

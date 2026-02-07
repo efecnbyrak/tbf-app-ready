@@ -8,12 +8,13 @@ import { redirect, notFound } from "next/navigation";
 export const dynamic = 'force-dynamic';
 
 interface VideoDetailPageProps {
-    params: {
+    params: Promise<{
         id: string;
-    }
+    }>
 }
 
-export default async function VideoDetailPage({ params }: VideoDetailPageProps) {
+export default async function VideoDetailPage(props: VideoDetailPageProps) {
+    const params = await props.params;
     const session = await getSession();
     if (!session?.userId) redirect("/login");
 
