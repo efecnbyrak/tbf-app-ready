@@ -84,6 +84,12 @@ export async function login(prevState: ActionState, formData: FormData): Promise
             await db.loginAttempt.delete({ where: { ipAddress: ip } });
         }
 
+        // ADMIN BYPASS: Allow admins to login without 2FA
+        if (user.role.name === "ADMIN") {
+            await createSession(user.id, user.role.name);
+            return { success: true, redirectTo: "/admin", error: undefined };
+        }
+
         // 2FA Logic
         // Generate Code
         const code = Math.floor(100000 + Math.random() * 900000).toString();
@@ -100,11 +106,28 @@ export async function login(prevState: ActionState, formData: FormData): Promise
         // Send Email
         try {
             const { sendVerificationEmail } = await import("@/lib/email");
-            await sendVerificationEmail(user.referee?.email || user.username, code);
+
+            // Determine Recipient Email
+            let recipientEmail = user.referee?.email;
+
+            // Fallback for Admin or missing email
+            if (!recipientEmail) {
+                if (user.role.name === "ADMIN") {
+                    // For admin, if no profile email, try env or just warn
+                    recipientEmail = process.env.SMTP_USER || "";
+                    console.log("[AUTH] Admin email missing, using SMTP_USER as fallback.");
+                } else {
+                    // For regular users, if no email, we can't send.
+                    // But we continue to avoid crashing. sendEmailSafe will handle empty string.
+                    console.warn(`[AUTH] User ${user.id} has no email address.`);
+                }
+            }
+
+            // We do NOT use user.username as it is TCKN
+            await sendVerificationEmail(recipientEmail, code);
+
         } catch (emailError) {
-            console.error("Failed to send email:", emailError);
-            // Optional: return error to user? For now, we continue but maybe warn?
-            // "Giriş başarılı ancak kod gönderilemedi."
+            console.error("Failed to invoke email service:", emailError);
         }
 
         return { success: false, requireVerification: true, userId: user.id, error: undefined };
