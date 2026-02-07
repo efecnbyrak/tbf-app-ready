@@ -83,17 +83,23 @@ export async function POST(req: NextRequest) {
         console.log("Using API Key:", API_KEY.substring(0, 10) + "...");
 
         // Call Gemini (Simplified Config)
-        // Fix: Pass systemInstruction here with correct object structure
-        const model = genAI.getGenerativeModel({
-            model: "gemini-1.5-flash",
-            systemInstruction: {
-                role: "system",
+        const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+
+        // Inject SYSTEM_PROMPT manually for gemini-pro compatibility
+        const extendedHistory = [
+            {
+                role: "user",
                 parts: [{ text: SYSTEM_PROMPT }]
-            }
-        });
+            },
+            {
+                role: "model",
+                parts: [{ text: "Anlaşıldı. TBF Kural Asistanı olarak hazırım." }]
+            },
+            ...history
+        ];
 
         const chat = model.startChat({
-            history: history,
+            history: extendedHistory,
         });
 
         const result = await chat.sendMessage(message);
