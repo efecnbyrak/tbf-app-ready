@@ -1,0 +1,50 @@
+﻿Ôû▓ Next.js 16.1.6 (Turbopack)
+- Environments: .env.local, .env.production, .env
+
+  Creating an optimized production build ...
+node.exe : 
+At line:1 char:1
++ & "C:\Program Files\nodejs/node.exe" "C:\Program Fil
+es\nodejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:String) 
+    [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+> Build error occurred
+Error: Turbopack build failed with 1 errors:
+./components/videos/VideoPlayerWrapper.tsx
+Code generation for chunk item errored
+An error occurred while generating the chunk item [pro
+ject]/components/videos/VideoPlayerWrapper.tsx [app-ss
+r] (ecmascript)
+
+Caused by:
+- ModuleId not found for ident: "[externals]/react-pla
+yer [external] (react-player, esm_import, [project]/no
+de_modules/react-player)"
+
+Debug info:
+- An error occurred while generating the chunk item [p
+roject]/components/videos/VideoPlayerWrapper.tsx [app-
+ssr] (ecmascript)
+- Execution of <MergedEcmascriptModuleChunkItem as Ecm
+ascriptChunkItem>::content_with_async_module_info fail
+ed
+- Execution of *EcmascriptChunkItemContent::new failed
+- Execution of EcmascriptModuleContent::new_merged fai
+led
+- Execution of <GlobalModuleIdStrategy as ModuleIdStra
+tegy>::get_module_id failed
+- ModuleId not found for ident: "[externals]/react-pla
+yer [external] (react-player, esm_import, [project]/no
+de_modules/react-player)"
+
+Import trace:
+  Server Component:
+    ./components/videos/VideoPlayerWrapper.tsx
+    ./app/referee/videos/[id]/page.tsx
+
+
+    at ignore-listed frames

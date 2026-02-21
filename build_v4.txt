@@ -1,0 +1,64 @@
+﻿Ôû▓ Next.js 16.1.6 (Turbopack)
+- Environments: .env.local, .env.production, .env
+
+  Creating an optimized production build ...
+Ô£ô Compiled successfully in 5.8s
+  Running TypeScript ...
+  Collecting page data using 11 workers ...
+  Generating static pages using 11 workers (0/30) ...
+  Generating static pages using 11 workers (7/30) 
+  Generating static pages using 11 workers (14/30) 
+  Generating static pages using 11 workers (22/30) 
+Ô£ô Generating static pages using 11 workers (30/30) in 965.6ms
+  Finalizing page optimization ...
+
+Route (app)
+Ôöî ãÆ /
+Ôö£ Ôùï /_not-found
+Ôö£ ãÆ /admin
+Ôö£ ãÆ /admin/availability
+Ôö£ ãÆ /admin/availability/export
+Ôö£ Ôùï /admin/exam-results
+Ôö£ Ôùï /admin/login
+Ôö£ ãÆ /admin/officials
+Ôö£ Ôùï /admin/questions
+Ôö£ ãÆ /admin/referees
+Ôö£ Ôùï /admin/rules
+Ôö£ ãÆ /admin/settings
+Ôö£ Ôùï /admin/videos
+Ôö£ ãÆ /api/chat
+Ôö£ ãÆ /api/rules
+Ôö£ ãÆ /api/rules/[id]
+Ôö£ ãÆ /api/videos
+Ôö£ ãÆ /api/videos/[id]
+Ôö£ ãÆ /api/videos/[id]/view
+Ôö£ ãÆ /api/videos/categories
+Ôö£ ãÆ /api/videos/categories/[id]
+Ôö£ ãÆ /general
+Ôö£ ãÆ /general/assignments
+Ôö£ ãÆ /general/availability
+Ôö£ ãÆ /general/rules
+Ôö£ ãÆ /general/rules/kural
+Ôö£ ãÆ /general/rules/video
+Ôö£ ãÆ /general/rules/yorum
+Ôö£ Ôùï /icon.png
+Ôö£ ãÆ /referee
+Ôö£ ãÆ /referee/assignments
+Ôö£ ãÆ /referee/availability
+Ôö£ ãÆ /referee/chat
+Ôö£ ãÆ /referee/exam
+Ôö£ ãÆ /referee/results
+Ôö£ ãÆ /referee/rules
+Ôö£ ãÆ /referee/rules/kural
+Ôö£ ãÆ /referee/rules/video
+Ôö£ ãÆ /referee/rules/yorum
+Ôö£ ãÆ /referee/training
+Ôö£ ãÆ /referee/videos
+Ôöö ãÆ /referee/videos/[id]
+
+
+ãÆ Proxy (Middleware)
+
+Ôùï  (Static)   prerendered as static content
+ãÆ  (Dynamic)  server-rendered on demand
+
