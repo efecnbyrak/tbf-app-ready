@@ -21,93 +21,65 @@ export async function POST(req: Request) {
     console.log("[API /api/rules POST] Request received");
     try {
         const formData = await req.formData();
-        console.log("[API] FormData received");
-
         const title = formData.get("title") as string;
         const category = formData.get("category") as string;
         const description = formData.get("description") as string;
-        const file = formData.get("file") as File;
+        const type = formData.get("type") as string; // "PDF" or "JSON"
 
-        console.log("[API] Form fields:", { title, category, description, hasFile: !!file });
+        let fileUrl: string | null = null;
+        let finalContent: string = "";
 
-        if (!file) {
-            console.error("[API] No file provided");
-            return NextResponse.json({ error: "PDF dosyası gereklidir" }, { status: 400 });
-        }
+        if (type === "JSON") {
+            finalContent = formData.get("jsonContent") as string;
+            console.log("[API] JSON content received, length:", finalContent.length);
+        } else {
+            // Handle PDF
+            const file = formData.get("file") as File;
+            if (!file) {
+                return NextResponse.json({ error: "PDF dosyası gereklidir" }, { status: 400 });
+            }
 
-        if (!file.name.toLowerCase().endsWith('.pdf')) {
-            console.error("[API] File is not a PDF:", file.name);
-            return NextResponse.json({ error: "Sadece PDF dosyaları yüklenebilir" }, { status: 400 });
-        }
+            const buffer = Buffer.from(await file.arrayBuffer());
 
-        console.log("[API] File received:", file.name, file.size, "bytes");
-
-        // Read file buffer
-        const buffer = Buffer.from(await file.arrayBuffer());
-        console.log("[API] Buffer created, size:", buffer.length);
-
-        // Extract text from PDF
-        let extractedText = "";
-        try {
-            console.log("[API] Starting PDF text extraction...");
-            const pdf = require("pdf-parse");
-            const pdfData = await pdf(buffer);
-            extractedText = pdfData.text;
-            console.log("[API] PDF text extracted, length:", extractedText.length);
-        } catch (pdfError) {
-            console.error("[API] PDF text extraction error:", pdfError);
-            extractedText = "PDF içeriği okunamadı.";
-        }
-
-        let fileUrl: string;
-
-        // Check if we have Vercel Blob token
-        const hasBlob = process.env.BLOB_READ_WRITE_TOKEN;
-        console.log("[API] Has BLOB token:", !!hasBlob);
-
-        if (hasBlob) {
+            // Extract text for searchability if needed (optional for PDF if we have JSON now, but good to keep)
             try {
-                // Production: Use Vercel Blob Storage
-                console.log("[API] Attempting Vercel Blob Storage upload...");
+                const pdf = require("pdf-parse");
+                const pdfData = await pdf(buffer);
+                finalContent = pdfData.text;
+            } catch (pdfError) {
+                console.error("[API] PDF extraction failed:", pdfError);
+                finalContent = "PDF içeriği okunamadı.";
+            }
+
+            // Save file
+            const hasBlob = process.env.BLOB_READ_WRITE_TOKEN;
+            if (hasBlob) {
                 const { put } = await import('@vercel/blob');
                 const filename = `rules/${Date.now()}-${file.name.replace(/\s+/g, '-')}`;
-
                 const blob = await put(filename, buffer, {
                     access: 'public',
                     contentType: 'application/pdf',
                 });
-
                 fileUrl = blob.url;
-                console.log("[API] File uploaded to Blob Storage:", fileUrl);
-            } catch (blobError: any) {
-                console.error("[API] Blob upload failed, falling back to local:", blobError.message);
-                // Fallback to local if blob fails
-                hasBlob && console.log("[API] Using local filesystem as fallback");
+            } else {
                 fileUrl = await saveToLocalFilesystem(buffer, file.name);
             }
-        } else {
-            // Development: Use local filesystem
-            console.log("[API] BLOB_READ_WRITE_TOKEN not found, using local filesystem");
-            fileUrl = await saveToLocalFilesystem(buffer, file.name);
         }
 
-        // Create rule with extracted text
+        // Create rule
         const rule = await db.ruleBook.create({
             data: {
                 title,
                 url: fileUrl,
-                content: extractedText,
+                content: finalContent,
                 category,
                 description
             }
         });
 
-        console.log("[API] Rule created in database:", rule.id);
-
         return NextResponse.json(rule);
     } catch (error: any) {
         console.error("[API] Error saving rule:", error);
-        console.error("[API] Error stack:", error.stack);
         return NextResponse.json({
             error: "İşlem başarısız.",
             details: error.message

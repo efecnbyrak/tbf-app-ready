@@ -41,3 +41,25 @@ export async function DELETE(req: Request, props: { params: Promise<{ id: string
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
     }
 }
+
+// PATCH /api/videos/[id] - Increment viewCount
+export async function PATCH(req: Request, props: { params: Promise<{ id: string }> }) {
+    try {
+        const params = await props.params;
+        const id = parseInt(params.id);
+
+        const updatedVideo = await db.video.update({
+            where: { id },
+            data: {
+                viewCount: {
+                    increment: 1
+                }
+            }
+        });
+
+        return NextResponse.json(updatedVideo);
+    } catch (error) {
+        console.error("Error incrementing view count:", error);
+        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    }
+}

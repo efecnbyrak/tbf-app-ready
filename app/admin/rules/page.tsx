@@ -7,7 +7,8 @@ interface RuleBook {
     id: number;
     title: string;
     description: string | null;
-    url: string;
+    content: string | null;
+    url: string | null;
     category: string | null;
     createdAt: string;
 }
@@ -22,9 +23,11 @@ export default function AdminRulesPage() {
     const [formData, setFormData] = useState({
         title: "",
         category: "",
-        description: ""
+        description: "",
+        content: "" // JSON content
     });
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [uploadType, setUploadType] = useState<"PDF" | "JSON">("PDF");
 
     useEffect(() => {
         fetchRules();
@@ -47,13 +50,13 @@ export default function AdminRulesPage() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        console.log("Form submission started");
-        console.log("Selected file:", selectedFile);
-        console.log("Form data:", formData);
-        console.log("Editing rule:", editingRule);
-
-        if (!selectedFile && !editingRule) {
+        if (uploadType === "PDF" && !selectedFile && !editingRule) {
             alert("Lütfen bir PDF dosyası seçin");
+            return;
+        }
+
+        if (uploadType === "JSON" && !formData.content && !editingRule) {
+            alert("Lütfen JSON içeriğini girin");
             return;
         }
 
@@ -63,52 +66,36 @@ export default function AdminRulesPage() {
             formDataToSend.append("title", formData.title);
             formDataToSend.append("category", formData.category);
             formDataToSend.append("description", formData.description);
+            formDataToSend.append("type", uploadType);
 
-            if (selectedFile) {
+            if (uploadType === "PDF" && selectedFile) {
                 formDataToSend.append("file", selectedFile);
-                console.log("File appended to FormData:", selectedFile.name, selectedFile.size, "bytes");
+            } else if (uploadType === "JSON") {
+                formDataToSend.append("jsonContent", formData.content);
             }
 
             const endpoint = editingRule ? `/api/rules/${editingRule.id}` : "/api/rules";
             const method = editingRule ? "PUT" : "POST";
-
-            console.log("Sending request to:", endpoint, "Method:", method);
 
             const res = await fetch(endpoint, {
                 method,
                 body: formDataToSend
             });
 
-            console.log("Response status:", res.status);
-            console.log("Response ok:", res.ok);
-            console.log("Response content-type:", res.headers.get("content-type"));
-
-            // Check if response is JSON
-            const contentType = res.headers.get("content-type");
-            if (!contentType || !contentType.includes("application/json")) {
-                const textResponse = await res.text();
-                console.error("Non-JSON response:", textResponse);
-                alert(`Sunucu hatası: ${textResponse.substring(0, 200)}`);
-                return;
-            }
-
             if (res.ok) {
-                const responseData = await res.json();
-                console.log("Success response:", responseData);
-                alert("Kural kitabı başarıyla eklendi!");
+                alert("Kural kitabı başarıyla kaydedildi!");
                 setIsModalOpen(false);
                 setEditingRule(null);
-                setFormData({ title: "", category: "", description: "" });
+                setFormData({ title: "", category: "", description: "", content: "" });
                 setSelectedFile(null);
                 fetchRules();
             } else {
                 const data = await res.json();
-                console.error("Error response:", data);
-                alert(data.error + (data.details ? `\nDetay: ${data.details}` : "") || "İşlem başarısız.");
+                alert(data.error || "İşlem başarısız.");
             }
         } catch (error) {
             console.error("Error saving rule:", error);
-            alert(`Hata oluştu: ${error instanceof Error ? error.message : 'Bilinmeyen hata'}`);
+            alert("Hata oluştu.");
         } finally {
             setIsSubmitting(false);
         }
@@ -131,16 +118,19 @@ export default function AdminRulesPage() {
         setFormData({
             title: rule.title,
             category: rule.category || "",
-            description: rule.description || ""
+            description: rule.description || "",
+            content: rule.content || ""
         });
         setSelectedFile(null);
+        setUploadType(rule.url ? "PDF" : "JSON");
         setIsModalOpen(true);
     };
 
     const openAddModal = () => {
         setEditingRule(null);
-        setFormData({ title: "", category: "", description: "" });
+        setFormData({ title: "", category: "", description: "", content: "" });
         setSelectedFile(null);
+        setUploadType("PDF");
         setIsModalOpen(true);
     };
 
@@ -152,7 +142,7 @@ export default function AdminRulesPage() {
                 </h1>
                 <button
                     onClick={openAddModal}
-                    className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors"
+                    className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors shadow-lg"
                 >
                     <Plus className="w-4 h-4" />
                     Yeni Doküman Ekle
@@ -161,7 +151,7 @@ export default function AdminRulesPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {rules.map((rule) => (
-                    <div key={rule.id} className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow">
+                    <div key={rule.id} className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-6 shadow-sm hover:shadow-md transition-all group">
                         <div className="flex items-start justify-between">
                             <div className="flex items-center gap-3">
                                 <div className="p-3 bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-lg">
@@ -171,8 +161,10 @@ export default function AdminRulesPage() {
                                     <h3 className="font-semibold text-zinc-900 dark:text-zinc-100">
                                         {rule.title}
                                     </h3>
-                                    <span className="text-xs text-zinc-500">
+                                    <span className="text-xs text-zinc-500 flex items-center gap-1">
                                         {rule.category || "Genel"}
+                                        <span className="w-1 h-1 rounded-full bg-zinc-300" />
+                                        {rule.url ? "PDF" : "Dijital"}
                                     </span>
                                 </div>
                             </div>
@@ -192,7 +184,7 @@ export default function AdminRulesPage() {
                             </div>
                         </div>
 
-                        <p className="mt-4 text-sm text-zinc-500 line-clamp-2">
+                        <p className="mt-4 text-sm text-zinc-500 line-clamp-2 italic">
                             {rule.description || "Açıklama yok"}
                         </p>
 
@@ -200,20 +192,27 @@ export default function AdminRulesPage() {
                             <span className="text-xs text-zinc-400">
                                 {new Date(rule.createdAt).toLocaleDateString("tr-TR")}
                             </span>
-                            <a
-                                href={rule.url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-sm text-red-600 hover:underline font-medium"
-                            >
-                                Görüntüle
-                            </a>
+                            {rule.url ? (
+                                <a
+                                    href={rule.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-sm text-red-600 hover:underline font-medium"
+                                >
+                                    Görüntüle (PDF)
+                                </a>
+                            ) : (
+                                <span className="text-sm text-blue-600 font-medium">
+                                    Dijital İçerik
+                                </span>
+                            )}
                         </div>
                     </div>
                 ))}
 
                 {rules.length === 0 && !isLoading && (
-                    <div className="col-span-full py-12 text-center text-zinc-500">
+                    <div className="col-span-full py-20 text-center text-zinc-500 bg-white dark:bg-zinc-900 rounded-2xl border border-dashed border-zinc-200 dark:border-zinc-800">
+                        <FileText className="w-12 h-12 mx-auto mb-4 opacity-20" />
                         Henüz hiç doküman eklenmemiş.
                     </div>
                 )}
@@ -221,78 +220,135 @@ export default function AdminRulesPage() {
 
             {/* Modal */}
             {isModalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-                    <div className="bg-white dark:bg-zinc-900 w-full max-w-md rounded-2xl shadow-xl border border-zinc-200 dark:border-zinc-800">
-                        <div className="flex items-center justify-between p-4 border-b border-zinc-200 dark:border-zinc-800">
-                            <h3 className="font-semibold text-zinc-900 dark:text-zinc-100">
-                                {editingRule ? "Doküman Düzenle" : "Yeni Doküman Ekle"}
-                            </h3>
-                            <button onClick={() => setIsModalOpen(false)} className="text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100">
-                                <X className="w-5 h-5" />
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+                    <div className="bg-white dark:bg-zinc-900 w-full max-w-lg rounded-2xl shadow-2xl border border-zinc-200 dark:border-zinc-800 animate-in fade-in zoom-in-95 duration-200">
+                        <div className="flex items-center justify-between p-6 border-b border-zinc-200 dark:border-zinc-800">
+                            <div>
+                                <h3 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">
+                                    {editingRule ? "Doküman Düzenle" : "Yeni Doküman Ekle"}
+                                </h3>
+                                <p className="text-sm text-zinc-500 mt-0.5">Kural kitabı veya yorum dökümanı</p>
+                            </div>
+                            <button onClick={() => setIsModalOpen(false)} className="text-zinc-400 hover:text-zinc-950 dark:hover:text-zinc-100 p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full transition-all">
+                                <X className="w-6 h-6" />
                             </button>
                         </div>
 
+                        <form onSubmit={handleSubmit} className="p-6 space-y-5 max-h-[75vh] overflow-y-auto">
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="col-span-2">
+                                    <label className="block text-sm font-bold text-zinc-700 dark:text-zinc-300 mb-1.5 ml-1">
+                                        Başlık
+                                    </label>
+                                    <input
+                                        type="text"
+                                        required
+                                        value={formData.title}
+                                        onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                                        className="w-full px-4 py-2.5 border border-zinc-200 dark:border-zinc-800 rounded-xl focus:ring-2 focus:ring-red-500 outline-none dark:bg-zinc-950 transition-all"
+                                        placeholder="Örn: 2024 Oyun Kuralları"
+                                    />
+                                </div>
 
-                        <form onSubmit={handleSubmit} className="p-4 space-y-4">
-                            <div>
-                                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
-                                    Başlık
-                                </label>
-                                <input
-                                    type="text"
-                                    required
-                                    value={formData.title}
-                                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                                    className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 outline-none dark:bg-zinc-800 dark:border-zinc-700"
-                                    placeholder="Örn: 2024 Oyun Kuralları"
-                                />
+                                <div>
+                                    <label className="block text-sm font-bold text-zinc-700 dark:text-zinc-300 mb-1.5 ml-1">
+                                        Kategori
+                                    </label>
+                                    <select
+                                        value={formData.category}
+                                        onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                                        className="w-full px-4 py-2.5 border border-zinc-200 dark:border-zinc-800 rounded-xl focus:ring-2 focus:ring-red-500 outline-none dark:bg-zinc-950 transition-all"
+                                    >
+                                        <option value="">Seçiniz</option>
+                                        <option value="Oyun Kuralları">Oyun Kuralları</option>
+                                        <option value="Yorumlar">Yorumlar</option>
+                                        <option value="Mekanik">Mekanik</option>
+                                        <option value="Diğer">Diğer</option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-bold text-zinc-700 dark:text-zinc-300 mb-1.5 ml-1">
+                                        Yükleme Tipi
+                                    </label>
+                                    <div className="flex bg-zinc-100 dark:bg-zinc-950 p-1 rounded-xl border border-zinc-200 dark:border-zinc-800">
+                                        <button
+                                            type="button"
+                                            onClick={() => setUploadType("PDF")}
+                                            className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${uploadType === "PDF" ? "bg-white dark:bg-zinc-800 shadow-sm text-red-600" : "text-zinc-500"}`}
+                                        >
+                                            PDF
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setUploadType("JSON")}
+                                            className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${uploadType === "JSON" ? "bg-white dark:bg-zinc-800 shadow-sm text-blue-600" : "text-zinc-500"}`}
+                                        >
+                                            JSON
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
 
+                            {uploadType === "PDF" ? (
+                                <div>
+                                    <label className="block text-sm font-bold text-zinc-700 dark:text-zinc-300 mb-1.5 ml-1">
+                                        PDF Dosyası
+                                    </label>
+                                    <div className="relative group">
+                                        <input
+                                            type="file"
+                                            accept=".pdf"
+                                            onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
+                                            className="hidden"
+                                            id="pdf-upload"
+                                            required={!editingRule && uploadType === "PDF"}
+                                        />
+                                        <label
+                                            htmlFor="pdf-upload"
+                                            className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-zinc-200 dark:border-zinc-800 rounded-2xl cursor-pointer hover:border-red-500 dark:hover:border-red-500 hover:bg-red-50/50 dark:hover:bg-red-900/5 transition-all"
+                                        >
+                                            <Upload className="w-8 h-8 text-zinc-400 group-hover:text-red-600 mb-2" />
+                                            <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
+                                                {selectedFile ? selectedFile.name : (editingRule && editingRule.url ? "Yeni PDF seçmek için tıkla" : "PDF Dosyası Seç")}
+                                            </span>
+                                            <span className="text-xs text-zinc-400 mt-1">Sadece .pdf (Max 10MB)</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div>
+                                    <label className="block text-sm font-bold text-zinc-700 dark:text-zinc-300 mb-1.5 ml-1">
+                                        JSON İçeriği
+                                    </label>
+                                    <textarea
+                                        rows={8}
+                                        value={formData.content}
+                                        onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+                                        className="w-full px-4 py-3 border border-zinc-200 dark:border-zinc-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none dark:bg-zinc-950 font-mono text-xs leading-relaxed"
+                                        placeholder={`[
+  {
+    "section": "BÖLÜM 1",
+    "h1": "OYUN KURALLARI",
+    "p": "Basketbol oyunu beşer kişilik..."
+  }
+]`}
+                                    />
+                                    <p className="text-[10px] text-zinc-400 mt-1.5 ml-1">
+                                        JSON formatında <strong>section</strong>, <strong>h1</strong> ve <strong>p</strong> alanlarını içeren bir dizi yapıştırın.
+                                    </p>
+                                </div>
+                            )}
 
                             <div>
-                                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
-                                    PDF Dosyası
-                                </label>
-                                <input
-                                    type="file"
-                                    accept=".pdf"
-                                    onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
-                                    className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 outline-none dark:bg-zinc-800 dark:border-zinc-700 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-red-50 file:text-red-700 hover:file:bg-red-100 dark:file:bg-red-900/20 dark:file:text-red-400"
-                                    required={!editingRule}
-                                />
-                                <p className="text-xs text-zinc-500 mt-1">
-                                    {selectedFile ? selectedFile.name : editingRule ? "Yeni dosya seçilmedi (mevcut dosya korunacak)" : "Lütfen masaüstünden PDF dosyası seçin"}
-                                </p>
-                            </div>
-
-
-                            <div>
-                                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
-                                    Kategori
-                                </label>
-                                <select
-                                    value={formData.category}
-                                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                                    className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 outline-none dark:bg-zinc-800 dark:border-zinc-700 bg-white"
-                                >
-                                    <option value="">Seçiniz</option>
-                                    <option value="Oyun Kuralları">Oyun Kuralları</option>
-                                    <option value="Yorumlar">Yorumlar</option>
-                                    <option value="Mekanik">Mekanik</option>
-                                    <option value="Diğer">Diğer</option>
-                                </select>
-                            </div>
-
-
-                            <div>
-                                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+                                <label className="block text-sm font-bold text-zinc-700 dark:text-zinc-300 mb-1.5 ml-1">
                                     Açıklama
                                 </label>
                                 <textarea
-                                    rows={3}
+                                    rows={2}
                                     value={formData.description}
                                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                                    className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 outline-none dark:bg-zinc-800 dark:border-zinc-700 resize-none"
+                                    className="w-full px-4 py-3 border border-zinc-200 dark:border-zinc-800 rounded-xl focus:ring-2 focus:ring-red-500 outline-none dark:bg-zinc-950 transition-all resize-none"
                                     placeholder="Doküman hakkında kısa bilgi..."
                                 />
                             </div>
@@ -300,9 +356,9 @@ export default function AdminRulesPage() {
                             <button
                                 type="submit"
                                 disabled={isSubmitting}
-                                className="w-full bg-red-600 hover:bg-red-700 text-white font-medium py-2 rounded-lg transition-colors disabled:opacity-50"
+                                className="w-full bg-red-600 hover:bg-red-700 text-white font-black py-4 rounded-2xl transition-all disabled:opacity-50 active:scale-[0.98] shadow-lg shadow-red-100 dark:shadow-none mt-2"
                             >
-                                {isSubmitting ? "Kaydediliyor..." : (editingRule ? "Değişiklikleri Kaydet" : "Ekle")}
+                                {isSubmitting ? "Kaydediliyor..." : (editingRule ? "DEĞİŞİKLİKLERİ KAYDET" : "ŞİMDİ YÜKLE VE YAYINLA")}
                             </button>
                         </form>
                     </div>

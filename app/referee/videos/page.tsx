@@ -33,11 +33,17 @@ function formatDuration(seconds: number) {
 function VideoCard({ video }: { video: Video }) {
     const thumb = getYouTubeThumbnail(video.url);
 
+    const handleClick = () => {
+        // Fire-and-forget: increment view count without blocking navigation
+        fetch(`/api/videos/${video.id}`, { method: "PATCH" }).catch(() => { });
+    };
+
     return (
         <a
             href={video.url}
             target="_blank"
             rel="noopener noreferrer"
+            onClick={handleClick}
             className="group block bg-white dark:bg-zinc-900 rounded-2xl border-2 border-zinc-200 dark:border-zinc-800 overflow-hidden hover:shadow-2xl hover:shadow-red-600/10 dark:hover:shadow-red-500/20 hover:border-red-300 dark:hover:border-red-700 transition-all duration-300 transform hover:-translate-y-1"
         >
             {/* Thumbnail */}

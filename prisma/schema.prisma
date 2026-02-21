@@ -258,7 +258,7 @@ model RuleBook {
   id          Int      @id @default(autoincrement())
   title       String
   description String?
-  url         String   // URL to PDF or resource
+  url         String?  // URL to PDF or resource
   content     String?  @db.Text // Extracted PDF text content
   category    String?  // Optional category
   createdAt   DateTime @default(now())
