@@ -5,6 +5,8 @@ import ExcelJS from "exceljs";
 import { NextResponse } from "next/server";
 import { formatClassification } from "@/lib/format-utils";
 
+export const runtime = "nodejs";
+
 export async function GET(request: Request) {
     const session = await verifySession();
     if (session.role !== "ADMIN") {
