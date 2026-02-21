@@ -1,7 +1,5 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import fs from "fs/promises";
-import path from "path";
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
@@ -34,13 +32,13 @@ export async function POST(req: Request) {
         }
 
         let fileUrl: string | null = null;
-        let finalContent: string = "";
+        let finalContent: string | null = null;
 
         if (type === "JSON") {
             finalContent = formData.get("jsonContent") as string;
             console.log("[API] JSON content received, length:", finalContent?.length ?? 0);
         } else {
-            // Handle PDF — no text extraction, just save the file
+            // Handle PDF
             const file = formData.get("file") as File;
             if (!file || file.size === 0) {
                 return NextResponse.json({ error: "PDF dosyası gereklidir" }, { status: 400 });
@@ -49,9 +47,11 @@ export async function POST(req: Request) {
             console.log("[API] PDF file received:", file.name, "size:", file.size);
             const buffer = Buffer.from(await file.arrayBuffer());
 
-            // Save file
-            const hasBlob = process.env.BLOB_READ_WRITE_TOKEN;
-            if (hasBlob) {
+            const blobToken = process.env.BLOB_READ_WRITE_TOKEN;
+            const isVercel = !!process.env.VERCEL;
+
+            if (blobToken) {
+                // ✅ Best path: Vercel Blob (permanent public URL)
                 const { put } = await import('@vercel/blob');
                 const filename = `rules/${Date.now()}-${file.name.replace(/\s+/g, '-')}`;
                 const blob = await put(filename, buffer, {
@@ -60,23 +60,35 @@ export async function POST(req: Request) {
                 });
                 fileUrl = blob.url;
                 console.log("[API] File saved to Vercel Blob:", fileUrl);
+            } else if (!isVercel) {
+                // ✅ Local dev: save to public folder (writable on local machine)
+                const fs = await import('fs/promises');
+                const path = await import('path');
+                const sanitizedFilename = `${Date.now()}-${file.name.replace(/\s+/g, '-')}`;
+                const uploadDir = path.join(process.cwd(), 'public', 'uploads', 'rules');
+                await fs.mkdir(uploadDir, { recursive: true });
+                const filePath = path.join(uploadDir, sanitizedFilename);
+                await fs.writeFile(filePath, buffer);
+                fileUrl = `/uploads/rules/${sanitizedFilename}`;
+                console.log("[API] File saved locally:", fileUrl);
             } else {
-                fileUrl = await saveToLocalFilesystem(buffer, file.name);
+                // ✅ Vercel without Blob: store PDF as base64 data URL in the DB
+                // This is the fallback so uploads don't fail when blob is not configured
+                const base64 = buffer.toString('base64');
+                fileUrl = `data:application/pdf;base64,${base64}`;
+                console.log("[API] No BLOB_READ_WRITE_TOKEN set. Stored PDF as base64 in DB.");
             }
-
-            finalContent = ""; // PDF content is accessed via the URL
         }
 
         // Create rule
-        const createData = {
-            title,
-            url: fileUrl,
-            content: finalContent || null,
-            category: category || null,
-            description: description || null,
-        };
-        const rule = await db.ruleBook.create({
-            data: createData as any,
+        const rule = await (db.ruleBook.create as any)({
+            data: {
+                title,
+                url: fileUrl,
+                content: finalContent,
+                category: category || null,
+                description: description || null,
+            },
         });
 
         console.log("[API] Rule created successfully, id:", rule.id);
@@ -88,18 +100,4 @@ export async function POST(req: Request) {
             details: error.message
         }, { status: 500 });
     }
-}
-
-// Helper function to save to local filesystem (async)
-async function saveToLocalFilesystem(buffer: Buffer, filename: string): Promise<string> {
-    const sanitizedFilename = `${Date.now()}-${filename.replace(/\s+/g, '-')}`;
-    const uploadDir = path.join(process.cwd(), 'public', 'uploads', 'rules');
-
-    await fs.mkdir(uploadDir, { recursive: true });
-
-    const filePath = path.join(uploadDir, sanitizedFilename);
-    await fs.writeFile(filePath, buffer);
-
-    console.log("[API] File saved locally to:", filePath);
-    return `/uploads/rules/${sanitizedFilename}`;
 }

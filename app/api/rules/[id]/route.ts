@@ -1,7 +1,5 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import fs from "fs/promises";
-import path from "path";
 
 export const dynamic = 'force-dynamic';
 
@@ -17,7 +15,7 @@ export async function PUT(req: Request, props: { params: Promise<{ id: string }>
         const description = formData.get("description") as string;
         const type = formData.get("type") as string;
 
-        let updateData: Record<string, any> = {
+        const updateData: Record<string, any> = {
             title,
             category: category || null,
             description: description || null,
@@ -30,10 +28,11 @@ export async function PUT(req: Request, props: { params: Promise<{ id: string }>
         } else if (type === "PDF") {
             const file = formData.get("file") as File | null;
             if (file && file.size > 0) {
-                // New file uploaded — save it
                 const buffer = Buffer.from(await file.arrayBuffer());
-                const hasBlob = process.env.BLOB_READ_WRITE_TOKEN;
-                if (hasBlob) {
+                const blobToken = process.env.BLOB_READ_WRITE_TOKEN;
+                const isVercel = !!process.env.VERCEL;
+
+                if (blobToken) {
                     const { put } = await import('@vercel/blob');
                     const filename = `rules/${Date.now()}-${file.name.replace(/\s+/g, '-')}`;
                     const blob = await put(filename, buffer, {
@@ -41,20 +40,26 @@ export async function PUT(req: Request, props: { params: Promise<{ id: string }>
                         contentType: 'application/pdf',
                     });
                     updateData.url = blob.url;
-                } else {
+                } else if (!isVercel) {
+                    const fs = await import('fs/promises');
+                    const path = await import('path');
                     const sanitizedFilename = `${Date.now()}-${file.name.replace(/\s+/g, '-')}`;
                     const uploadDir = path.join(process.cwd(), 'public', 'uploads', 'rules');
                     await fs.mkdir(uploadDir, { recursive: true });
                     const filePath = path.join(uploadDir, sanitizedFilename);
                     await fs.writeFile(filePath, buffer);
                     updateData.url = `/uploads/rules/${sanitizedFilename}`;
+                } else {
+                    // Vercel without Blob: store as base64 data URL
+                    const base64 = buffer.toString('base64');
+                    updateData.url = `data:application/pdf;base64,${base64}`;
                 }
-                updateData.content = "";
+                updateData.content = null;
             }
-            // If no new file, keep existing url/content as-is
+            // If no new file selected, keep existing url/content unchanged
         }
 
-        const rule = await db.ruleBook.update({
+        const rule = await (db.ruleBook.update as any)({
             where: { id },
             data: updateData,
         });
@@ -73,7 +78,7 @@ export async function DELETE(req: Request, props: { params: Promise<{ id: string
         const id = parseInt(params.id);
         await db.ruleBook.delete({ where: { id } });
         return NextResponse.json({ success: true });
-    } catch (error) {
+    } catch (error: any) {
         console.error("[API DELETE /api/rules/[id]] Error:", error);
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
     }
