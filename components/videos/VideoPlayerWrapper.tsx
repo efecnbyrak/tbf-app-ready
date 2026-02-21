@@ -5,15 +5,15 @@ import { useState, useRef } from "react";
 import { updateVideoProgress } from "@/app/actions/video";
 import { Loader2, CheckCircle } from "lucide-react";
 
-// Import ONLY YouTube player to reduce bundle size and avoid issues
-const ReactPlayer = dynamic(() => import("react-player/youtube"), {
+// Use main react-player (react-player/youtube subpath not supported by Turbopack)
+const ReactPlayer = dynamic(() => import("react-player"), {
     ssr: false,
     loading: () => (
         <div className="flex items-center justify-center w-full h-full bg-black">
             <Loader2 className="w-8 h-8 animate-spin text-white" />
         </div>
     )
-});
+}) as any;
 
 interface VideoPlayerWrapperProps {
     videoId: number;
@@ -73,7 +73,7 @@ export function VideoPlayerWrapper({
 
         // Auto-save progress every 5 seconds
         if (hasStarted && Math.floor(currentProgress) % 5 === 0) {
-            updateVideoProgress(videoId, currentProgress, false);
+            updateVideoProgress(videoId, currentProgress, 0);
         }
     };
 
@@ -131,15 +131,17 @@ export function VideoPlayerWrapper({
                         onReady={handleReady}
                         onError={handleError}
                         config={{
-                            playerVars: {
-                                autoplay: 1,
-                                rel: 0,
-                                modestbranding: 1,
-                                playsinline: 1,
-                                enablejsapi: 1,
-                                origin: typeof window !== 'undefined' ? window.location.origin : ''
+                            youtube: {
+                                playerVars: {
+                                    autoplay: 1,
+                                    rel: 0,
+                                    modestbranding: 1,
+                                    playsinline: 1,
+                                    enablejsapi: 1,
+                                    origin: typeof window !== 'undefined' ? window.location.origin : ''
+                                }
                             }
-                        }}
+                        } as any}
                     />
                 )}
             </div>
