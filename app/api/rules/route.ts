@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import fs from "fs/promises";
+import path from "path";
 
-// Force dynamic rendering to avoid build-time errors with pdf-parse
+// Force dynamic rendering
 export const dynamic = 'force-dynamic';
 
 // GET /api/rules
@@ -12,6 +14,7 @@ export async function GET() {
         });
         return NextResponse.json(rules);
     } catch (error) {
+        console.error("[API /api/rules GET] Error:", error);
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
     }
 }
@@ -26,30 +29,25 @@ export async function POST(req: Request) {
         const description = formData.get("description") as string;
         const type = formData.get("type") as string; // "PDF" or "JSON"
 
+        if (!title) {
+            return NextResponse.json({ error: "Başlık zorunludur" }, { status: 400 });
+        }
+
         let fileUrl: string | null = null;
         let finalContent: string = "";
 
         if (type === "JSON") {
             finalContent = formData.get("jsonContent") as string;
-            console.log("[API] JSON content received, length:", finalContent.length);
+            console.log("[API] JSON content received, length:", finalContent?.length ?? 0);
         } else {
-            // Handle PDF
+            // Handle PDF — no text extraction, just save the file
             const file = formData.get("file") as File;
-            if (!file) {
+            if (!file || file.size === 0) {
                 return NextResponse.json({ error: "PDF dosyası gereklidir" }, { status: 400 });
             }
 
+            console.log("[API] PDF file received:", file.name, "size:", file.size);
             const buffer = Buffer.from(await file.arrayBuffer());
-
-            // Extract text for searchability if needed (optional for PDF if we have JSON now, but good to keep)
-            try {
-                const pdf = require("pdf-parse");
-                const pdfData = await pdf(buffer);
-                finalContent = pdfData.text;
-            } catch (pdfError) {
-                console.error("[API] PDF extraction failed:", pdfError);
-                finalContent = "PDF içeriği okunamadı.";
-            }
 
             // Save file
             const hasBlob = process.env.BLOB_READ_WRITE_TOKEN;
@@ -61,22 +59,27 @@ export async function POST(req: Request) {
                     contentType: 'application/pdf',
                 });
                 fileUrl = blob.url;
+                console.log("[API] File saved to Vercel Blob:", fileUrl);
             } else {
                 fileUrl = await saveToLocalFilesystem(buffer, file.name);
             }
+
+            finalContent = ""; // PDF content is accessed via the URL
         }
 
         // Create rule
+        const createData = {
+            title,
+            url: fileUrl,
+            content: finalContent || null,
+            category: category || null,
+            description: description || null,
+        };
         const rule = await db.ruleBook.create({
-            data: {
-                title,
-                url: fileUrl,
-                content: finalContent,
-                category,
-                description
-            }
+            data: createData as any,
         });
 
+        console.log("[API] Rule created successfully, id:", rule.id);
         return NextResponse.json(rule);
     } catch (error: any) {
         console.error("[API] Error saving rule:", error);
@@ -87,21 +90,16 @@ export async function POST(req: Request) {
     }
 }
 
-// Helper function to save to local filesystem
+// Helper function to save to local filesystem (async)
 async function saveToLocalFilesystem(buffer: Buffer, filename: string): Promise<string> {
-    const fs = require('fs');
-    const path = require('path');
     const sanitizedFilename = `${Date.now()}-${filename.replace(/\s+/g, '-')}`;
     const uploadDir = path.join(process.cwd(), 'public', 'uploads', 'rules');
 
-    if (!fs.existsSync(uploadDir)) {
-        fs.mkdirSync(uploadDir, { recursive: true });
-    }
+    await fs.mkdir(uploadDir, { recursive: true });
 
     const filePath = path.join(uploadDir, sanitizedFilename);
-    fs.writeFileSync(filePath, buffer);
-    const url = `/uploads/rules/${sanitizedFilename}`;
+    await fs.writeFile(filePath, buffer);
 
     console.log("[API] File saved locally to:", filePath);
-    return url;
+    return `/uploads/rules/${sanitizedFilename}`;
 }
