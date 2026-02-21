@@ -38,16 +38,22 @@ export async function login(prevState: ActionState, formData: FormData): Promise
     // 0. Rate Limiting Check
     const ip = (await headers()).get("x-forwarded-for") || "127.0.0.1";
 
-    // Check existing attempt
-    let loginAttempt = await db.loginAttempt.findUnique({
-        where: { ipAddress: ip }
-    });
+    // Check existing attempt - wrap in try-catch so a transient DB error doesn't block login
+    let loginAttempt = null;
+    try {
+        loginAttempt = await db.loginAttempt.findUnique({
+            where: { ipAddress: ip }
+        });
 
-    if (loginAttempt) {
-        if (loginAttempt.blockedUntil && loginAttempt.blockedUntil > new Date()) {
-            const minutesLeft = Math.ceil((loginAttempt.blockedUntil.getTime() - new Date().getTime()) / 60000);
-            return { error: `Çok fazla başarısız deneme. Lütfen ${minutesLeft} dakika bekleyin.`, success: false };
+        if (loginAttempt) {
+            if (loginAttempt.blockedUntil && loginAttempt.blockedUntil > new Date()) {
+                const minutesLeft = Math.ceil((loginAttempt.blockedUntil.getTime() - new Date().getTime()) / 60000);
+                return { error: `Çok fazla başarısız deneme. Lütfen ${minutesLeft} dakika bekleyin.`, success: false };
+            }
         }
+    } catch (rateLimitError) {
+        // DB bağlantısı geçici olarak kopmuşsa rate limiting'i atla, login devam etsin
+        console.warn("[LOGIN] Rate limit DB check failed, skipping:", (rateLimitError as any)?.message);
     }
 
     try {
