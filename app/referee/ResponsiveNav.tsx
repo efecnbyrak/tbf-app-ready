@@ -99,6 +99,71 @@ export function ResponsiveNav({ refereeName, roleType, basePath = "/referee", ti
                             <Calendar className="w-5 h-5" />
                             Uygunluk Formu
                         </Link>
+
+                        {/* Diğer sayfalar - Şimdilik gizli tutuluyor */}
+                        {false && (
+                            <>
+                                <Link
+                                    href={`${basePath}/assignments`}
+                                    onClick={() => setIsOpen(false)}
+                                    className={`flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-all ${isActive(`${basePath}/assignments`)
+                                        ? "bg-red-700 text-white shadow-md border-l-4 border-red-900"
+                                        : "hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-200"
+                                        }`}
+                                >
+                                    <FileText className="w-5 h-5" />
+                                    Görevlerim
+                                </Link>
+
+                                <Link
+                                    href={`${basePath}/rules`}
+                                    onClick={() => setIsOpen(false)}
+                                    className={`flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-all ${isActive(`${basePath}/rules`)
+                                        ? "bg-red-700 text-white shadow-md border-l-4 border-red-900"
+                                        : "hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-200"
+                                        }`}
+                                >
+                                    <BookOpen className="w-5 h-5" />
+                                    Kural Kitabı
+                                </Link>
+
+                                <Link
+                                    href={`${basePath}/exam`}
+                                    onClick={() => setIsOpen(false)}
+                                    className={`flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-all ${isActive(`${basePath}/exam`)
+                                        ? "bg-red-700 text-white shadow-md border-l-4 border-red-900"
+                                        : "hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-200"
+                                        }`}
+                                >
+                                    <FileText className="w-5 h-5" />
+                                    Sınav
+                                </Link>
+
+                                <Link
+                                    href={`${basePath}/results`}
+                                    onClick={() => setIsOpen(false)}
+                                    className={`flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-all ${isActive(`${basePath}/results`)
+                                        ? "bg-red-700 text-white shadow-md border-l-4 border-red-900"
+                                        : "hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-200"
+                                        }`}
+                                >
+                                    <Trophy className="w-5 h-5" />
+                                    Sonuçlar
+                                </Link>
+
+                                <Link
+                                    href={`${basePath}/videos`}
+                                    onClick={() => setIsOpen(false)}
+                                    className={`flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-all ${isActive(`${basePath}/videos`)
+                                        ? "bg-red-700 text-white shadow-md border-l-4 border-red-900"
+                                        : "hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-200"
+                                        }`}
+                                >
+                                    <PlayCircle className="w-5 h-5" />
+                                    Eğitim Videoları
+                                </Link>
+                            </>
+                        )}
                     </nav>
 
                     <div className="mt-auto pt-6 border-t dark:border-zinc-800">

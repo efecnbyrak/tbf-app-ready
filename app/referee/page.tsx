@@ -82,7 +82,7 @@ export default async function RefereeDashboard() {
                                     />
                                 </div>
                                 <div>
-                                    <h2 className="text-xl font-bold">{displayName}</h2>
+                                    <h2 className="text-xl font-bold text-zinc-900 dark:text-white">{displayName}</h2>
                                     <div className="flex flex-wrap gap-2 mt-2">
                                         <span className={`px-3 py-1 rounded-full text-xs font-semibold ${referee.classification === 'BELIRLENMEMIS'
                                             ? 'bg-zinc-100 text-zinc-600'
@@ -100,14 +100,14 @@ export default async function RefereeDashboard() {
                         <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-zinc-100 dark:border-zinc-800">
                             <div>
                                 <label className="text-xs font-medium text-zinc-500 uppercase block mb-1">TC Kimlik No</label>
-                                <span className="font-mono text-zinc-700 dark:text-zinc-300 bg-zinc-50 dark:bg-zinc-800/50 px-3 py-1.5 rounded-lg block w-full">
+                                <span className="font-mono text-zinc-700 dark:text-zinc-300 bg-zinc-50 dark:bg-zinc-800/50 px-3 py-1.5 rounded-lg block w-full border border-zinc-100 dark:border-zinc-700/50">
                                     {referee.tckn.substring(0, 2)}*******{referee.tckn.substring(9)}
                                 </span>
                             </div>
 
                             <div>
                                 <label className="text-xs font-medium text-zinc-500 uppercase block mb-1">E-posta</label>
-                                <span className="text-zinc-700 dark:text-zinc-300 bg-zinc-50 dark:bg-zinc-800/50 px-3 py-1.5 rounded-lg block w-full truncate">
+                                <span className="text-zinc-700 dark:text-zinc-300 bg-zinc-50 dark:bg-zinc-800/50 px-3 py-1.5 rounded-lg block w-full truncate border border-zinc-100 dark:border-zinc-700/50">
                                     {referee.email}
                                 </span>
                             </div>
@@ -115,7 +115,7 @@ export default async function RefereeDashboard() {
                             {referee.phone && (
                                 <div>
                                     <label className="text-xs font-medium text-zinc-500 uppercase block mb-1">Telefon</label>
-                                    <span className="text-zinc-700 dark:text-zinc-300 bg-zinc-50 dark:bg-zinc-800/50 px-3 py-1.5 rounded-lg block w-full">
+                                    <span className="text-zinc-700 dark:text-zinc-300 bg-zinc-50 dark:bg-zinc-800/50 px-3 py-1.5 rounded-lg block w-full border border-zinc-100 dark:border-zinc-700/50">
                                         {referee.phone}
                                     </span>
                                 </div>
@@ -182,7 +182,7 @@ export default async function RefereeDashboard() {
                                             </div>
 
                                             <div className="flex items-center justify-between text-xs text-zinc-400">
-                                                <span>
+                                                <span className="dark:text-zinc-500">
                                                     Son güncelleme: {new Date(form.updatedAt).toLocaleDateString('tr-TR')}
                                                 </span>
                                                 <Link
@@ -199,6 +199,41 @@ export default async function RefereeDashboard() {
                             </div>
                         )}
                     </div>
+
+                    {/* Assigned Matches Section - Hidden for now but preserved in code */}
+                    {false && (
+                        <div className="space-y-6">
+                            <h2 className="text-xl font-bold text-zinc-900 dark:text-white flex items-center gap-2">
+                                <Clock className="w-6 h-6 text-red-600" />
+                                Atanan Maçlarım
+                            </h2>
+                            {upcomingMatches.length === 0 ? (
+                                <div className="text-center py-12 bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 border-dashed">
+                                    <p className="text-zinc-500">Yaklaşan maç göreviniz bulunmuyor.</p>
+                                </div>
+                            ) : (
+                                <div className="grid grid-cols-1 gap-4">
+                                    {upcomingMatches.map((assignment) => (
+                                        <div key={assignment.id} className="bg-white dark:bg-zinc-900 rounded-xl p-5 border border-zinc-200 dark:border-zinc-800 shadow-sm">
+                                            <div className="flex justify-between items-start mb-4">
+                                                <span className="text-xs font-bold text-red-600 uppercase tracking-wider">{assignment.match.category}</span>
+                                                <span className="text-xs text-zinc-500">{new Date(assignment.match.date).toLocaleDateString('tr-TR')} {assignment.match.time}</span>
+                                            </div>
+                                            <div className="flex items-center justify-between gap-4 mb-4">
+                                                <div className="flex-1 text-center font-bold text-zinc-900 dark:text-white">{assignment.match.teamA}</div>
+                                                <div className="text-zinc-400 text-sm">vs</div>
+                                                <div className="flex-1 text-center font-bold text-zinc-900 dark:text-white">{assignment.match.teamB}</div>
+                                            </div>
+                                            <div className="pt-4 border-t border-zinc-100 dark:border-zinc-800 flex justify-between items-center text-xs text-zinc-500">
+                                                <span>{assignment.match.venue}</span>
+                                                <span className="bg-zinc-100 dark:bg-zinc-800 px-2 py-1 rounded text-zinc-600 dark:text-zinc-400">{assignment.role}</span>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </div>
 
                 {/* Right Sidebar: Quick Actions */}

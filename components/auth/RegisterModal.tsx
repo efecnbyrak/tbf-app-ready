@@ -39,27 +39,27 @@ export function RegisterModal({ isOpen, onClose, onSwitchToLogin }: RegisterModa
             <form action={formAction} className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                     <div>
-                        <label className="block text-sm font-medium text-zinc-700 mb-1">
+                        <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
                             Ad
                         </label>
                         <input
                             type="text"
                             name="firstName"
                             required
-                            className={`w-full px-3 py-2 border rounded-lg focus:ring-2 outline-none bg-white text-zinc-900 ${state.errors?.firstName ? 'border-red-500 ring-red-200' : 'border-zinc-300 focus:ring-red-600 focus:border-transparent'}`}
+                            className={`w-full px-3 py-2 border rounded-lg focus:ring-2 outline-none bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white transition-colors ${state.errors?.firstName ? 'border-red-500 ring-red-200' : 'border-zinc-300 dark:border-zinc-700 focus:ring-red-600 focus:border-transparent'}`}
                             placeholder="Ahmet"
                         />
                         {state.errors?.firstName && <p className="text-red-500 text-xs mt-1">{state.errors.firstName}</p>}
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-zinc-700 mb-1">
+                        <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
                             Soyad
                         </label>
                         <input
                             type="text"
                             name="lastName"
                             required
-                            className={`w-full px-3 py-2 border rounded-lg focus:ring-2 outline-none bg-white text-zinc-900 ${state.errors?.lastName ? 'border-red-500 ring-red-200' : 'border-zinc-300 focus:ring-red-600 focus:border-transparent'}`}
+                            className={`w-full px-3 py-2 border rounded-lg focus:ring-2 outline-none bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white transition-colors ${state.errors?.lastName ? 'border-red-500 ring-red-200' : 'border-zinc-300 dark:border-zinc-700 focus:ring-red-600 focus:border-transparent'}`}
                             placeholder="Yılmaz"
                         />
                         {state.errors?.lastName && <p className="text-red-500 text-xs mt-1">{state.errors.lastName}</p>}
@@ -67,7 +67,7 @@ export function RegisterModal({ isOpen, onClose, onSwitchToLogin }: RegisterModa
                 </div>
 
                 <div>
-                    <label className="block text-sm font-medium text-zinc-700 mb-1">
+                    <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
                         TC Kimlik No
                     </label>
                     <input
@@ -75,7 +75,7 @@ export function RegisterModal({ isOpen, onClose, onSwitchToLogin }: RegisterModa
                         name="tckn"
                         required
                         maxLength={11}
-                        className={`w-full px-3 py-2 border rounded-lg focus:ring-2 outline-none bg-white text-zinc-900 ${state.errors?.tckn ? 'border-red-500 ring-red-200' : 'border-zinc-300 focus:ring-red-600 focus:border-transparent'}`}
+                        className={`w-full px-3 py-2 border rounded-lg focus:ring-2 outline-none bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white transition-colors ${state.errors?.tckn ? 'border-red-500 ring-red-200' : 'border-zinc-300 dark:border-zinc-700 focus:ring-red-600 focus:border-transparent'}`}
                         placeholder="11111111111"
                         onChange={(e) => {
                             e.target.value = e.target.value.replace(/\D/g, '');
@@ -85,14 +85,14 @@ export function RegisterModal({ isOpen, onClose, onSwitchToLogin }: RegisterModa
                 </div>
 
                 <div>
-                    <label className="block text-sm font-medium text-zinc-700 mb-1">
+                    <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
                         Telefon Numarası
                     </label>
                     <input
                         type="tel"
                         name="phone"
                         required
-                        className={`w-full px-3 py-2 border rounded-lg focus:ring-2 outline-none bg-white text-zinc-900 ${state.errors?.phone ? 'border-red-500 ring-red-200' : 'border-zinc-300 focus:ring-red-600 focus:border-transparent'}`}
+                        className={`w-full px-3 py-2 border rounded-lg focus:ring-2 outline-none bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white transition-colors ${state.errors?.phone ? 'border-red-500 ring-red-200' : 'border-zinc-300 dark:border-zinc-700 focus:ring-red-600 focus:border-transparent'}`}
                         placeholder="05XXXXXXXXX"
                         maxLength={11}
                     />
@@ -100,78 +100,78 @@ export function RegisterModal({ isOpen, onClose, onSwitchToLogin }: RegisterModa
                 </div>
 
                 <div>
-                    <label className="block text-sm font-medium text-zinc-700 mb-1">
+                    <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
                         E-posta
                     </label>
                     <input
                         type="email"
                         name="email"
                         required
-                        className={`w-full px-3 py-2 border rounded-lg focus:ring-2 outline-none bg-white text-zinc-900 ${state.errors?.email ? 'border-red-500 ring-red-200' : 'border-zinc-300 focus:ring-red-600 focus:border-transparent'}`}
+                        className={`w-full px-3 py-2 border rounded-lg focus:ring-2 outline-none bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white transition-colors ${state.errors?.email ? 'border-red-500 ring-red-200' : 'border-zinc-300 dark:border-zinc-700 focus:ring-red-600 focus:border-transparent'}`}
                         placeholder="ornek@mail.com"
                     />
                     {state.errors?.email && <p className="text-red-500 text-xs mt-1">{state.errors.email}</p>}
                 </div>
 
                 <div>
-                    <label className="block text-sm font-medium text-zinc-700 mb-1">
+                    <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
                         Şifre
                     </label>
                     <input
                         type="password"
                         name="password"
                         required
-                        className={`w-full px-3 py-2 border rounded-lg focus:ring-2 outline-none bg-white text-zinc-900 ${state.errors?.password ? 'border-red-500 ring-red-200' : 'border-zinc-300 focus:ring-red-600 focus:border-transparent'}`}
+                        className={`w-full px-3 py-2 border rounded-lg focus:ring-2 outline-none bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white transition-colors ${state.errors?.password ? 'border-red-500 ring-red-200' : 'border-zinc-300 dark:border-zinc-700 focus:ring-red-600 focus:border-transparent'}`}
                         placeholder="Şifre giriniz.."
                     />
                     {state.errors?.password && <p className="text-red-500 text-xs mt-1">{state.errors.password}</p>}
                 </div>
 
                 <div>
-                    <label className="block text-sm font-medium text-zinc-700 mb-1">
+                    <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
                         Şifre Tekrar
                     </label>
                     <input
                         type="password"
                         name="passwordConfirm"
                         required
-                        className={`w-full px-3 py-2 border border-zinc-300 rounded-lg focus:ring-2 outline-none bg-white text-zinc-900 focus:ring-red-600 focus:border-transparent`}
+                        className={`w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-lg focus:ring-2 outline-none bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white transition-colors focus:ring-red-600 focus:border-transparent`}
                         placeholder="Şifrenizi tekrar giriniz.."
                     />
                 </div>
 
                 <div>
-                    <label className="block text-sm font-medium text-zinc-700 mb-1">
+                    <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
                         Göreviniz
                     </label>
                     <select
                         name="roleType"
                         required
                         defaultValue=""
-                        className={`w-full px-3 py-2 border rounded-lg focus:ring-2 outline-none bg-white text-zinc-900 ${state.errors?.roleType ? 'border-red-500 ring-red-200' : 'border-zinc-300 focus:ring-red-600 focus:border-transparent'}`}
+                        className={`w-full px-3 py-2 border rounded-lg focus:ring-2 outline-none bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white transition-colors ${state.errors?.roleType ? 'border-red-500 ring-red-200' : 'border-zinc-300 dark:border-zinc-700 focus:ring-red-600 focus:border-transparent'}`}
                     >
-                        <option value="" disabled>Seçiniz</option>
-                        <option value="REFEREE">Hakem</option>
-                        <option value="TABLE">Masa Görevlisi</option>
-                        <option value="OBSERVER">Gözlemci</option>
-                        <option value="STATISTICIAN">İstatistik Görevlisi</option>
-                        <option value="HEALTH">Sağlık Görevlisi</option>
-                        <option value="FIELD_COMMISSIONER">Saha Komiseri</option>
-                        <option value="TABLE_HEALTH">Masa & Sağlık</option>
-                        <option value="TABLE_STATISTICIAN">Masa & İstatistik</option>
+                        <option value="" disabled className="bg-white dark:bg-zinc-900">Seçiniz</option>
+                        <option value="REFEREE" className="bg-white dark:bg-zinc-900">Hakem</option>
+                        <option value="TABLE" className="bg-white dark:bg-zinc-900">Masa Görevlisi</option>
+                        <option value="OBSERVER" className="bg-white dark:bg-zinc-900">Gözlemci</option>
+                        <option value="STATISTICIAN" className="bg-white dark:bg-zinc-900">İstatistik Görevlisi</option>
+                        <option value="HEALTH" className="bg-white dark:bg-zinc-900">Sağlık Görevlisi</option>
+                        <option value="FIELD_COMMISSIONER" className="bg-white dark:bg-zinc-900">Saha Komiseri</option>
+                        <option value="TABLE_HEALTH" className="bg-white dark:bg-zinc-900">Masa & Sağlık</option>
+                        <option value="TABLE_STATISTICIAN" className="bg-white dark:bg-zinc-900">Masa & İstatistik</option>
                     </select>
                     {state.errors?.roleType && <p className="text-red-500 text-xs mt-1">{state.errors.roleType}</p>}
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                     <div>
-                        <label className="block text-sm font-medium text-zinc-700 mb-1">
+                        <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
                             Meslek
                         </label>
                         <input
                             type="text"
                             name="job"
-                            className={`w-full px-3 py-2 border rounded-lg focus:ring-2 outline-none bg-white text-zinc-900 ${state.errors?.job ? 'border-red-500 ring-red-200' : 'border-zinc-300 focus:ring-red-600 focus:border-transparent'}`}
+                            className={`w-full px-3 py-2 border rounded-lg focus:ring-2 outline-none bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white transition-colors ${state.errors?.job ? 'border-red-500 ring-red-200' : 'border-zinc-300 dark:border-zinc-700 focus:ring-red-600 focus:border-transparent'}`}
                             placeholder="Mühendis, Öğrenci..."
                         />
                     </div>
@@ -198,11 +198,11 @@ export function RegisterModal({ isOpen, onClose, onSwitchToLogin }: RegisterModa
                             value={district}
                             onChange={(e) => setDistrict(e.target.value)}
                             required
-                            className="w-full px-3 py-2 border border-zinc-300 rounded-lg focus:ring-2 outline-none bg-white text-zinc-900"
+                            className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-lg focus:ring-2 outline-none bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white transition-colors"
                         >
-                            <option value="">İlçe Seçiniz</option>
+                            <option value="" className="bg-white dark:bg-zinc-900">İlçe Seçiniz</option>
                             {ISTANBUL_DISTRICTS.map(d => (
-                                <option key={d} value={d}>{d}</option>
+                                <option key={d} value={d} className="bg-white dark:bg-zinc-900">{d}</option>
                             ))}
                         </select>
                     </div>
@@ -215,7 +215,7 @@ export function RegisterModal({ isOpen, onClose, onSwitchToLogin }: RegisterModa
                             value={details}
                             onChange={(e) => setDetails(e.target.value)}
                             placeholder="Mahalle, Sokak, No..."
-                            className="w-full px-3 py-2 border border-zinc-300 rounded-lg focus:ring-2 outline-none bg-white text-zinc-900"
+                            className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-lg focus:ring-2 outline-none bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white transition-colors"
                         />
                     </div>
                 </div>

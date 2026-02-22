@@ -59,26 +59,30 @@ export function LoginModal({ isOpen, onClose, onSwitchToRegister }: LoginModalPr
             {!showVerify ? (
                 <form action={formAction} className="space-y-4">
                     <div>
-                        <label className="block text-sm font-medium text-zinc-700 mb-1">
-                            TC Kimlik No / Kullanıcı Adı
+                        <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+                            TC Kimlik No
                         </label>
                         <input
                             type="text"
                             name="identifier"
                             required
-                            className="w-full px-3 py-2 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-red-600 focus:border-transparent outline-none bg-white text-zinc-900"
-                            placeholder="TCKN veya Kullanıcı Adı"
+                            maxLength={11}
+                            className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-lg focus:ring-2 focus:ring-red-600 focus:border-transparent outline-none bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white transition-colors"
+                            placeholder="TC Kimlik No"
+                            onChange={(e) => {
+                                e.target.value = e.target.value.replace(/\D/g, '');
+                            }}
                         />
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-zinc-700 mb-1">
+                        <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
                             Şifre
                         </label>
                         <input
                             type="password"
                             name="password"
                             required
-                            className="w-full px-3 py-2 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-red-600 focus:border-transparent outline-none bg-white text-zinc-900"
+                            className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-lg focus:ring-2 focus:ring-red-600 focus:border-transparent outline-none bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white transition-colors"
                             placeholder="Şifre giriniz.."
                         />
                     </div>
