@@ -90,12 +90,23 @@ export default function AdminRulesPage() {
                 setSelectedFile(null);
                 fetchRules();
             } else {
-                const data = await res.json();
-                alert(data.error || "İşlem başarısız.");
+                let errorMessage = "İşlem başarısız.";
+                try {
+                    const data = await res.json();
+                    errorMessage = data.error || errorMessage;
+                    if (data.details) errorMessage += ` (${data.details})`;
+                } catch (e) {
+                    if (res.status === 413) {
+                        errorMessage = "Dosya boyutu çok büyük (Sunucu limiti).";
+                    } else {
+                        errorMessage = `Sunucu hatası: ${res.status} ${res.statusText}`;
+                    }
+                }
+                alert(errorMessage);
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error("Error saving rule:", error);
-            alert("Hata oluştu.");
+            alert(`Sistem hatası: ${error.message || "Bilinmeyen hata"}`);
         } finally {
             setIsSubmitting(false);
         }

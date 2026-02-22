@@ -7,6 +7,11 @@ const nextConfig: NextConfig = {
         "@aws-sdk/client-s3",
         "pdf-parse",
     ],
+    experimental: {
+        serverActions: {
+            bodySizeLimit: '50mb',
+        },
+    },
 };
 
 export default nextConfig;
