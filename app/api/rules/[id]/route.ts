@@ -26,8 +26,14 @@ export async function PUT(req: Request, props: { params: Promise<{ id: string }>
             updateData.content = jsonContent;
             updateData.url = null; // Clear PDF URL if switching to JSON
         } else if (type === "PDF") {
+            const preUploadedUrl = formData.get("preUploadedUrl") as string | null;
             const file = formData.get("file") as File | null;
-            if (file && file.size > 0) {
+
+            if (preUploadedUrl) {
+                updateData.url = preUploadedUrl;
+                updateData.content = null;
+                console.log("[API PUT] Using pre-uploaded URL:", preUploadedUrl);
+            } else if (file && file.size > 0) {
                 const buffer = Buffer.from(await file.arrayBuffer());
                 const blobToken = process.env.BLOB_READ_WRITE_TOKEN;
                 const isVercel = !!process.env.VERCEL;
@@ -56,7 +62,6 @@ export async function PUT(req: Request, props: { params: Promise<{ id: string }>
                 }
                 updateData.content = null;
             }
-            // If no new file selected, keep existing url/content unchanged
         }
 
         const rule = await (db.ruleBook.update as any)({

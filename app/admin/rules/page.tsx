@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Plus, Trash2, Edit, Save, X, FileText, Upload } from "lucide-react";
+import { Plus, Trash2, Edit, Save, X, FileText, Upload, Loader2 } from "lucide-react";
+import { upload } from '@vercel/blob/client';
 
 interface RuleBook {
     id: number;
@@ -69,7 +70,24 @@ export default function AdminRulesPage() {
             formDataToSend.append("type", uploadType);
 
             if (uploadType === "PDF" && selectedFile) {
-                formDataToSend.append("file", selectedFile);
+                // If file is larger than 4MB, OR specifically on Vercel, upload client-side to bypass payload limit
+                if (selectedFile.size > 4 * 1024 * 1024) {
+                    try {
+                        const blob = await upload(`rules/${selectedFile.name}`, selectedFile, {
+                            access: 'public',
+                            handleUploadUrl: '/api/upload/blob',
+                        });
+                        formDataToSend.append("preUploadedUrl", blob.url);
+                        console.log("Client-side upload successful:", blob.url);
+                    } catch (uploadError: any) {
+                        console.error("Client-side upload failed:", uploadError);
+                        alert(`Dosya yükleme hatası: ${uploadError.message}`);
+                        setIsSubmitting(false);
+                        return;
+                    }
+                } else {
+                    formDataToSend.append("file", selectedFile);
+                }
             } else if (uploadType === "JSON") {
                 formDataToSend.append("jsonContent", formData.content);
             }
