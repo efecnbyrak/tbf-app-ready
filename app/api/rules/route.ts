@@ -4,6 +4,9 @@ import { db } from "@/lib/db";
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
 
+// Allow large PDF uploads (up to 20MB)
+export const maxDuration = 30; // seconds
+
 // GET /api/rules
 export async function GET() {
     try {

@@ -23,9 +23,12 @@ export function SettingsForm({ initialMode, initialSeason, initialTargetDate, in
 
         await updateSystemSetting("AVAILABILITY_MODE", formData.get("mode") as string);
         await updateSystemSetting("CURRENT_SEASON", formData.get("season") as string);
+        await updateSystemSetting("CURRENT_WEEK_NUMBER", formData.get("weekNumber") as string);
+        await updateSystemSetting("AVAILABILITY_TARGET_DATE", formData.get("targetDate") as string);
 
         setLoading(false);
         alert("Ayarlar kaydedildi!");
+        window.location.reload();
     };
 
     const handleAdvance = async () => {
@@ -52,9 +55,24 @@ export function SettingsForm({ initialMode, initialSeason, initialTargetDate, in
         }
     };
 
-    const targetDateDisplay = initialTargetDate
-        ? new Date(initialTargetDate).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })
-        : "Otomatik (Gelecek Hafta)";
+    const targetDateParsed = initialTargetDate ? new Date(initialTargetDate) : null;
+
+    // Window calculation for display
+    let openTime = "Hesaplanamadı";
+    let closeTime = "Hesaplanamadı";
+
+    if (targetDateParsed) {
+        const open = new Date(targetDateParsed);
+        open.setDate(targetDateParsed.getDate() - 6);
+        open.setHours(15, 30, 0, 0);
+
+        const close = new Date(targetDateParsed);
+        close.setDate(targetDateParsed.getDate() - 4);
+        close.setHours(18, 30, 0, 0);
+
+        openTime = open.toLocaleString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+        closeTime = close.toLocaleString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+    }
 
     return (
         <div className="space-y-8 max-w-2xl">
@@ -65,6 +83,21 @@ export function SettingsForm({ initialMode, initialSeason, initialTargetDate, in
                     Uygunluk Haftası Yönetimi
                 </h2>
 
+                {/* Window info */}
+                <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                    <p className="text-sm font-bold text-blue-800 dark:text-blue-300 mb-2">⏱️ Mevcut Form Zamanlaması</p>
+                    <div className="grid grid-cols-2 gap-4 text-xs">
+                        <div>
+                            <p className="text-zinc-500">Açılış:</p>
+                            <p className="font-mono font-bold text-zinc-900 dark:text-zinc-100">{openTime}</p>
+                        </div>
+                        <div>
+                            <p className="text-zinc-500">Kapanış:</p>
+                            <p className="font-mono font-bold text-zinc-900 dark:text-zinc-100">{closeTime}</p>
+                        </div>
+                    </div>
+                </div>
+
                 {/* Week Number Display */}
                 <div className="mb-4 p-4 bg-gradient-to-r from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20 rounded-lg border-2 border-red-200 dark:border-red-800">
                     <div className="flex items-center justify-between">
@@ -72,24 +105,25 @@ export function SettingsForm({ initialMode, initialSeason, initialTargetDate, in
                             <p className="text-sm font-medium text-red-700 dark:text-red-400">Mevcut Dönem</p>
                             <p className="text-3xl font-bold text-red-900 dark:text-red-300">{initialWeekNumber}. Hafta</p>
                         </div>
-                        <button
-                            onClick={handleReset}
-                            disabled={resetLoading}
-                            className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-zinc-800 border-2 border-red-300 dark:border-red-700 text-red-700 dark:text-red-400 rounded-lg font-medium hover:bg-red-50 dark:hover:bg-red-900/30 transition-all disabled:opacity-50"
-                        >
-                            {resetLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <RotateCcw className="w-4 h-4" />}
-                            Sıfırla
-                        </button>
+                        <div className="flex gap-2">
+                            <button
+                                onClick={handleReset}
+                                disabled={resetLoading}
+                                className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-zinc-800 border-2 border-red-300 dark:border-red-700 text-red-700 dark:text-red-400 rounded-lg font-medium hover:bg-red-50 dark:hover:bg-red-900/30 transition-all disabled:opacity-50"
+                            >
+                                {resetLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <RotateCcw className="w-4 h-4" />}
+                                Sıfırla
+                            </button>
+                        </div>
                     </div>
-                    <p className="text-xs text-red-600 dark:text-red-500 mt-2">
-                        Sıfırla butonu hafta numarasını 1'e çeker. Hedef tarihi değiştirmez.
-                    </p>
                 </div>
 
                 <div className="bg-zinc-50 dark:bg-zinc-800 rounded-lg p-5 flex flex-col md:flex-row items-center justify-between gap-4">
                     <div>
                         <p className="font-bold text-zinc-900 dark:text-white">Hedef Hafta (Maç Tarihleri)</p>
-                        <p className="text-zinc-500 font-medium">{targetDateDisplay} haftası</p>
+                        <p className="text-zinc-500 font-medium">
+                            {targetDateParsed ? targetDateParsed.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' }) : "Ayarlanmadı"} haftası
+                        </p>
                         <p className="text-xs text-zinc-400 mt-1">Bu haftanın atamaları için form toplanır.</p>
                     </div>
                     <button
@@ -101,9 +135,6 @@ export function SettingsForm({ initialMode, initialSeason, initialTargetDate, in
                         Haftayı İlerle
                     </button>
                 </div>
-                <p className="text-xs text-zinc-500 mt-3 ml-1">
-                    💡 "Haftayı İlerle" butonu hem hedef tarihi 7 gün ilerletir hem de hafta sayacını +1 arttırır.
-                </p>
             </div>
 
             <form onSubmit={handleSave} className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 p-6">
@@ -119,6 +150,27 @@ export function SettingsForm({ initialMode, initialSeason, initialTargetDate, in
                             <option value="CLOSED">Manuel: KİLİTLİ (Form Kapanır)</option>
                             <option value="OPEN">Manuel: AÇIK (Süre dolsa da açık)</option>
                         </select>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="p-4 bg-zinc-50 dark:bg-zinc-800 rounded-lg">
+                            <p className="font-medium mb-1">Mevcut Hafta No</p>
+                            <input
+                                name="weekNumber"
+                                type="number"
+                                defaultValue={initialWeekNumber}
+                                className="w-full bg-white dark:bg-zinc-700 border border-zinc-200 dark:border-zinc-600 rounded px-3 py-2 text-sm font-bold"
+                            />
+                        </div>
+                        <div className="p-4 bg-zinc-50 dark:bg-zinc-800 rounded-lg">
+                            <p className="font-medium mb-1">Hedef Tarih (Cumartesi)</p>
+                            <input
+                                name="targetDate"
+                                type="date"
+                                defaultValue={initialTargetDate ? initialTargetDate.split('T')[0] : ""}
+                                className="w-full bg-white dark:bg-zinc-700 border border-zinc-200 dark:border-zinc-600 rounded px-3 py-2 text-sm font-bold"
+                            />
+                        </div>
                     </div>
 
                     <div className="flex flex-col md:flex-row md:items-center justify-between p-4 bg-zinc-50 dark:bg-zinc-800 rounded-lg gap-4">

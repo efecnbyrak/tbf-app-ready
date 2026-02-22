@@ -36,7 +36,6 @@ export async function sendEmailSafe(to: string | null | undefined, subject: stri
         return true;
     } catch (error) {
         console.error("Error sending email:", error);
-        // Do not throw, just return false to keep system stable
         return false;
     }
 }
@@ -54,4 +53,65 @@ export async function sendVerificationEmail(to: string | null | undefined, code:
     `;
 
     return await sendEmailSafe(to, 'TBF Hakem Sistemi - Doğrulama Kodu', html);
+}
+
+export async function sendAvailabilityConfirmationEmail(
+    to: string | null | undefined,
+    refereeName: string,
+    weekLabel: string,
+    availableDays: { dayName: string; date: string; slots: string }[],
+    deadlineStr: string,
+    formUrl: string
+) {
+    const dayRows = availableDays.length > 0
+        ? availableDays.map(d => `
+            <tr>
+                <td style="padding:8px 12px;border-bottom:1px solid #f0f0f0;font-weight:600;color:#1a1a1a;">${d.dayName}</td>
+                <td style="padding:8px 12px;border-bottom:1px solid #f0f0f0;color:#555;">${d.date}</td>
+                <td style="padding:8px 12px;border-bottom:1px solid #f0f0f0;color:#c00;font-weight:700;">${d.slots}</td>
+            </tr>`).join('')
+        : `<tr><td colspan="3" style="padding:12px;text-align:center;color:#888;">Hiçbir gün için uygunluk belirtilmedi.</td></tr>`;
+
+    const html = `
+        <div style="font-family:'Segoe UI',Arial,sans-serif;max-width:600px;margin:0 auto;border:1px solid #e5e5e5;border-radius:12px;overflow:hidden;">
+            <div style="background:#c00;padding:24px 28px;">
+                <h1 style="color:#fff;margin:0;font-size:20px;font-weight:700;">TBF Hakem Sistemi</h1>
+                <p style="color:rgba(255,255,255,0.85);margin:6px 0 0;font-size:14px;">Uygunluk Formu Onayı</p>
+            </div>
+            <div style="padding:28px;">
+                <p style="color:#1a1a1a;font-size:15px;">Merhaba <strong>${refereeName}</strong>,</p>
+                <p style="color:#555;font-size:14px;line-height:1.6;">
+                    <strong>${weekLabel}</strong> için uygunluk formunuz başarıyla kaydedildi.
+                    Aşağıda seçiminizin özeti yer almaktadır.
+                </p>
+
+                <table style="width:100%;border-collapse:collapse;margin-top:16px;border:1px solid #e5e5e5;border-radius:8px;overflow:hidden;">
+                    <thead>
+                        <tr style="background:#f7f7f7;">
+                            <th style="padding:10px 12px;text-align:left;font-size:12px;color:#888;text-transform:uppercase;letter-spacing:.5px;">Gün</th>
+                            <th style="padding:10px 12px;text-align:left;font-size:12px;color:#888;text-transform:uppercase;letter-spacing:.5px;">Tarih</th>
+                            <th style="padding:10px 12px;text-align:left;font-size:12px;color:#888;text-transform:uppercase;letter-spacing:.5px;">Uygunluk</th>
+                        </tr>
+                    </thead>
+                    <tbody>${dayRows}</tbody>
+                </table>
+
+                <p style="color:#888;font-size:12px;margin-top:14px;">
+                    ⏰ Form güncelleme hakkınız <strong>${deadlineStr}</strong> tarihine kadar devam eder.
+                </p>
+
+                <div style="margin-top:20px;text-align:center;">
+                    <a href="${formUrl}"
+                       style="display:inline-block;background:#c00;color:#fff;text-decoration:none;padding:13px 28px;border-radius:8px;font-size:14px;font-weight:700;letter-spacing:.3px;">
+                        🔗 Formu Görüntüle / Güncelle
+                    </a>
+                </div>
+            </div>
+            <div style="background:#f7f7f7;padding:16px 28px;border-top:1px solid #e5e5e5;">
+                <p style="color:#aaa;font-size:11px;margin:0;">Bu e-posta TBF Hakem Sistemi tarafından otomatik olarak gönderilmiştir. Lütfen yanıtlamayınız.</p>
+            </div>
+        </div>
+    `;
+
+    return await sendEmailSafe(to, `TBF - ${weekLabel} Uygunluk Formu Onayı`, html);
 }
