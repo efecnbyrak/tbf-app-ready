@@ -216,16 +216,16 @@ export default async function RefereeDashboard() {
                                     {upcomingMatches.map((assignment) => (
                                         <div key={assignment.id} className="bg-white dark:bg-zinc-900 rounded-xl p-5 border border-zinc-200 dark:border-zinc-800 shadow-sm">
                                             <div className="flex justify-between items-start mb-4">
-                                                <span className="text-xs font-bold text-red-600 uppercase tracking-wider">{assignment.match.category}</span>
-                                                <span className="text-xs text-zinc-500">{new Date(assignment.match.date).toLocaleDateString('tr-TR')} {assignment.match.time}</span>
+                                                <span className="text-xs font-bold text-red-600 uppercase tracking-wider">{assignment.match.league}</span>
+                                                <span className="text-xs text-zinc-500">{new Date(assignment.match.date).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })}</span>
                                             </div>
                                             <div className="flex items-center justify-between gap-4 mb-4">
-                                                <div className="flex-1 text-center font-bold text-zinc-900 dark:text-white">{assignment.match.teamA}</div>
+                                                <div className="flex-1 text-center font-bold text-zinc-900 dark:text-white">{assignment.match.homeTeam}</div>
                                                 <div className="text-zinc-400 text-sm">vs</div>
-                                                <div className="flex-1 text-center font-bold text-zinc-900 dark:text-white">{assignment.match.teamB}</div>
+                                                <div className="flex-1 text-center font-bold text-zinc-900 dark:text-white">{assignment.match.awayTeam}</div>
                                             </div>
                                             <div className="pt-4 border-t border-zinc-100 dark:border-zinc-800 flex justify-between items-center text-xs text-zinc-500">
-                                                <span>{assignment.match.venue}</span>
+                                                <span>{assignment.match.location}</span>
                                                 <span className="bg-zinc-100 dark:bg-zinc-800 px-2 py-1 rounded text-zinc-600 dark:text-zinc-400">{assignment.role}</span>
                                             </div>
                                         </div>
