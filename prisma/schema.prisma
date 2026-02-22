@@ -266,3 +266,24 @@ model RuleBook {
 
   @@map("rule_books")
 }
+
+model PendingUpload {
+  id        String        @id @default(uuid())
+  filename  String
+  type      String
+  total     Int           @default(0)
+  chunks    UploadChunk[]
+  createdAt DateTime      @default(now())
+
+  @@map("pending_uploads")
+}
+
+model UploadChunk {
+  id              Int           @id @default(autoincrement())
+  pendingUpload   PendingUpload @relation(fields: [pendingUploadId], references: [id], onDelete: Cascade)
+  pendingUploadId String
+  index           Int
+  data            String        @db.Text
+
+  @@map("upload_chunks")
+}

@@ -63,6 +63,89 @@ export default function AdminRulesPage() {
 
         setIsSubmitting(true);
         try {
+            // Check if we should use chunked upload (large file > 4MB)
+            if (uploadType === "PDF" && selectedFile && selectedFile.size > 4 * 1024 * 1024) {
+                try {
+                    console.log("Starting chunked upload for:", selectedFile.name);
+
+                    // 1. Initialize
+                    const initRes = await fetch("/api/upload/init", {
+                        method: "POST",
+                        body: JSON.stringify({
+                            filename: selectedFile.name,
+                            type: "PDF",
+                            total: Math.ceil(selectedFile.size / (1024 * 1024))
+                        })
+                    });
+
+                    if (!initRes.ok) throw new Error("Yükleme başlatılamadı.");
+                    const { uploadId } = await initRes.json();
+
+                    // 2. Upload chunks (1MB each)
+                    const CHUNK_SIZE = 1024 * 1024;
+                    const totalChunks = Math.ceil(selectedFile.size / CHUNK_SIZE);
+
+                    for (let i = 0; i < totalChunks; i++) {
+                        const start = i * CHUNK_SIZE;
+                        const end = Math.min(selectedFile.size, start + CHUNK_SIZE);
+                        const chunk = selectedFile.slice(start, end);
+
+                        // Convert to base64
+                        const reader = new FileReader();
+                        const base64Promise = new Promise<string>((resolve) => {
+                            reader.onload = () => {
+                                const base64 = (reader.result as string).split(',')[1];
+                                resolve(base64);
+                            };
+                            reader.readAsDataURL(chunk);
+                        });
+
+                        const base64Data = await base64Promise;
+
+                        const chunkRes = await fetch("/api/upload/chunk", {
+                            method: "POST",
+                            body: JSON.stringify({
+                                uploadId,
+                                index: i,
+                                data: base64Data
+                            })
+                        });
+
+                        if (!chunkRes.ok) throw new Error(`Parça ${i + 1} yüklenemedi.`);
+                        console.log(`Chunk ${i + 1}/${totalChunks} uploaded.`);
+                    }
+
+                    // 3. Complete
+                    const completeRes = await fetch("/api/upload/complete", {
+                        method: "POST",
+                        body: JSON.stringify({
+                            uploadId,
+                            title: formData.title,
+                            category: formData.category,
+                            description: formData.description
+                        })
+                    });
+
+                    if (!completeRes.ok) throw new Error("Dosya birleştirilemedi.");
+
+                    alert("Kural kitabı başarıyla yüklendi (Parçalı Yükleme)!");
+                    setIsModalOpen(false);
+                    setEditingRule(null);
+                    setFormData({ title: "", category: "", description: "", content: "" });
+                    setSelectedFile(null);
+                    fetchRules();
+                    setIsSubmitting(false);
+                    return;
+
+                } catch (chunkError: any) {
+                    console.error("Chunked upload failed:", chunkError);
+                    alert(`Parçalı yükleme hatası: ${chunkError.message}`);
+                    setIsSubmitting(false);
+                    return;
+                }
+            }
+
+            // Normal upload flow for small files or JSON
             const formDataToSend = new FormData();
             formDataToSend.append("title", formData.title);
             formDataToSend.append("category", formData.category);
@@ -70,24 +153,7 @@ export default function AdminRulesPage() {
             formDataToSend.append("type", uploadType);
 
             if (uploadType === "PDF" && selectedFile) {
-                // If file is larger than 4MB, OR specifically on Vercel, upload client-side to bypass payload limit
-                if (selectedFile.size > 4 * 1024 * 1024) {
-                    try {
-                        const blob = await upload(`rules/${selectedFile.name}`, selectedFile, {
-                            access: 'public',
-                            handleUploadUrl: '/api/upload/blob',
-                        });
-                        formDataToSend.append("preUploadedUrl", blob.url);
-                        console.log("Client-side upload successful:", blob.url);
-                    } catch (uploadError: any) {
-                        console.error("Client-side upload failed:", uploadError);
-                        alert(`Dosya yükleme hatası: ${uploadError.message}`);
-                        setIsSubmitting(false);
-                        return;
-                    }
-                } else {
-                    formDataToSend.append("file", selectedFile);
-                }
+                formDataToSend.append("file", selectedFile);
             } else if (uploadType === "JSON") {
                 formDataToSend.append("jsonContent", formData.content);
             }
