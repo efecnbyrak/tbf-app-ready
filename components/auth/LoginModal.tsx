@@ -59,26 +59,26 @@ export function LoginModal({ isOpen, onClose, onSwitchToRegister }: LoginModalPr
             {!showVerify ? (
                 <form action={formAction} className="space-y-4">
                     <div>
-                        <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+                        <label className="block text-sm font-medium text-zinc-700 mb-1">
                             TC Kimlik No / Kullanıcı Adı
                         </label>
                         <input
                             type="text"
                             name="identifier"
                             required
-                            className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-600 focus:border-transparent outline-none dark:bg-zinc-800 dark:border-zinc-700"
+                            className="w-full px-3 py-2 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-red-600 focus:border-transparent outline-none bg-white text-zinc-900"
                             placeholder="TCKN veya Kullanıcı Adı"
                         />
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+                        <label className="block text-sm font-medium text-zinc-700 mb-1">
                             Şifre
                         </label>
                         <input
                             type="password"
                             name="password"
                             required
-                            className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-600 focus:border-transparent outline-none dark:bg-zinc-800 dark:border-zinc-700"
+                            className="w-full px-3 py-2 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-red-600 focus:border-transparent outline-none bg-white text-zinc-900"
                             placeholder="Şifre giriniz.."
                         />
                     </div>
@@ -106,11 +106,11 @@ export function LoginModal({ isOpen, onClose, onSwitchToRegister }: LoginModalPr
                 </form>
             ) : (
                 <form onSubmit={handleVerify} className="space-y-4">
-                    <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg text-sm text-blue-700 dark:text-blue-300">
+                    <div className="bg-blue-50 p-4 rounded-lg text-sm text-blue-700">
                         Sisteme kayıtlı E-posta adresinize gönderilen 6 haneli doğrulama kodunu giriniz.
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+                        <label className="block text-sm font-medium text-zinc-700 mb-1">
                             Doğrulama Kodu
                         </label>
                         <input
@@ -119,7 +119,7 @@ export function LoginModal({ isOpen, onClose, onSwitchToRegister }: LoginModalPr
                             onChange={(e) => setVerifyCode(e.target.value)}
                             required
                             maxLength={6}
-                            className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-600 focus:border-transparent outline-none dark:bg-zinc-800 dark:border-zinc-700 text-center text-2xl tracking-widest font-mono"
+                            className="w-full px-3 py-2 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-red-600 focus:border-transparent outline-none bg-white text-zinc-900 text-center text-2xl tracking-widest font-mono"
                             placeholder="123456"
                         />
                     </div>

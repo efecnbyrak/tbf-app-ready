@@ -123,81 +123,6 @@ export default async function RefereeDashboard() {
                         </div>
                     </div>
 
-                    {/* Assigned Matches Section */}
-                    <div className="space-y-6">
-                        <h2 className="text-xl font-bold text-zinc-900 dark:text-white flex items-center gap-2">
-                            <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
-                            Görev Aldığınız Maçlar
-                        </h2>
-
-                        {upcomingMatches.length === 0 && pastMatches.length === 0 ? (
-                            <div className="text-center py-12 bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 border-dashed">
-                                <p className="text-zinc-500">Henüz atanmış bir maçınız bulunmamaktadır.</p>
-                            </div>
-                        ) : (
-                            <>
-                                {/* Upcoming */}
-                                {upcomingMatches.length > 0 && (
-                                    <div className="space-y-4">
-                                        <h3 className="text-sm font-semibold text-zinc-500 uppercase tracking-wider">Yaklaşan Maçlar</h3>
-                                        <div className="grid gap-4">
-                                            {upcomingMatches.map((assignment) => (
-                                                <div key={assignment.id} className="bg-white dark:bg-zinc-900 rounded-lg p-5 border-l-4 border-red-600 shadow-sm border-y border-r border-zinc-200 dark:border-zinc-800 flex flex-col md:flex-row md:items-center justify-between gap-4 transition hover:shadow-md">
-                                                    <div className="flex-1">
-                                                        <div className="flex items-center gap-2 text-red-600 font-bold text-sm mb-1">
-                                                            <span>{assignment.match.league}</span>
-                                                            <span className="w-1 h-1 bg-zinc-300 rounded-full"></span>
-                                                            <span>{new Date(assignment.match.date).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', weekday: 'long' })}</span>
-                                                            <span className="w-1 h-1 bg-zinc-300 rounded-full"></span>
-                                                            <span>{new Date(assignment.match.date).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}</span>
-                                                        </div>
-                                                        <div className="text-lg font-bold text-zinc-900 dark:text-white mb-1">
-                                                            {assignment.match.homeTeam} vs {assignment.match.awayTeam}
-                                                        </div>
-                                                        <div className="text-zinc-500 text-sm flex items-center gap-1">
-                                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                                                            {assignment.match.location}
-                                                        </div>
-                                                    </div>
-
-                                                    <div className="bg-zinc-50 dark:bg-zinc-800 px-4 py-2 rounded-lg text-center min-w-[140px]">
-                                                        <div className="text-xs text-zinc-500 uppercase">Göreviniz</div>
-                                                        <div className="font-bold text-red-700">{assignment.role}</div>
-                                                    </div>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
-
-                                {/* Past */}
-                                {pastMatches.length > 0 && (
-                                    <div className="space-y-4 opacity-75">
-                                        <h3 className="text-sm font-semibold text-zinc-500 uppercase tracking-wider">Geçmiş Maçlar</h3>
-                                        <div className="grid gap-4">
-                                            {pastMatches.map((assignment) => (
-                                                <div key={assignment.id} className="bg-gray-50 dark:bg-zinc-900/50 rounded-lg p-5 border border-zinc-200 dark:border-zinc-800 flex flex-col md:flex-row md:items-center justify-between gap-4 grayscale transition hover:grayscale-0">
-                                                    <div className="flex-1">
-                                                        <div className="flex items-center gap-2 text-zinc-500 font-bold text-sm mb-1">
-                                                            <span>{assignment.match.league}</span>
-                                                            <span>•</span>
-                                                            <span>{new Date(assignment.match.date).toLocaleDateString('tr-TR')}</span>
-                                                        </div>
-                                                        <div className="text-lg font-bold text-zinc-700 dark:text-zinc-300 mb-1">
-                                                            {assignment.match.homeTeam} - {assignment.match.awayTeam}
-                                                        </div>
-                                                    </div>
-                                                    <div className="text-sm text-zinc-500">
-                                                        {assignment.role}
-                                                    </div>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
-                            </>
-                        )}
-                    </div>
 
                     {/* My Availabilities Section */}
                     <div className="space-y-6">
@@ -249,8 +174,8 @@ export default async function RefereeDashboard() {
                                                     </p>
                                                 </div>
                                                 <div className={`px-3 py-1 rounded-full text-xs font-bold ${isSubmitted
-                                                        ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
-                                                        : "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400"
+                                                    ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
+                                                    : "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400"
                                                     }`}>
                                                     {isSubmitted ? "Gönderildi" : "Taslak"}
                                                 </div>
