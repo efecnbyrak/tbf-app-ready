@@ -28,13 +28,17 @@ export async function proxy(request: NextRequest) {
         }
 
         // 3. Check Role Permissions
-        if (isAdminRoute && session.role !== "ADMIN") {
-            // Referee trying to access Admin
+        const role = session.role;
+        const isAdminUser = role === "ADMIN" || role === "SUPER_ADMIN" || role === "ADMIN_IHK";
+        const isRefereeUser = role === "REFEREE";
+
+        if (isAdminRoute && !isAdminUser) {
+            // Non-admin trying to access Admin -> Go to referee (or home if not even referee)
             return NextResponse.redirect(new URL("/referee", request.nextUrl));
         }
 
-        if (isRefereeRoute && session.role !== "REFEREE") {
-            // Admin trying to access Referee?
+        if (isRefereeRoute && !isRefereeUser && !isAdminUser) {
+            // Someone who is neither a referee nor an admin trying to access referee
             return NextResponse.redirect(new URL("/admin", request.nextUrl));
         }
     }

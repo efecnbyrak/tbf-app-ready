@@ -8,9 +8,10 @@ export default async function Home() {
 
   // If user is already logged in, redirect to their dashboard
   if (session?.userId) {
-    if (session.role === "ADMIN") {
+    const role = session.role;
+    if (role === "ADMIN" || role === "SUPER_ADMIN" || role === "ADMIN_IHK") {
       redirect("/admin");
-    } else if (session.role === "REFEREE") {
+    } else if (role === "REFEREE") {
       redirect("/referee");
     }
   }
