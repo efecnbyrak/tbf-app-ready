@@ -15,8 +15,19 @@ export async function saveAvailability(prevState: ActionState, formData: FormDat
     const session = await verifySession();
     const userId = session.userId;
 
-    const referee = await db.referee.findUnique({ where: { userId }, include: { regions: true } });
+    const referee = await db.referee.findUnique({
+        where: { userId },
+        include: {
+            regions: true,
+            user: true // Include user to check suspension
+        }
+    });
     if (!referee) return { error: "Hakem profili bulunamadı.", success: false };
+
+    if (referee.user.suspendedUntil && referee.user.suspendedUntil > new Date()) {
+        const dateStr = referee.user.suspendedUntil.toLocaleDateString('tr-TR');
+        return { error: `Hesabınız ${dateStr} tarihine kadar dondurulmuştur. Bu süre zarfında uygunluk formu dolduramazsınız.`, success: false };
+    }
 
     const { startDate, deadline, isLocked } = await getAvailabilityWindow();
 

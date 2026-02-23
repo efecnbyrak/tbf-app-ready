@@ -2,6 +2,7 @@
 import { db } from "@/lib/db";
 import { getAvailabilityWindow } from "@/lib/availability-utils";
 import { ExportButton } from "./ExportButton";
+import { CleanupButton } from "@/components/admin/CleanupButton";
 import { AvailabilityList } from "./AvailabilityList";
 import Link from "next/link";
 import { User, Users, Table, Shield, Activity, FileSpreadsheet } from "lucide-react";
@@ -92,6 +93,7 @@ export default async function AvailabilityAdminPage({ searchParams }: PageProps)
                     </p>
                 </div>
                 <div className="flex gap-2">
+                    <CleanupButton />
                     <ExportButton group={activeGroup} type={activeType} />
                 </div>
             </div>

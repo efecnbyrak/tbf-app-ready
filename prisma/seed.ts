@@ -6,23 +6,19 @@ const prisma = new PrismaClient();
 async function main() {
     console.log('🌱 Seeding database...');
 
-    // 1. Create ADMIN role if it doesn't exist
-    let adminRole = await prisma.role.findUnique({ where: { name: 'ADMIN' } });
-    if (!adminRole) {
-        adminRole = await prisma.role.create({
-            data: { name: 'ADMIN' }
+    // 1. Create Roles
+    const roles = ['SUPER_ADMIN', 'ADMIN_IHK', 'REFEREE'];
+    for (const roleName of roles) {
+        await prisma.role.upsert({
+            where: { name: roleName },
+            create: { name: roleName },
+            update: {}
         });
-        console.log('✅ Created ADMIN role');
     }
+    console.log('✅ Synchronized Roles: SUPER_ADMIN, ADMIN_IHK, REFEREE');
 
-    // 2. Create REFEREE role if it doesn't exist
-    let refereeRole = await prisma.role.findUnique({ where: { name: 'REFEREE' } });
-    if (!refereeRole) {
-        refereeRole = await prisma.role.create({
-            data: { name: 'REFEREE' }
-        });
-        console.log('✅ Created REFEREE role');
-    }
+    const adminRole = await prisma.role.findUniqueOrThrow({ where: { name: 'SUPER_ADMIN' } });
+    const refereeRole = await prisma.role.findUniqueOrThrow({ where: { name: 'REFEREE' } });
 
     // 2.5 Create Default Regions
     const regions = ["Avrupa", "Asya", "BGM"];

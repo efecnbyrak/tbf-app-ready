@@ -8,6 +8,7 @@ import { DeleteRefereeButton } from "@/app/admin/referees/DeleteRefereeButton";
 import { ClassificationEditor } from "@/app/admin/referees/ClassificationEditor";
 
 import { TypeEditor } from "@/components/admin/TypeEditor";
+import { SuspendRefereeButton } from "@/components/admin/SuspendRefereeButton";
 
 // Icon mapping based on officialType
 const RoleIcon = ({ type }: { type: string }) => {
@@ -71,10 +72,13 @@ export function OfficialCard({ official }: OfficialCardProps) {
 
             {/* Actions */}
             <div className="w-full mt-auto pt-2 border-t border-zinc-100 dark:border-zinc-800 flex justify-between items-center">
+                <div className="flex items-center gap-1.5">
+                    <DeleteRefereeButton refereeId={official.id} />
+                    <SuspendRefereeButton userId={official.userId} suspendedUntil={official.user?.suspendedUntil} />
+                </div>
                 <span className="text-xs text-zinc-400 font-mono">
                     {official.tckn ? `${official.tckn.substring(0, 2)}*******${official.tckn.substring(9, 11)}` : ''}
                 </span>
-                <DeleteRefereeButton refereeId={official.id} />
             </div>
         </div>
     );

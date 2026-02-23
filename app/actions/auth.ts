@@ -11,6 +11,7 @@ export interface ActionState {
     error?: string;
     success: boolean;
     username?: string;
+    message?: string;
     redirectTo?: string;
     requireVerification?: boolean;
     userId?: number;
@@ -73,6 +74,17 @@ export async function login(prevState: ActionState, formData: FormData): Promise
             return { error: "Kullanıcı bulunamadı veya şifre hatalı.", success: false };
         }
 
+        // 1.5 Check if approved
+        if (!user.isApproved && user.role.name !== "SUPER_ADMIN" && user.role.name !== "ADMIN") {
+            return { error: "Başvurunuz Yönetici tarafından onay beklemektedir. Onaylandığı zaman bilgilendirileceksiniz.", success: false };
+        }
+
+        // 1.6 Check if suspended
+        if (user.suspendedUntil && user.suspendedUntil > new Date()) {
+            const formattedDate = user.suspendedUntil.toLocaleDateString('tr-TR');
+            return { error: `Hesabınız ${formattedDate} tarihine kadar dondurulmuştur.`, success: false };
+        }
+
         // 2. Check password
         const isPasswordValid = await bcrypt.compare(password, user.password);
 
@@ -91,9 +103,12 @@ export async function login(prevState: ActionState, formData: FormData): Promise
         }
 
         // ADMIN BYPASS: Allow admins to login without 2FA
-        if (user.role.name === "ADMIN") {
+        if (user.role.name === "ADMIN" || user.role.name === "SUPER_ADMIN" || user.role.name === "ADMIN_IHK") {
             await createSession(user.id, user.role.name);
-            return { success: true, redirectTo: "/admin", error: undefined };
+            const redirectPath = (user.role.name === "SUPER_ADMIN" || user.role.name === "ADMIN_IHK" || user.role.name === "ADMIN")
+                ? "/admin"
+                : "/";
+            return { success: true, redirectTo: redirectPath, error: undefined };
         }
 
         // 2FA Logic
@@ -180,7 +195,7 @@ export async function verify2FA(userId: number, code: string): Promise<ActionSta
 
         // Redirect
         let redirectTo = "/";
-        if (user.role.name === "ADMIN") {
+        if (user.role.name === "ADMIN" || user.role.name === "SUPER_ADMIN" || user.role.name === "ADMIN_IHK") {
             redirectTo = "/admin";
         } else if (user.referee?.officialType === "REFEREE") {
             redirectTo = "/referee";
@@ -262,6 +277,7 @@ export async function register(prevState: ActionState, formData: FormData): Prom
                     tckn: tckn,
                     password: hashedPassword,
                     roleId: refereeRole!.id,
+                    isApproved: false // Explicitly set to false (referee registration)
                 }
             });
 
@@ -291,7 +307,13 @@ export async function register(prevState: ActionState, formData: FormData): Prom
         // They should Login explicitly to get the code.
         // Return username so they know what to use.
 
-        return { success: true, username: generatedUsername, error: undefined };
+        // 6. Return specific success message for approval
+        return {
+            success: true,
+            username: generatedUsername,
+            error: undefined,
+            message: "Kayıt başarılı! Başvurunuz Yönetici tarafından onay beklemektedir. Onaylandığı zaman mail olarak bilgilendirileceksiniz."
+        };
 
     } catch (error) {
         console.error("Register error:", error);
