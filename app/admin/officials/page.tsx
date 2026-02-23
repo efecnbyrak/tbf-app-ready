@@ -27,7 +27,7 @@ export default async function OfficialsPage({ searchParams }: PageProps) {
         orderBy: { createdAt: 'desc' }
     });
 
-    const officials = allOfficials.filter(off => {
+    const officials = allOfficials.filter((off: any) => {
         const type = refereeTypeMap.get(off.id) || "REFEREE";
 
         // Status filter (Approved/Unapproved)
@@ -136,8 +136,8 @@ export default async function OfficialsPage({ searchParams }: PageProps) {
                         <p className="text-zinc-500">Bu kategoride kayıtlı görevli bulunmamaktadır.</p>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-                        {officials.map((off) => (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
+                        {officials.map((off: any) => (
                             <OfficialCard
                                 key={off.id}
                                 official={{

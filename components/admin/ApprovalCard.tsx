@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { approveUser, rejectUser } from "@/app/actions/admin-users";
 import { Check, X, User as UserIcon, Loader2 } from "lucide-react";
+import { formatOfficialType } from "@/lib/format-utils";
 
 interface ApprovalCardProps {
     user: any;
@@ -54,7 +55,9 @@ export function ApprovalCard({ user }: ApprovalCardProps) {
                         <h3 className="font-black text-zinc-900 dark:text-white tracking-tight">
                             {user.referee?.firstName} {user.referee?.lastName}
                         </h3>
-                        <p className="text-xs font-bold text-zinc-500 uppercase tracking-wider">{user.referee?.officialType || "Belirtilmemiş"}</p>
+                        <p className="text-xs font-bold text-zinc-500 uppercase tracking-wider">
+                            {user.referee?.officialType ? formatOfficialType(user.referee.officialType) : "Belirtilmemiş"}
+                        </p>
                     </div>
                 </div>
             </div>

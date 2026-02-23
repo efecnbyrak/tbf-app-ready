@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { Search, ChevronDown, ChevronUp, Calendar } from "lucide-react";
-import { formatClassification } from "@/lib/format-utils";
+import { formatClassification, formatOfficialType } from "@/lib/format-utils";
 import { Referee, Region, AvailabilityForm as PrismaForm, AvailabilityDay } from "@prisma/client";
 
 type AvailabilityFormWithDetails = PrismaForm & {
@@ -98,18 +98,8 @@ export function AvailabilityList({ forms, startDate, endDate }: AvailabilityList
                                     <td className="px-6 py-4">
                                         {(() => {
                                             const isGeneralOfficial = form.referee.officialType && form.referee.officialType !== "REFEREE";
-                                            const typeLabels: Record<string, string> = {
-                                                "TABLE": "Masa Görevlisi",
-                                                "OBSERVER": "Gözlemci",
-                                                "HEALTH": "Sağlık Görevlisi",
-                                                "STATISTICIAN": "İstatistik Görevlisi",
-                                                "FIELD_COMMISSIONER": "Saha Komiseri",
-                                                "TABLE_HEALTH": "Masa & Sağlık",
-                                                "TABLE_STATISTICIAN": "Masa & İstatistik",
-                                                "REFEREE": "Hakem"
-                                            };
                                             const displayText = isGeneralOfficial
-                                                ? (typeLabels[form.referee.officialType!] || form.referee.officialType)
+                                                ? formatOfficialType(form.referee.officialType!)
                                                 : formatClassification(form.referee.classification);
                                             const bgColor = isGeneralOfficial
                                                 ? "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300"
@@ -207,18 +197,8 @@ export function AvailabilityList({ forms, startDate, endDate }: AvailabilityList
                                     <div className="flex flex-wrap gap-2 items-center">
                                         {(() => {
                                             const isGeneralOfficial = form.referee.officialType && form.referee.officialType !== "REFEREE";
-                                            const typeLabels: Record<string, string> = {
-                                                "TABLE": "Masa Görevlisi",
-                                                "OBSERVER": "Gözlemci",
-                                                "HEALTH": "Sağlık Görevlisi",
-                                                "STATISTICIAN": "İstatistik Görevlisi",
-                                                "FIELD_COMMISSIONER": "Saha Komiseri",
-                                                "TABLE_HEALTH": "Masa & Sağlık",
-                                                "TABLE_STATISTICIAN": "Masa & İstatistik",
-                                                "REFEREE": "Hakem"
-                                            };
                                             const displayText = isGeneralOfficial
-                                                ? (typeLabels[form.referee.officialType!] || form.referee.officialType)
+                                                ? formatOfficialType(form.referee.officialType!)
                                                 : formatClassification(form.referee.classification);
                                             const bgColor = isGeneralOfficial
                                                 ? "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300"

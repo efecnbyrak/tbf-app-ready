@@ -1,7 +1,8 @@
 import { db } from "@/lib/db";
 import { verifySession } from "@/lib/session";
 import { getAvailabilityWindow } from "@/lib/availability-utils";
-import { Info, Lock } from "lucide-react";
+import { Lock, Info } from "lucide-react";
+import { formatOfficialType } from "@/lib/format-utils";
 import { OfficialAvailabilityForm } from "../../referee/availability/OfficialAvailabilityForm";
 
 export default async function OfficialAvailabilityPage() {
@@ -38,18 +39,7 @@ export default async function OfficialAvailabilityPage() {
     `;
     const realOfficialType = rawType[0]?.officialType || referee.officialType;
 
-    const typeLabels: Record<string, string> = {
-        "TABLE": "Masa Görevlisi",
-        "OBSERVER": "Gözlemci",
-        "HEALTH": "Sağlık Görevlisi",
-        "STATISTICIAN": "İstatistik Görevlisi",
-        "FIELD_COMMISSIONER": "Saha Komiseri",
-        "TABLE_HEALTH": "Masa & Sağlık",
-        "TABLE_STATISTICIAN": "Masa & İstatistik",
-        "REFEREE": "Hakem"
-    };
-
-    const roleLabel = typeLabels[realOfficialType!] || realOfficialType || "Görevli";
+    const roleLabel = realOfficialType ? formatOfficialType(realOfficialType) : "Görevli";
 
     return (
         <div className="max-w-4xl mx-auto pb-12">
