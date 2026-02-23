@@ -5,8 +5,8 @@ import { ExportButton } from "./ExportButton";
 import { CleanupButton } from "@/components/admin/CleanupButton";
 import { AvailabilityList } from "./AvailabilityList";
 import Link from "next/link";
+import { ensureSchemaColumns } from "@/app/actions/auth";
 import { User, Users, Table, Shield, Activity, FileSpreadsheet } from "lucide-react";
-import { Prisma } from "@prisma/client";
 import { format } from "date-fns";
 import { tr } from "date-fns/locale";
 
@@ -17,6 +17,7 @@ interface PageProps {
 }
 
 export default async function AvailabilityAdminPage({ searchParams }: PageProps) {
+    await ensureSchemaColumns();
     const params = await searchParams;
     const { startDate, endDate } = await getAvailabilityWindow();
 
@@ -53,7 +54,7 @@ export default async function AvailabilityAdminPage({ searchParams }: PageProps)
     });
 
     // In-Memory Filtering
-    const forms = allForms.filter(form => {
+    const forms = allForms.filter((form: any) => {
         const type = refereeTypeMap.get(form.refereeId) || "REFEREE";
 
         if (activeGroup === "REFEREE") {
@@ -165,7 +166,7 @@ export default async function AvailabilityAdminPage({ searchParams }: PageProps)
             )}
 
             <AvailabilityList
-                forms={forms.map(form => ({
+                forms={forms.map((form: any) => ({
                     ...form,
                     referee: {
                         ...form.referee,

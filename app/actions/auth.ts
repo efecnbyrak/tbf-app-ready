@@ -6,6 +6,23 @@ import bcrypt from "bcryptjs";
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 
+// Self-healing helper to add missing columns if they don't exist
+export async function ensureSchemaColumns() {
+    try {
+        // Users table (mapped as users)
+        await db.$executeRawUnsafe(`ALTER TABLE users ADD COLUMN IF NOT EXISTS "isApproved" BOOLEAN NOT NULL DEFAULT false`);
+        await db.$executeRawUnsafe(`ALTER TABLE users ADD COLUMN IF NOT EXISTS "suspendedUntil" TIMESTAMP`);
+
+        // Referees table (mapped as referees)
+        await db.$executeRawUnsafe(`ALTER TABLE referees ADD COLUMN IF NOT EXISTS "address" TEXT`);
+        await db.$executeRawUnsafe(`ALTER TABLE referees ADD COLUMN IF NOT EXISTS "job" TEXT`);
+        await db.$executeRawUnsafe(`ALTER TABLE referees ADD COLUMN IF NOT EXISTS "officialType" TEXT DEFAULT 'REFEREE'`);
+    } catch (e) {
+        // Silently fail if columns exist or other DB issues
+        console.warn("[DB-FIX] Self-healing attempt finished:", (e as any)?.message);
+    }
+}
+
 export interface ActionState {
     error?: string;
     success: boolean;
@@ -56,6 +73,9 @@ export async function login(prevState: ActionState, formData: FormData): Promise
         console.warn("[LOGIN] Rate limit DB check failed, skipping:", (rateLimitError as any)?.message);
     }
 
+    // Ensure database columns exist before proceeding
+    await ensureSchemaColumns();
+
     try {
         // 1. Find user by username OR tckn
         const user = await db.user.findFirst({
@@ -74,6 +94,7 @@ export async function login(prevState: ActionState, formData: FormData): Promise
         }
 
         // 1.5 Check if approved
+        // Note: isApproved might be null if we just added it, but default is false in SQL
         if (!user.isApproved && user.role.name !== "SUPER_ADMIN" && user.role.name !== "ADMIN") {
             return { error: "Başvurunuz Yönetici tarafından onay beklemektedir. Onaylandığı zaman bilgilendirileceksiniz.", success: false };
         }
@@ -240,6 +261,9 @@ export async function register(prevState: ActionState, formData: FormData): Prom
     if (tckn.length !== 11) {
         return { error: "TC Kimlik No 11 haneli olmalıdır.", errors: { tckn: "TCKN 11 haneli olmalıdır" }, success: false };
     }
+
+    // Ensure database columns exist before proceeding
+    await ensureSchemaColumns();
 
     try {
         // 1. Hash password

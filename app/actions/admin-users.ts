@@ -3,8 +3,10 @@
 import { db } from "@/lib/db";
 import { verifySession } from "@/lib/session";
 import { revalidatePath } from "next/cache";
+import { ensureSchemaColumns } from "./auth";
 
 export async function approveUser(userId: number) {
+    await ensureSchemaColumns();
     const session = await verifySession();
     if (session.role !== "SUPER_ADMIN" && session.role !== "ADMIN_IHK" && session.role !== "ADMIN") {
         throw new Error("Yetkisiz işlem.");
@@ -51,6 +53,7 @@ export async function rejectUser(userId: number) {
 }
 
 export async function suspendUser(userId: number, until: Date | null) {
+    await ensureSchemaColumns();
     const session = await verifySession();
     if (session.role !== "SUPER_ADMIN" && session.role !== "ADMIN_IHK" && session.role !== "ADMIN") {
         throw new Error("Yetkisiz işlem.");

@@ -1,9 +1,11 @@
 import { db } from "@/lib/db";
 import { RefereeListClient } from "./RefereeListClient";
+import { ensureSchemaColumns } from "@/app/actions/auth";
 
 export const dynamic = 'force-dynamic';
 
 export default async function RefereesPage() {
+    await ensureSchemaColumns();
     // Fetch Referee Types manually via Raw Query to bypass stale Prisma Client
     const refereeTypesRaw = await db.$queryRaw<Array<{ id: number, officialType: string }>>`
         SELECT id, "officialType" FROM referees
@@ -22,7 +24,7 @@ export default async function RefereesPage() {
     });
 
     // Make data plain for client component
-    const plainReferees = JSON.parse(JSON.stringify(allReferees.filter(ref => refereeTypeMap[ref.id] === "REFEREE")));
+    const plainReferees = JSON.parse(JSON.stringify(allReferees.filter((ref: any) => refereeTypeMap[ref.id] === "REFEREE")));
 
     return (
         <div className="space-y-12">
