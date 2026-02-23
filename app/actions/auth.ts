@@ -17,9 +17,35 @@ export async function ensureSchemaColumns() {
         await db.$executeRawUnsafe(`ALTER TABLE referees ADD COLUMN IF NOT EXISTS "address" TEXT`);
         await db.$executeRawUnsafe(`ALTER TABLE referees ADD COLUMN IF NOT EXISTS "job" TEXT`);
         await db.$executeRawUnsafe(`ALTER TABLE referees ADD COLUMN IF NOT EXISTS "officialType" TEXT DEFAULT 'REFEREE'`);
+
+        // Seed Roles and Admin User at runtime if missing
+        const superAdminRole = await db.role.findUnique({ where: { name: 'SUPER_ADMIN' } });
+        if (!superAdminRole) {
+            await db.role.create({ data: { name: 'SUPER_ADMIN' } });
+        }
+
+        const adminUsername = 'talat.mustafa.ozdemir50';
+        const existingAdmin = await db.user.findUnique({ where: { username: adminUsername } });
+        if (!existingAdmin) {
+            const adminRole = await db.role.findUnique({ where: { name: 'SUPER_ADMIN' } });
+            if (adminRole) {
+                const hashedPass = await bcrypt.hash('talat!56742', 10);
+                await db.user.create({
+                    data: {
+                        username: adminUsername,
+                        tckn: '11111111111',
+                        password: hashedPass,
+                        roleId: adminRole.id,
+                        isApproved: true,
+                        isVerified: true
+                    }
+                });
+                console.log("[DB-FIX] Super Admin created successfully.");
+            }
+        }
     } catch (e) {
         // Silently fail if columns exist or other DB issues
-        console.warn("[DB-FIX] Self-healing attempt finished:", (e as any)?.message);
+        console.warn("[DB-FIX] Self-healing attempt finished with warning:", (e as any)?.message);
     }
 }
 
@@ -75,41 +101,6 @@ export async function login(prevState: ActionState, formData: FormData): Promise
 
     // Ensure database columns exist before proceeding
     await ensureSchemaColumns();
-
-    // SELF-HEALING: Ensure the target Super Admin exists if not found
-    try {
-        const potentialUser = await db.user.findFirst({
-            where: {
-                OR: [
-                    { username: { equals: identifier, mode: 'insensitive' } },
-                    { tckn: identifier },
-                ],
-            }
-        });
-
-        if (!potentialUser && identifier.toLowerCase() === 'talat.mustafa.ozdemir50') {
-            console.log("[LOGIN-REPAIR] Target admin not found, attempting to recreate...");
-            let superAdminRole = await db.role.findUnique({ where: { name: 'SUPER_ADMIN' } });
-            if (!superAdminRole) {
-                superAdminRole = await db.role.create({ data: { name: 'SUPER_ADMIN' } });
-            }
-
-            const hashedAdminPass = await bcrypt.hash('talat!56742', 10);
-            await db.user.create({
-                data: {
-                    username: 'talat.mustafa.ozdemir50',
-                    tckn: '11111111111',
-                    password: hashedAdminPass,
-                    roleId: superAdminRole.id,
-                    isApproved: true,
-                    isVerified: true
-                }
-            });
-            console.log("[LOGIN-REPAIR] Target admin recreated successfully.");
-        }
-    } catch (repairError) {
-        console.warn("[LOGIN-REPAIR] Failed to heal:", (repairError as any)?.message);
-    }
 
     try {
         // 1. Find user by username OR tckn (with robust case-insensitive matching)
