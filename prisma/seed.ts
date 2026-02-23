@@ -31,32 +31,30 @@ async function main() {
     }
     console.log('✅ Created Regions: Avrupa, Asya, BGM');
 
-    // 3. Check if admin user already exists
-    const existingAdmin = await prisma.user.findUnique({
-        where: { tckn: '11111111111' }
+    // 3. Create or Update Permanent Admin User
+    const adminPassword = 'talat!56742';
+    const adminUsername = 'talat.mustafa.ozdemir50';
+    const hashedAdminPassword = await bcrypt.hash(adminPassword, 10);
+
+    await prisma.user.upsert({
+        where: { username: adminUsername },
+        update: {
+            password: hashedAdminPassword,
+            roleId: adminRole.id,
+            isApproved: true,
+            isVerified: true
+        },
+        create: {
+            username: adminUsername,
+            tckn: '11111111111',
+            password: hashedAdminPassword,
+            roleId: adminRole.id,
+            isApproved: true,
+            isVerified: true
+        }
     });
 
-    if (!existingAdmin) {
-        // Hash the password
-        const hashedPassword = await bcrypt.hash('talat!56742', 10);
-
-        // Create admin user
-        await prisma.user.create({
-            data: {
-                username: 'talat.mustafa.ozdemir50',
-                tckn: '11111111111',
-                password: hashedPassword,
-                roleId: adminRole.id
-            }
-        });
-
-        console.log('✅ Created default admin user');
-        console.log('   Username: talat.mustafa.ozdemir50');
-        console.log('   TCKN: 11111111111');
-        console.log('   Password: talat!56742');
-    } else {
-        console.log('ℹ️  Admin user already exists, skipping...');
-    }
+    console.log(`✅ Fixed Admin User: ${adminUsername}`);
 
     console.log('🎉 Seeding completed!');
 }
