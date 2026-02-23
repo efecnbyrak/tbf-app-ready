@@ -77,13 +77,12 @@ export async function login(prevState: ActionState, formData: FormData): Promise
     await ensureSchemaColumns();
 
     try {
-        // 1. Find user by username OR tckn (with case-insensitive fallback for username)
+        // 1. Find user by username OR tckn (with robust case-insensitive matching)
         const user = await db.user.findFirst({
             where: {
                 OR: [
-                    { username: identifier },
+                    { username: { equals: identifier, mode: 'insensitive' } },
                     { tckn: identifier },
-                    { username: identifier.toLowerCase() }
                 ],
             },
             include: {
@@ -94,12 +93,14 @@ export async function login(prevState: ActionState, formData: FormData): Promise
 
         if (!user) {
             await handleFailedLogin(ip, loginAttempt);
-            return { error: "Kullanıcı bulunamadı veya şifre hatalı.", success: false };
+            // Unique error message for "Not Found" to distinguish from "Bad Password"
+            return { error: "Bu kullanıcı adı veya TCKN ile kayıtlı bir hesap bulunamadı.", success: false };
         }
 
         // 1.5 Check if approved
-        // Note: Any role that is an ADMIN or SUPER_ADMIN should bypass this
-        const isAdminUser = user.role.name.startsWith("ADMIN") || user.role.name === "SUPER_ADMIN";
+        // Robust check for any Admin or Super Admin role
+        const roleName = (user.role?.name || "").toUpperCase();
+        const isAdminUser = roleName.includes("ADMIN");
 
         if (!user.isApproved && !isAdminUser) {
             return { error: "Başvurunuz Yönetici tarafından onay beklemektedir. Onaylandığı zaman bilgilendirileceksiniz.", success: false };
@@ -114,13 +115,9 @@ export async function login(prevState: ActionState, formData: FormData): Promise
         // 2. Check password
         const isPasswordValid = await bcrypt.compare(password, user.password);
 
-        // Debug logging
-        console.log('[LOGIN DEBUG] bcrypt.compare result:', isPasswordValid);
-        console.log('[LOGIN DEBUG] user.role.name:', user.role.name);
-
         if (!isPasswordValid) {
             await handleFailedLogin(ip, loginAttempt);
-            return { error: "Kullanıcı bulunamadı veya şifre hatalı.", success: false };
+            return { error: "Girdiğiniz şifre hatalı. Lütfen kontrol ederek tekrar deneyiniz.", success: false };
         }
 
         // Success - Reset attempts
