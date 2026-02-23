@@ -44,9 +44,13 @@ export async function rejectUser(userId: number) {
         throw new Error("Yetkisiz işlem.");
     }
 
-    // For rejection, we might delete the user or just mark as rejected.
-    // Here we'll delete to keep the system clean.
-    await db.user.delete({ where: { id: userId } });
+    // For rejection, we must delete related records manually to avoid foreign key crashes
+    // since we couldn't easily add cascade delete to the DB schema.
+    await db.$transaction(async (tx: any) => {
+        // Delete related records
+        await tx.referee.deleteMany({ where: { userId: userId } });
+        await tx.user.delete({ where: { id: userId } });
+    });
 
     revalidatePath("/admin/approvals");
     return { success: true };

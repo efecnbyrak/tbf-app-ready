@@ -11,6 +11,7 @@ interface RefereeListClientProps {
 
 // Mapping of database values to UI display labels
 const CLASSIFICATION_MAP: Record<string, string> = {
+    "UNAPPROVED": "Onay Bekleyenler",
     "BELIRLENMEMIS": "Belirtilmemiş",
     "A": "A Klasmanı",
     "B": "B Klasmanı",
@@ -21,6 +22,7 @@ const CLASSIFICATION_MAP: Record<string, string> = {
 
 // Sort order for classifications
 const ORDERED_CLASSIFICATIONS = [
+    "UNAPPROVED",
     "BELIRLENMEMIS",
     "A",
     "B",
@@ -44,6 +46,14 @@ export function RefereeListClient({ initialReferees, refereeTypeMap }: RefereeLi
     const grouped = ORDERED_CLASSIFICATIONS.reduce((acc, code) => {
         const label = CLASSIFICATION_MAP[code];
         acc[label] = filteredReferees.filter(ref => {
+            // First Priority: Check if unapproved
+            if (code === "UNAPPROVED") {
+                return !ref.user?.isApproved;
+            }
+
+            // If we are looking for other classifications, only include approved users
+            if (ref.user?.isApproved === false) return false;
+
             // For the "Belirtilmemiş" group, catch null, empty, or explicit BELIRLENMEMIS codes
             if (code === "BELIRLENMEMIS") {
                 return !ref.classification ||

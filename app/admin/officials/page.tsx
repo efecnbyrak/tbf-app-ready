@@ -2,17 +2,18 @@
 import { db } from "@/lib/db";
 import { OfficialCard } from "@/components/admin/OfficialCard";
 import Link from "next/link";
-import { Users, Table, Shield, Activity, FileSpreadsheet } from "lucide-react";
+import { Users, Table, Shield, Activity, FileSpreadsheet, ShieldAlert } from "lucide-react";
 
 export const dynamic = 'force-dynamic';
 
 interface PageProps {
-    searchParams: Promise<{ type?: string }>;
+    searchParams: Promise<{ type?: string; status?: string }>;
 }
 
 export default async function OfficialsPage({ searchParams }: PageProps) {
     const params = await searchParams;
     const selectedType = params.type;
+    const selectedStatus = params.status;
 
     // Fetch Referee Types manually via Raw Query to bypass stale Prisma Client
     const refereeTypesRaw = await db.$queryRaw<Array<{ id: number, officialType: string }>>`
@@ -28,6 +29,19 @@ export default async function OfficialsPage({ searchParams }: PageProps) {
 
     const officials = allOfficials.filter(off => {
         const type = refereeTypeMap.get(off.id) || "REFEREE";
+
+        // Status filter (Approved/Unapproved)
+        if (selectedStatus === "unapproved") {
+            if (off.user?.isApproved) return false;
+        } else if (off.user?.isApproved === false) {
+            // By default, only show approved unless "unapproved" is selected
+            // However, the user might want a "Tümü" that includes everyone?
+            // User said: "Onaylanmamış şeklinde de bi kategori aç"
+            // So if status is not unapproved, we filter them out unless it's the "Approvals" page?
+            // Actually, let's make "unapproved" a separate filter.
+            return false;
+        }
+
         if (selectedType) {
             return type === selectedType;
         }
@@ -58,13 +72,25 @@ export default async function OfficialsPage({ searchParams }: PageProps) {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <Link
                     href="/admin/officials"
-                    className={`p-4 rounded-xl border transition-all ${!selectedType
+                    className={`p-4 rounded-xl border transition-all ${(!selectedType && !selectedStatus)
                         ? "bg-zinc-900 text-white border-zinc-900 shadow-lg scale-105"
                         : "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700"}`}
                 >
                     <div className="flex flex-col items-center gap-2">
-                        <Users className={`w-8 h-8 ${!selectedType ? "text-white" : "text-zinc-500"}`} />
+                        <Users className={`w-8 h-8 ${(!selectedType && !selectedStatus) ? "text-white" : "text-zinc-500"}`} />
                         <span className="font-semibold">Tümü</span>
+                    </div>
+                </Link>
+
+                <Link
+                    href="/admin/officials?status=unapproved"
+                    className={`p-4 rounded-xl border transition-all ${selectedStatus === "unapproved"
+                        ? "bg-red-600 text-white border-red-600 shadow-lg scale-105"
+                        : "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700"}`}
+                >
+                    <div className="flex flex-col items-center gap-2">
+                        <ShieldAlert className={`w-8 h-8 ${selectedStatus === "unapproved" ? "text-white" : "text-red-500"}`} />
+                        <span className="font-semibold">Onay Bekleyenler</span>
                     </div>
                 </Link>
 
@@ -97,7 +123,7 @@ export default async function OfficialsPage({ searchParams }: PageProps) {
             <div className="space-y-4">
                 <div className="flex items-center justify-between">
                     <h2 className="text-xl font-semibold">
-                        {selectedType ? types.find(t => t.id === selectedType)?.label : "Tüm Görevliler"}
+                        {selectedStatus === "unapproved" ? "Onay Bekleyen Görevliler" : (selectedType ? types.find(t => t.id === selectedType)?.label : "Tüm Görevliler")}
                     </h2>
                     <span className="text-sm text-zinc-500 bg-zinc-100 dark:bg-zinc-800 px-3 py-1 rounded-full">
                         {officials.length} Kişi

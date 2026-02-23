@@ -73,8 +73,11 @@ export default async function AvailabilityAdminPage({ searchParams }: PageProps)
     const generalTypes = [
         { id: "TABLE", label: "Masa Görevlileri", icon: Table },
         { id: "OBSERVER", label: "Gözlemciler", icon: Shield },
-        { id: "STATISTICIAN", label: "İstatistikçiler", icon: FileSpreadsheet },
+        { id: "STATISTICIAN", label: "İstatistik Görevlileri", icon: FileSpreadsheet },
         { id: "HEALTH", label: "Sağlık Görevlileri", icon: Activity },
+        { id: "COMMISSIONER", label: "Saha Komiserleri", icon: Shield },
+        { id: "TABLE_HEALTH", label: "Masa & Sağlık", icon: Table },
+        { id: "TABLE_STATISTICIAN", label: "Masa & İstatistik", icon: Table },
     ];
 
     return (
