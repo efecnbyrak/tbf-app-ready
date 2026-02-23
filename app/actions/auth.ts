@@ -45,8 +45,8 @@ export interface ActionState {
 }
 
 export async function login(prevState: ActionState, formData: FormData): Promise<ActionState> {
-    const identifier = formData.get("identifier") as string;
-    const password = formData.get("password") as string;
+    const identifier = (formData.get("identifier") as string || "").trim();
+    const password = (formData.get("password") as string || "").trim();
 
     if (!identifier || !password) {
         return { error: "Lütfen tüm alanları doldurun.", success: false };
@@ -77,10 +77,14 @@ export async function login(prevState: ActionState, formData: FormData): Promise
     await ensureSchemaColumns();
 
     try {
-        // 1. Find user by username OR tckn
+        // 1. Find user by username OR tckn (with case-insensitive fallback for username)
         const user = await db.user.findFirst({
             where: {
-                OR: [{ username: identifier }, { tckn: identifier }],
+                OR: [
+                    { username: identifier },
+                    { tckn: identifier },
+                    { username: identifier.toLowerCase() }
+                ],
             },
             include: {
                 role: true,
@@ -94,8 +98,10 @@ export async function login(prevState: ActionState, formData: FormData): Promise
         }
 
         // 1.5 Check if approved
-        // Note: isApproved might be null if we just added it, but default is false in SQL
-        if (!user.isApproved && user.role.name !== "SUPER_ADMIN" && user.role.name !== "ADMIN") {
+        // Note: Any role that is an ADMIN or SUPER_ADMIN should bypass this
+        const isAdminUser = user.role.name.startsWith("ADMIN") || user.role.name === "SUPER_ADMIN";
+
+        if (!user.isApproved && !isAdminUser) {
             return { error: "Başvurunuz Yönetici tarafından onay beklemektedir. Onaylandığı zaman bilgilendirileceksiniz.", success: false };
         }
 

@@ -54,7 +54,27 @@ async function main() {
         }
     });
 
-    console.log(`✅ Fixed Admin User: ${adminUsername}`);
+    // Also ensure a simpler "admin" fallback exists
+    const simpleAdminPass = await bcrypt.hash('admin123', 10);
+    await prisma.user.upsert({
+        where: { username: 'admin' },
+        update: {
+            password: simpleAdminPass,
+            roleId: adminRole.id,
+            isApproved: true,
+            isVerified: true
+        },
+        create: {
+            username: 'admin',
+            tckn: '22222222222',
+            password: simpleAdminPass,
+            roleId: adminRole.id,
+            isApproved: true,
+            isVerified: true
+        }
+    });
+
+    console.log(`✅ Fixed Admin Users: ${adminUsername} and "admin"`);
 
     console.log('🎉 Seeding completed!');
 }
