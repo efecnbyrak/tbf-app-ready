@@ -31,7 +31,7 @@ export default async function ApprovalsPage() {
                 </div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {pendingUsers.map((user) => (
+                    {pendingUsers.map((user: any) => (
                         <div key={user.id} className="bg-white dark:bg-zinc-900 rounded-xl shadow-sm border border-zinc-200 dark:border-zinc-800 p-6 space-y-4">
                             <div className="flex items-start justify-between">
                                 <div className="flex items-center gap-3">

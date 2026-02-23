@@ -4,7 +4,6 @@ import { db } from "@/lib/db";
 import { createSession, deleteSession } from "@/lib/session";
 import bcrypt from "bcryptjs";
 import { redirect } from "next/navigation";
-import { Prisma, LoginAttempt } from "@prisma/client";
 import { headers } from "next/headers";
 
 export interface ActionState {
@@ -153,10 +152,9 @@ export async function login(prevState: ActionState, formData: FormData): Promise
 
         return { success: false, requireVerification: true, userId: user.id, error: undefined };
 
-    } catch (error) {
+    } catch (error: any) {
         console.error("Login error:", error);
-        const errMsg = (error as any)?.message || "Bilinmeyen hata";
-        console.error("Login Error Details:", errMsg);
+        console.error("Login Error Details:", error?.message);
         return { error: "Giriş yapılırken bir hata oluştu.", success: false };
     }
 }
@@ -270,7 +268,7 @@ export async function register(prevState: ActionState, formData: FormData): Prom
         let createdUser;
 
         // 5. Transaction
-        await db.$transaction(async (tx) => {
+        await db.$transaction(async (tx: any) => {
             createdUser = await tx.user.create({
                 data: {
                     username: generatedUsername,
@@ -315,25 +313,23 @@ export async function register(prevState: ActionState, formData: FormData): Prom
             message: "Kayıt başarılı! Başvurunuz Yönetici tarafından onay beklemektedir. Onaylandığı zaman mail olarak bilgilendirileceksiniz."
         };
 
-    } catch (error) {
+    } catch (error: any) {
         console.error("Register error:", error);
-        console.error("Register Error Details:", (error as any)?.message);
-        if (error instanceof Prisma.PrismaClientKnownRequestError) {
-            if (error.code === 'P2002') {
-                const target = (error.meta?.target as string[]) || [];
-                if (target.includes('tckn')) {
-                    return { error: "Bu TCKN zaten kullanımda.", errors: { tckn: "Zaten kayıtlı." }, success: false };
-                }
-                if (target.includes('email')) {
-                    return { error: "Bu E-posta zaten kullanımda.", errors: { email: "Zaten kayıtlı." }, success: false };
-                }
-                if (target.includes('username')) {
-                    return { error: "Bu TCKN ile kayıtlı bir kullanıcı zaten var.", success: false };
-                }
+        console.error("Register Error Details:", error?.message);
+        if (error?.code === 'P2002') {
+            const target = (error.meta?.target as string[]) || [];
+            if (target.includes('tckn')) {
+                return { error: "Bu TCKN zaten kullanımda.", errors: { tckn: "Zaten kayıtlı." }, success: false };
+            }
+            if (target.includes('email')) {
+                return { error: "Bu E-posta zaten kullanımda.", errors: { email: "Zaten kayıtlı." }, success: false };
+            }
+            if (target.includes('username')) {
+                return { error: "Bu TCKN ile kayıtlı bir kullanıcı zaten var.", success: false };
             }
         }
-        return { error: "Kayıt olurken bir hata oluştu.", success: false };
     }
+    return { error: "Kayıt olurken bir hata oluştu.", success: false };
 }
 
 export async function logout() {
@@ -341,7 +337,7 @@ export async function logout() {
     redirect("/");
 }
 
-async function handleFailedLogin(ip: string, loginAttempt: LoginAttempt | null) {
+async function handleFailedLogin(ip: string, loginAttempt: any) {
     const now = new Date();
     if (!loginAttempt) {
         await db.loginAttempt.create({

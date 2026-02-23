@@ -1,6 +1,6 @@
 import { useActionState, useEffect, useState } from "react";
 import { Modal } from "@/components/ui/modal";
-import { register } from "@/app/actions/auth";
+import { register, ActionState } from "@/app/actions/auth";
 import { ISTANBUL_DISTRICTS } from "@/lib/constants";
 
 interface RegisterModalProps {
@@ -9,10 +9,11 @@ interface RegisterModalProps {
     onSwitchToLogin: () => void;
 }
 
-const initialState: { error?: string; success: boolean; username?: string; errors?: Record<string, string> } = {
+const initialState: ActionState = {
     error: undefined,
     success: false,
     username: undefined,
+    message: undefined,
     errors: {}
 };
 

@@ -86,7 +86,7 @@ export async function saveAvailability(prevState: ActionState, formData: FormDat
         // Collect day data for email summary
         const savedDays: { dayName: string; date: string; slots: string }[] = [];
 
-        await db.$transaction(async (tx) => {
+        await db.$transaction(async (tx: any) => {
             await tx.availabilityDay.deleteMany({
                 where: { formId: form.id }
             });

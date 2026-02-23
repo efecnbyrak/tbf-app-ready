@@ -1,7 +1,7 @@
 import { useActionState, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Modal } from "@/components/ui/modal";
-import { login, verify2FA } from "@/app/actions/auth";
+import { login, verify2FA, ActionState } from "@/app/actions/auth";
 import { Loader2 } from "lucide-react";
 
 interface LoginModalProps {
@@ -10,11 +10,11 @@ interface LoginModalProps {
     onSwitchToRegister: () => void;
 }
 
-const initialState = {
-    error: undefined as string | undefined,
+const initialState: ActionState = {
+    error: undefined,
     success: false,
     requireVerification: false,
-    userId: undefined as number | undefined
+    userId: undefined
 };
 
 export function LoginModal({ isOpen, onClose, onSwitchToRegister }: LoginModalProps) {
