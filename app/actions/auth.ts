@@ -7,6 +7,8 @@ import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
 
+import { TURKEY_CITIES } from "@/lib/constants";
+
 // Self-healing helper to add missing columns if they don't exist
 export async function ensureSchemaColumns() {
     try {
@@ -30,11 +32,22 @@ export async function ensureSchemaColumns() {
         }
 
         // Seed City-based Regions
-        const cities = ["İstanbul", "Ankara", "İzmir", "Bursa", "Antalya"];
-        for (const cityName of cities) {
-            const exists = await db.region.findUnique({ where: { name: cityName } });
-            if (!exists) {
-                await db.region.create({ data: { name: cityName } });
+        const currentRegionCount = await db.region.count();
+        if (currentRegionCount < 81) {
+            await db.region.deleteMany({
+                where: {
+                    name: {
+                        in: ["Avrupa", "Asya", "BGM", "Anadolu", "İl Hakemi", "Aday Hakem"]
+                    }
+                }
+            });
+
+            for (const cityName of TURKEY_CITIES) {
+                await db.region.upsert({
+                    where: { name: cityName },
+                    update: {},
+                    create: { name: cityName }
+                });
             }
         }
 
@@ -592,7 +605,7 @@ export async function toggleUserActiveStatus(userId: number) {
         revalidatePath("/admin/manage-admins");
         revalidatePath("/admin/referees");
         revalidatePath("/admin/officials");
-        return { success: true, message: `Kullanıcı durumu ${!user.isActive ? 'Aktif' : 'Pasif'} olarak güncellendi.` };
+        return { success: true, message: `Kullanıcı durumu ${!(user as any).isActive ? 'Aktif' : 'Pasif'} olarak güncellendi.` };
     } catch (error) {
         console.error("Toggle User Activity error:", error);
         return { error: "İşlem sırasında bir hata oluştu." };
