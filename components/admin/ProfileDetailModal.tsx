@@ -254,7 +254,7 @@ export function ProfileDetailModal({ official, onClose, onToggleActive, onPromot
                             {/* Contact Card */}
                             <div className="md:col-span-2 p-6 bg-zinc-50 dark:bg-zinc-800/50 rounded-[2rem] border border-zinc-100 dark:border-zinc-800 group hover:shadow-xl hover:shadow-zinc-500/5 transition-all">
                                 <h3 className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.3em] mb-4">İLETİŞİM BİLGİLERİ</h3>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                     <a href={`tel:${official.phone}`} className="flex items-center gap-4 p-4 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-100 dark:border-zinc-800 hover:border-red-500 transition-colors shadow-sm">
                                         <div className="w-10 h-10 bg-red-50 dark:bg-red-900/20 rounded-xl flex items-center justify-center text-red-600">
                                             <Phone className="w-5 h-5" />
@@ -264,7 +264,7 @@ export function ProfileDetailModal({ official, onClose, onToggleActive, onPromot
                                             <span className="text-sm font-bold text-zinc-900 dark:text-white">{official.phone}</span>
                                         </div>
                                     </a>
-                                    <a href={`mailto:${official.email}`} className="flex items-center gap-4 p-4 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-100 dark:border-zinc-800 hover:border-red-500 transition-colors shadow-sm max-w-full overflow-hidden">
+                                    <a href={`mailto:${official.email}`} className="md:col-span-2 flex items-center gap-4 p-4 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-100 dark:border-zinc-800 hover:border-red-500 transition-colors shadow-sm max-w-full overflow-hidden">
                                         <div className="w-10 h-10 bg-zinc-50 dark:bg-zinc-800 rounded-xl flex items-center justify-center text-zinc-400">
                                             <Mail className="w-5 h-5" />
                                         </div>
@@ -353,7 +353,7 @@ export function ProfileDetailModal({ official, onClose, onToggleActive, onPromot
                             </div>
 
                             {/* Account Visibility Toggle */}
-                            <div className="md:col-span-2 flex items-center justify-between p-6 bg-zinc-900 dark:bg-zinc-100 rounded-[2rem] shadow-xl mt-4">
+                            <div className="md:col-span-2 flex items-center justify-between p-6 bg-zinc-900 dark:bg-zinc-100 rounded-[2rem] shadow-xl mt-8">
                                 <div className="flex flex-col">
                                     <span className="text-[9px] font-black text-zinc-500 dark:text-zinc-400 uppercase tracking-[0.2em]">Sistem Durumu</span>
                                     <span className="text-sm font-black text-white dark:text-zinc-900 mt-1">
@@ -371,12 +371,12 @@ export function ProfileDetailModal({ official, onClose, onToggleActive, onPromot
                                 </button>
                             </div>
 
-                            {/* PERSISTENT SAVE BUTTON (BOTTOM FIXED ON MOBILE, STICKY ON DESKTOP) */}
-                            <div className="fixed lg:absolute bottom-0 left-0 w-full p-4 lg:p-8 bg-gradient-to-t from-white via-white/95 to-transparent dark:from-zinc-900 dark:via-zinc-900/95 z-40 flex justify-center">
+                            {/* PERSISTENT SAVE BUTTON (NON-BLOCKING POSITION) */}
+                            <div className="md:col-span-2 pt-8 mt-4 border-t border-zinc-100 dark:border-zinc-800">
                                 <button
                                     onClick={handleSave}
                                     disabled={isPending || !hasChanges}
-                                    className={`w-full max-w-md p-5 rounded-[2.5rem] shadow-2xl transition-all flex items-center justify-center gap-4 hover:scale-[1.02] active:scale-95 ${hasChanges ? 'bg-red-600 text-white shadow-red-600/40' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-400 cursor-not-allowed'}`}
+                                    className={`w-full p-5 rounded-[2.5rem] shadow-2xl transition-all flex items-center justify-center gap-4 hover:scale-[1.01] active:scale-95 z-10 ${hasChanges ? 'bg-red-600 text-white shadow-red-600/40 cursor-pointer' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-400 cursor-not-allowed opacity-50'}`}
                                 >
                                     <Save className={`w-6 h-6 ${isPending ? 'animate-bounce' : ''}`} />
                                     <span className="font-black text-lg tracking-tight uppercase">{isPending ? "KAYDEDİLİYOR..." : "DEĞİŞİKLİKLERİ KAYDET"}</span>
