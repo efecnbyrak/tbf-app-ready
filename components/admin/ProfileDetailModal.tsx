@@ -1,10 +1,11 @@
 "use client";
 
 import { useState, useTransition, useEffect } from "react";
-import { X, Calendar, LogIn, Trophy, UserSquare2, Phone, Mail, MapPin, Briefcase, Hash, Edit3, Save, RotateCcw, Shield, Star, AlertCircle, Check, Search, ShieldCheck } from "lucide-react";
+import { X, Calendar, LogIn, Trophy, UserSquare2, Phone, Mail, MapPin, Briefcase, Hash, Edit3, Save, RotateCcw, Shield, Star, AlertCircle, Check, Search, ShieldCheck, ChevronDown, UserMinus } from "lucide-react";
 import { format } from "date-fns";
 import { tr } from "date-fns/locale";
 import { updateRefereeProfile } from "@/app/actions/admin-users";
+import { demoteFromAdmin } from "@/app/actions/auth";
 import { useRouter } from "next/navigation";
 import { TURKEY_CITIES, OFFICIAL_TYPES, CLASSIFICATIONS } from "@/lib/constants";
 
@@ -34,6 +35,18 @@ export function ProfileDetailModal({ official, onClose, onToggleActive, onPromot
 
     const [availableRegions, setAvailableRegions] = useState<any[]>([]);
     const [citySearch, setCitySearch] = useState("");
+
+    // Detect if data has changed to show save button
+    const hasChanges =
+        editData.classification !== (official.classification || "BELIRLENMEMIS") ||
+        editData.officialType !== (official.officialType || "REFEREE") ||
+        editData.suspendedUntil !== (official.user?.suspendedUntil ? new Date(official.user.suspendedUntil).toISOString().split('T')[0] : "") ||
+        JSON.stringify(editData.regionIds) !== JSON.stringify(official.regions?.map((r: any) => r.id) || []);
+
+    const maskTCKN = (tckn: string) => {
+        if (!tckn || tckn.length < 11) return tckn;
+        return `${tckn.substring(0, 2)}********${tckn.substring(10, 11)}`;
+    };
 
     useEffect(() => {
         fetch("/api/regions")
@@ -65,6 +78,19 @@ export function ProfileDetailModal({ official, onClose, onToggleActive, onPromot
                 router.refresh();
             } else {
                 alert("Hata: " + res.message);
+            }
+        });
+    };
+
+    const handleDemote = () => {
+        if (!confirm("Bu kullanıcının yöneticilik yetkisini almak istediğinize emin misiniz?")) return;
+        startTransition(async () => {
+            const res = await demoteFromAdmin(official.userId);
+            if (res.success) {
+                router.refresh();
+                onClose();
+            } else {
+                alert("Hata: " + res.error);
             }
         });
     };
@@ -113,81 +139,98 @@ export function ProfileDetailModal({ official, onClose, onToggleActive, onPromot
                         </div>
 
                         <div className="space-y-2 mb-6">
-                            <h2 className="text-3xl font-black text-zinc-900 dark:text-white leading-tight uppercase tracking-tighter italic">
+                            <h2 className="text-3xl font-black text-zinc-900 dark:text-white leading-tight uppercase tracking-tighter">
                                 {official.firstName} <br /> {official.lastName}
                             </h2>
                             <div className="flex items-center justify-center gap-2 text-zinc-400 font-bold text-[10px] tracking-widest uppercase">
                                 <Hash className="w-3 h-3" />
-                                {official.tckn}
+                                {maskTCKN(official.tckn)}
                             </div>
                         </div>
 
                         <div className="w-full space-y-3">
-                            {/* Mission Badge */}
+                            {/* Mission Badge - Custom Dropdown */}
                             <div className="relative">
                                 <button
-                                    onClick={() => setEditingField('type')}
-                                    className="w-full p-4 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-[1.5rem] flex flex-col items-center gap-1 group transition-all hover:scale-[1.02]"
+                                    onClick={() => setEditingField(editingField === 'type' ? null : 'type')}
+                                    className={`w-full p-4 rounded-[1.5rem] flex flex-col items-center gap-1 transition-all hover:scale-[1.02] border-2 ${editingField === 'type' ? 'bg-white dark:bg-zinc-800 border-red-50' : 'bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 border-transparent'}`}
                                 >
-                                    <span className="text-[8px] font-black text-zinc-400 dark:text-zinc-500 tracking-[0.3em] uppercase">GÖREV TÜRÜ</span>
-                                    <span className="text-sm font-black tracking-tight uppercase italic flex items-center gap-2">
+                                    <span className={`text-[8px] font-black tracking-[0.3em] uppercase ${editingField === 'type' ? 'text-zinc-400' : 'text-zinc-400 dark:text-zinc-500'}`}>GÖREV TÜRÜ</span>
+                                    <span className={`text-sm font-black tracking-tight uppercase flex items-center gap-2 ${editingField === 'type' ? 'text-zinc-900 dark:text-white' : ''}`}>
                                         <Shield className="w-4 h-4 text-red-500" />
                                         {OFFICIAL_TYPES.find(t => t.id === editData.officialType)?.label || "BELİRTİLMEMİŞ"}
+                                        <ChevronDown className={`w-3 h-3 transition-transform ${editingField === 'type' ? 'rotate-180' : ''}`} />
                                     </span>
                                 </button>
                                 {editingField === 'type' && (
-                                    <div className="absolute inset-0 z-30">
-                                        <select
-                                            autoFocus
-                                            value={editData.officialType}
-                                            onChange={(e) => { setEditData({ ...editData, officialType: e.target.value }); setEditingField(null); }}
-                                            onBlur={() => setEditingField(null)}
-                                            className="w-full h-full rounded-[1.5rem] bg-white dark:bg-zinc-800 border-2 border-red-500 px-4 font-bold text-sm outline-none"
-                                        >
-                                            {OFFICIAL_TYPES.map(t => <option key={t.id} value={t.id}>{t.label}</option>)}
-                                        </select>
+                                    <div className="absolute top-[calc(100%+8px)] left-0 w-full bg-white dark:bg-zinc-900 border-2 border-zinc-100 dark:border-zinc-800 rounded-2xl shadow-2xl z-50 overflow-hidden py-2 animate-in slide-in-from-top-2 duration-200">
+                                        {OFFICIAL_TYPES.map(t => (
+                                            <button
+                                                key={t.id}
+                                                onClick={() => { setEditData({ ...editData, officialType: t.id }); setEditingField(null); }}
+                                                className={`w-full text-left px-6 py-3 text-xs font-black uppercase tracking-widest hover:bg-zinc-50 dark:hover:bg-zinc-800 flex items-center justify-between ${editData.officialType === t.id ? 'text-red-600 bg-red-50 dark:bg-red-900/10' : 'text-zinc-500 dark:text-zinc-400'}`}
+                                            >
+                                                {t.label}
+                                                {editData.officialType === t.id && <Check className="w-4 h-4" />}
+                                            </button>
+                                        ))}
                                     </div>
                                 )}
                             </div>
 
-                            {/* Classification Badge - Only for Referees or if specifically set */}
+                            {/* Classification Badge - Custom Dropdown */}
                             {(isReferee || official.classification !== "BELIRLENMEMIS") && (
                                 <div className="relative">
                                     <button
-                                        onClick={() => setEditingField('class')}
-                                        className="w-full p-4 bg-red-600 text-white rounded-[1.5rem] flex flex-col items-center gap-1 group transition-all hover:shadow-xl hover:shadow-red-600/20"
+                                        onClick={() => setEditingField(editingField === 'class' ? null : 'class')}
+                                        className={`w-full p-4 rounded-[1.5rem] flex flex-col items-center gap-1 transition-all hover:shadow-xl border-2 ${editingField === 'class' ? 'bg-white dark:bg-zinc-800 border-red-50 shadow-red-500/10' : 'bg-red-600 text-white border-transparent shadow-red-600/20'}`}
                                     >
-                                        <span className="text-[8px] font-black text-red-200 tracking-[0.3em] uppercase">KLASMAN</span>
-                                        <span className="text-sm font-black tracking-tight uppercase italic">
+                                        <span className={`text-[8px] font-black tracking-[0.3em] uppercase ${editingField === 'class' ? 'text-zinc-400' : 'text-red-200'}`}>KLASMAN</span>
+                                        <span className="text-sm font-black tracking-tight uppercase flex items-center gap-2">
                                             {CLASSIFICATIONS.find(c => c.id === editData.classification)?.label || "BELİRTİLMEMİŞ"}
+                                            <ChevronDown className={`w-3 h-3 transition-transform ${editingField === 'class' ? 'rotate-180' : ''}`} />
                                         </span>
                                     </button>
                                     {editingField === 'class' && (
-                                        <div className="absolute inset-0 z-30">
-                                            <select
-                                                autoFocus
-                                                value={editData.classification}
-                                                onChange={(e) => { setEditData({ ...editData, classification: e.target.value }); setEditingField(null); }}
-                                                onBlur={() => setEditingField(null)}
-                                                className="w-full h-full rounded-[1.5rem] bg-white dark:bg-zinc-800 border-2 border-zinc-900 px-4 font-bold text-sm outline-none"
-                                            >
-                                                {CLASSIFICATIONS.map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
-                                            </select>
+                                        <div className="absolute top-[calc(100%+8px)] left-0 w-full bg-white dark:bg-zinc-900 border-2 border-zinc-100 dark:border-zinc-800 rounded-2xl shadow-2xl z-50 overflow-hidden py-2 animate-in slide-in-from-top-2 duration-200">
+                                            {CLASSIFICATIONS.map(c => (
+                                                <button
+                                                    key={c.id}
+                                                    onClick={() => { setEditData({ ...editData, classification: c.id }); setEditingField(null); }}
+                                                    className={`w-full text-left px-6 py-3 text-xs font-black uppercase tracking-widest hover:bg-zinc-50 dark:hover:bg-zinc-800 flex items-center justify-between ${editData.classification === c.id ? 'text-red-600 bg-red-50 dark:bg-red-900/10' : 'text-zinc-500 dark:text-zinc-400'}`}
+                                                >
+                                                    {c.label}
+                                                    {editData.classification === c.id && <Check className="w-4 h-4" />}
+                                                </button>
+                                            ))}
                                         </div>
                                     )}
                                 </div>
                             )}
 
-                            {/* PROMOTE BUTTON: Only for observers, only for super admins, and not if already admin */}
+                            {/* Promote/Demote Actions */}
                             {isSuperAdmin && isObserver && !isAdmin && (
                                 <button
                                     onClick={() => { if (onPromote) onPromote(); }}
                                     className="w-full p-4 bg-emerald-600 text-white rounded-[1.5rem] flex flex-col items-center gap-1 group transition-all hover:bg-emerald-700 hover:shadow-xl hover:shadow-emerald-600/20 mt-4"
                                 >
                                     <span className="text-[8px] font-black text-emerald-100 tracking-[0.3em] uppercase">YÖNETİM</span>
-                                    <span className="text-sm font-black tracking-tight uppercase italic flex items-center gap-2">
+                                    <span className="text-sm font-black tracking-tight uppercase flex items-center gap-2">
                                         <ShieldCheck className="w-4 h-4" />
                                         YÖNETİCİ YAP
+                                    </span>
+                                </button>
+                            )}
+
+                            {isSuperAdmin && isAdmin && (
+                                <button
+                                    onClick={handleDemote}
+                                    className="w-full p-4 bg-indigo-600 text-white rounded-[1.5rem] flex flex-col items-center gap-1 group transition-all hover:bg-indigo-700 hover:shadow-xl hover:shadow-indigo-600/20 mt-4"
+                                >
+                                    <span className="text-[8px] font-black text-indigo-100 tracking-[0.3em] uppercase">YÖNETİM</span>
+                                    <span className="text-sm font-black tracking-tight uppercase flex items-center gap-2">
+                                        <UserMinus className="w-4 h-4" />
+                                        YÖNETİCİLİĞİ AL
                                     </span>
                                 </button>
                             )}
@@ -279,7 +322,7 @@ export function ProfileDetailModal({ official, onClose, onToggleActive, onPromot
                                     </div>
                                     <div className="flex flex-col">
                                         <span className="text-[8px] font-black text-zinc-400 mb-1">MESLEK</span>
-                                        <div className="flex items-center gap-3 text-sm font-black text-zinc-900 dark:text-white uppercase italic">
+                                        <div className="flex items-center gap-3 text-sm font-black text-zinc-900 dark:text-white uppercase tracking-tight">
                                             <Briefcase className="w-4 h-4 text-zinc-400" />
                                             {official.job || "BELİRTİLMEMİŞ"}
                                         </div>
@@ -292,55 +335,52 @@ export function ProfileDetailModal({ official, onClose, onToggleActive, onPromot
                                 <h3 className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.3em] mb-4">DİSİPLİN DURUMU</h3>
                                 <div className="space-y-4">
                                     <div className="flex flex-col">
-                                        <span className="text-[8px] font-black text-zinc-400 mb-1 tracking-tighter uppercase italic">Ceza Bitiş Tarihi</span>
+                                        <span className="text-[8px] font-black text-zinc-400 mb-1 tracking-tighter uppercase">Ceza Bitiş Tarihi</span>
                                         <input
                                             type="date"
                                             value={editData.suspendedUntil}
                                             onChange={(e) => setEditData({ ...editData, suspendedUntil: e.target.value })}
-                                            className="w-full px-4 py-3 bg-white dark:bg-zinc-900 rounded-2xl text-xs font-black border-2 border-transparent focus:border-red-500 outline-none transition-all shadow-sm group-hover:bg-zinc-50 shadow-red-600/5 uppercase italic"
+                                            className="w-full px-4 py-3 bg-white dark:bg-zinc-900 rounded-2xl text-xs font-black border-2 border-transparent focus:border-red-500 outline-none transition-all shadow-sm group-hover:bg-zinc-50 shadow-red-600/5 uppercase"
                                         />
                                     </div>
                                     <div className="flex items-center gap-3">
                                         <div className={`w-3 h-3 rounded-full animate-pulse ${isSuspended ? 'bg-red-600 shadow-[0_0_12px_rgba(220,38,38,0.5)]' : 'bg-emerald-600 shadow-[0_0_12px_rgba(5,150,105,0.5)]'}`} />
-                                        <span className="text-[10px] font-black text-zinc-900 dark:text-white tracking-widest uppercase italic">
+                                        <span className="text-[10px] font-black text-zinc-900 dark:text-white tracking-widest uppercase">
                                             {isSuspended ? "DİSİPLİN CEZASI VAR" : "TEMİZ SİCİL"}
                                         </span>
                                     </div>
                                 </div>
                             </div>
 
-                            {/* Bottom Actions */}
-                            <div className="md:col-span-2 flex flex-col sm:flex-row gap-4 pt-4">
+                            {/* Account Visibility Toggle */}
+                            <div className="md:col-span-2 flex items-center justify-between p-6 bg-zinc-900 dark:bg-zinc-100 rounded-[2rem] shadow-xl mt-4">
+                                <div className="flex flex-col">
+                                    <span className="text-[9px] font-black text-zinc-500 dark:text-zinc-400 uppercase tracking-[0.2em]">Sistem Durumu</span>
+                                    <span className="text-sm font-black text-white dark:text-zinc-900 mt-1">
+                                        {isActive ? "AKTİF" : "DONDURULMUŞ"}
+                                    </span>
+                                </div>
                                 <button
                                     onClick={onToggleActive}
-                                    className={`flex-1 group relative p-6 rounded-[2.5rem] overflow-hidden transition-all duration-500 hover:scale-[1.02] shadow-xl ${isActive
-                                        ? "bg-zinc-900 text-white shadow-zinc-950/20"
-                                        : "bg-emerald-600 text-white shadow-emerald-500/30"}`}
+                                    className={`px-8 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shadow-lg ${isActive
+                                        ? "bg-red-600 text-white shadow-red-600/30 hover:bg-red-700 hover:shadow-red-700/40"
+                                        : "bg-emerald-600 text-white shadow-emerald-600/30 hover:bg-emerald-700 hover:shadow-emerald-700/40"
+                                        }`}
                                 >
-                                    <div className="relative z-10 flex items-center justify-between">
-                                        <div className="flex flex-col items-start">
-                                            <span className="text-[8px] font-black text-zinc-400 uppercase tracking-[0.4em] mb-1">Hesap İşlemi</span>
-                                            <span className="text-sm font-black tracking-tight uppercase italic underline decoration-red-600/50 underline-offset-4">
-                                                {isActive ? "HESABI PASİFE AL" : "HESABI AKTİFLEŞTİR"}
-                                            </span>
-                                        </div>
-                                        <div className={`p-4 rounded-2xl shadow-lg transition-transform group-hover:rotate-12 ${isActive ? "bg-white/10" : "bg-black/10"}`}>
-                                            <RotateCcw className="w-5 h-5" />
-                                        </div>
-                                    </div>
-                                    <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 -mr-16 -mt-16 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity" />
+                                    {isActive ? "PASİFE AL" : "AKTİFLEŞTİR"}
                                 </button>
+                            </div>
 
-                                {(isEditing || editingField) && (
-                                    <button
-                                        onClick={handleSave}
-                                        disabled={isPending}
-                                        className="flex-1 p-6 bg-red-600 text-white rounded-[2.5rem] shadow-2xl shadow-red-600/30 hover:bg-red-700 transition-all flex items-center justify-center gap-4 hover:scale-[1.02] active:scale-95"
-                                    >
-                                        <Save className={`w-6 h-6 ${isPending ? 'animate-bounce' : ''}`} />
-                                        <span className="font-black text-lg tracking-tight uppercase italic">{isPending ? "KAYDEDİLİYOR..." : "DEĞİŞİKLİKLERİ KAYDET"}</span>
-                                    </button>
-                                )}
+                            {/* PERSISTENT SAVE BUTTON (BOTTOM FIXED ON MOBILE, STICKY ON DESKTOP) */}
+                            <div className="fixed lg:absolute bottom-0 left-0 w-full p-4 lg:p-8 bg-gradient-to-t from-white via-white/95 to-transparent dark:from-zinc-900 dark:via-zinc-900/95 z-40 flex justify-center">
+                                <button
+                                    onClick={handleSave}
+                                    disabled={isPending || !hasChanges}
+                                    className={`w-full max-w-md p-5 rounded-[2.5rem] shadow-2xl transition-all flex items-center justify-center gap-4 hover:scale-[1.02] active:scale-95 ${hasChanges ? 'bg-red-600 text-white shadow-red-600/40' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-400 cursor-not-allowed'}`}
+                                >
+                                    <Save className={`w-6 h-6 ${isPending ? 'animate-bounce' : ''}`} />
+                                    <span className="font-black text-lg tracking-tight uppercase">{isPending ? "KAYDEDİLİYOR..." : "DEĞİŞİKLİKLERİ KAYDET"}</span>
+                                </button>
                             </div>
 
                         </div>

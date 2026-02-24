@@ -51,6 +51,9 @@ export function OfficialRow({ official, onClick, onToggleActive, onPromote, isSu
                             {official.firstName} {official.lastName}
                         </h3>
                         {official.user?.role?.name === "SUPER_ADMIN" && <ShieldCheck className="w-4 h-4 text-orange-500" />}
+                        {official.user?.role?.name === "ADMIN" && (
+                            <span className="px-2 py-0.5 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 text-[8px] font-black uppercase tracking-widest rounded-md">YÖNETİCİ</span>
+                        )}
                     </div>
                     <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mt-1">
                         {(isReferee || official.classification !== "BELIRLENMEMIS") && (

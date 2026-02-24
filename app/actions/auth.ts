@@ -590,6 +590,44 @@ export async function promoteToAdmin(userId: number) {
     }
 }
 
+export async function demoteFromAdmin(userId: number) {
+    try {
+        const session = await import("@/lib/session");
+        const currentSession = await session.getSession();
+
+        if (currentSession?.role !== "SUPER_ADMIN") {
+            return { error: "Yetkisiz işlem. Sadece Süper Admin bu işlemi yapabilir." };
+        }
+
+        const userToDemote = await db.user.findUnique({
+            where: { id: userId },
+            include: { role: true }
+        });
+
+        if (!userToDemote) return { error: "Kullanıcı bulunamadı." };
+
+        let userRole = await db.role.findUnique({ where: { name: "USER" } });
+        if (!userRole) {
+            userRole = await db.role.create({ data: { name: "USER" } });
+        }
+
+        await db.user.update({
+            where: { id: userId },
+            data: {
+                roleId: userRole.id
+            }
+        });
+
+        revalidatePath("/admin/manage-admins");
+        revalidatePath("/admin/officials");
+        revalidatePath("/admin/referees");
+        return { success: true, message: "Yöneticilik yetkisi başarıyla geri alındı." };
+    } catch (error) {
+        console.error("Demote from Admin error:", error);
+        return { error: "İşlem sırasında bir hata oluştu." };
+    }
+}
+
 export async function toggleUserActiveStatus(userId: number) {
     try {
         const session = await import("@/lib/session");

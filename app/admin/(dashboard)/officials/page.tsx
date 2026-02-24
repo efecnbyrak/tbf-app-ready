@@ -80,8 +80,8 @@ export default async function OfficialsPage({ searchParams }: PageProps) {
             return type === selectedType;
         }
 
-        // Default: all non-referees that are not admins (unless status=managers is set)
-        return type !== "REFEREE" && off.user?.role?.name !== "ADMIN";
+        // Default: all non-referees
+        return type !== "REFEREE";
     });
 
     // Plain data for client component
@@ -90,7 +90,7 @@ export default async function OfficialsPage({ searchParams }: PageProps) {
     return (
         <div className="space-y-12">
             <header>
-                <h1 className="text-4xl font-black text-zinc-900 dark:text-white tracking-tight italic uppercase">Genel Görevliler</h1>
+                <h1 className="text-4xl font-black text-zinc-900 dark:text-white tracking-tight uppercase">Genel Görevliler</h1>
                 <p className="text-zinc-500 font-medium mt-1">Masa görevlileri, gözlemciler ve teknik kadro yönetimi.</p>
             </header>
 
