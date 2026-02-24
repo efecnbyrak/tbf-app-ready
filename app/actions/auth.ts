@@ -14,11 +14,14 @@ export async function ensureSchemaColumns() {
         await db.$executeRawUnsafe(`ALTER TABLE users ADD COLUMN IF NOT EXISTS "isApproved" BOOLEAN NOT NULL DEFAULT false`);
         await db.$executeRawUnsafe(`ALTER TABLE users ADD COLUMN IF NOT EXISTS "isActive" BOOLEAN NOT NULL DEFAULT true`);
         await db.$executeRawUnsafe(`ALTER TABLE users ADD COLUMN IF NOT EXISTS "lastLoginAt" TIMESTAMP`);
+        await db.$executeRawUnsafe(`ALTER TABLE users ADD COLUMN IF NOT EXISTS "suspendedUntil" TIMESTAMP`);
 
         // Referees table (mapped as referees)
         await db.$executeRawUnsafe(`ALTER TABLE referees ADD COLUMN IF NOT EXISTS "address" TEXT`);
         await db.$executeRawUnsafe(`ALTER TABLE referees ADD COLUMN IF NOT EXISTS "job" TEXT`);
         await db.$executeRawUnsafe(`ALTER TABLE referees ADD COLUMN IF NOT EXISTS "officialType" TEXT DEFAULT 'REFEREE'`);
+        await db.$executeRawUnsafe(`ALTER TABLE referees ADD COLUMN IF NOT EXISTS "points" INTEGER DEFAULT 0`);
+        await db.$executeRawUnsafe(`ALTER TABLE referees ADD COLUMN IF NOT EXISTS "rating" INTEGER DEFAULT 0`);
 
         // Seed Roles and Admin User at runtime if missing
         const superAdminRole = await db.role.findUnique({ where: { name: 'SUPER_ADMIN' } });
@@ -142,15 +145,15 @@ export async function login(prevState: ActionState, formData: FormData): Promise
         const isActuallyAdmin = user.role.name === "ADMIN" || user.role.name === "SUPER_ADMIN" || user.role.name === "ADMIN_IHK";
 
         if (!isActuallyAdmin) {
-            if (user.lastLoginAt && user.lastLoginAt < sixMonthsAgo && user.isActive) {
+            if ((user as any).lastLoginAt && (user as any).lastLoginAt < sixMonthsAgo && (user as any).isActive) {
                 await db.user.update({
                     where: { id: user.id },
-                    data: { isActive: false }
+                    data: { isActive: false } as any
                 });
                 return { error: "Hesabınız 6 aydır giriş yapılmadığı için pasif konuma alınmıştır. Lütfen yönetici ile iletişime geçin.", success: false };
             }
 
-            if (!user.isActive) {
+            if (!(user as any).isActive) {
                 return { error: "Hesabınız pasif konumdadır. Lütfen yönetici ile iletişime geçin.", success: false };
             }
         }
