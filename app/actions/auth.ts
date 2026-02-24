@@ -12,7 +12,8 @@ export async function ensureSchemaColumns() {
     try {
         // Users table (mapped as users)
         await db.$executeRawUnsafe(`ALTER TABLE users ADD COLUMN IF NOT EXISTS "isApproved" BOOLEAN NOT NULL DEFAULT false`);
-        await db.$executeRawUnsafe(`ALTER TABLE users ADD COLUMN IF NOT EXISTS "suspendedUntil" TIMESTAMP`);
+        await db.$executeRawUnsafe(`ALTER TABLE users ADD COLUMN IF NOT EXISTS "isActive" BOOLEAN NOT NULL DEFAULT true`);
+        await db.$executeRawUnsafe(`ALTER TABLE users ADD COLUMN IF NOT EXISTS "lastLoginAt" TIMESTAMP`);
 
         // Referees table (mapped as referees)
         await db.$executeRawUnsafe(`ALTER TABLE referees ADD COLUMN IF NOT EXISTS "address" TEXT`);
@@ -133,8 +134,32 @@ export async function login(prevState: ActionState, formData: FormData): Promise
             return { error: "Başvurunuz Yönetici tarafından onay beklemektedir. Onaylandığı zaman bilgilendirileceksiniz.", success: false };
         }
 
-        // 1.6 Check if suspended - REMOVED restriction for login, will check in forms instead
-        // if (user.suspendedUntil && user.suspendedUntil > new Date()) { ... }
+        // 1.6 Check if suspended or passive
+        const now = new Date();
+        const sixMonthsAgo = new Date(now.getTime() - (6 * 30 * 24 * 60 * 60 * 1000));
+
+        // If not admin, check for inactivity
+        const isActuallyAdmin = user.role.name === "ADMIN" || user.role.name === "SUPER_ADMIN" || user.role.name === "ADMIN_IHK";
+
+        if (!isActuallyAdmin) {
+            if (user.lastLoginAt && user.lastLoginAt < sixMonthsAgo && user.isActive) {
+                await db.user.update({
+                    where: { id: user.id },
+                    data: { isActive: false }
+                });
+                return { error: "Hesabınız 6 aydır giriş yapılmadığı için pasif konuma alınmıştır. Lütfen yönetici ile iletişime geçin.", success: false };
+            }
+
+            if (!user.isActive) {
+                return { error: "Hesabınız pasif konumdadır. Lütfen yönetici ile iletişime geçin.", success: false };
+            }
+        }
+
+        // Update lastLoginAt
+        await db.user.update({
+            where: { id: user.id },
+            data: { lastLoginAt: now } as any
+        });
 
         // 1.7 Check login path
         const isAdminLogin = formData.get("adminLogin") === "true";
@@ -487,6 +512,78 @@ export async function deleteAdmin(userId: number) {
     } catch (error: any) {
         console.error("Delete Admin error:", error);
         return { error: error.message || "Silme işlemi sırasında bir hata oluştu." };
+    }
+}
+
+export async function promoteToAdmin(userId: number) {
+    try {
+        const session = await import("@/lib/session");
+        const currentSession = await session.getSession();
+
+        if (currentSession?.role !== "SUPER_ADMIN") {
+            return { error: "Yetkisiz işlem. Sadece Süper Admin bu işlemi yapabilir." };
+        }
+
+        const userToPromote = await db.user.findUnique({
+            where: { id: userId },
+            include: { role: true, referee: true }
+        });
+
+        if (!userToPromote) return { error: "Kullanıcı bulunamadı." };
+
+        // Check if it's an Observer (Gözlemci)
+        if (userToPromote.referee?.officialType !== "OBSERVER") {
+            return { error: "Sadece Gözlemciler (OBSERVER) yöneticiye dönüştürülebilir." };
+        }
+
+        let adminRole = await db.role.findUnique({ where: { name: "ADMIN" } });
+        if (!adminRole) {
+            adminRole = await db.role.create({ data: { name: "ADMIN" } });
+        }
+
+        await db.user.update({
+            where: { id: userId },
+            data: {
+                roleId: adminRole.id,
+                isApproved: true,
+                isVerified: true
+            }
+        });
+
+        revalidatePath("/admin/manage-admins");
+        revalidatePath("/admin/officials");
+        return { success: true, message: "Kullanıcı başarıyla yönetici yapıldı." };
+    } catch (error) {
+        console.error("Promote to Admin error:", error);
+        return { error: "İşlem sırasında bir hata oluştu." };
+    }
+}
+
+export async function toggleUserActiveStatus(userId: number) {
+    try {
+        const session = await import("@/lib/session");
+        const currentSession = await session.getSession();
+
+        const allowedRoles = ["ADMIN", "SUPER_ADMIN"];
+        if (!allowedRoles.includes(currentSession?.role || "")) {
+            return { error: "Yetkisiz işlem." };
+        }
+
+        const user = await db.user.findUnique({ where: { id: userId } });
+        if (!user) return { error: "Kullanıcı bulunamadı." };
+
+        await db.user.update({
+            where: { id: userId },
+            data: { isActive: !(user as any).isActive } as any
+        });
+
+        revalidatePath("/admin/manage-admins");
+        revalidatePath("/admin/referees");
+        revalidatePath("/admin/officials");
+        return { success: true, message: `Kullanıcı durumu ${!user.isActive ? 'Aktif' : 'Pasif'} olarak güncellendi.` };
+    } catch (error) {
+        console.error("Toggle User Activity error:", error);
+        return { error: "İşlem sırasında bir hata oluştu." };
     }
 }
 

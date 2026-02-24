@@ -1,11 +1,14 @@
 import { db } from "@/lib/db";
 import { RefereeListClient } from "./RefereeListClient";
 import { ensureSchemaColumns } from "@/app/actions/auth";
+import { verifySession } from "@/lib/session";
 
 export const dynamic = 'force-dynamic';
 
 export default async function RefereesPage() {
     await ensureSchemaColumns();
+    const session = await verifySession();
+
     // Fetch Referee Types manually via Raw Query to bypass stale Prisma Client
     const refereeTypesRaw = await db.$queryRaw<Array<{ id: number, officialType: string }>>`
         SELECT id, "officialType" FROM referees
@@ -19,7 +22,24 @@ export default async function RefereesPage() {
 
     // Fetch all referees and filter in memory
     const allReferees = await db.referee.findMany({
-        include: { user: true, regions: true },
+        include: {
+            user: true,
+            regions: true,
+            assignments: {
+                include: {
+                    match: true
+                },
+                orderBy: {
+                    match: {
+                        date: 'desc'
+                    }
+                },
+                take: 5
+            },
+            _count: {
+                select: { assignments: true }
+            }
+        },
         orderBy: { createdAt: 'desc' }
     });
 
@@ -38,6 +58,7 @@ export default async function RefereesPage() {
             <RefereeListClient
                 initialReferees={plainReferees}
                 refereeTypeMap={refereeTypeMap}
+                currentUserRole={session.role}
             />
         </div>
     );

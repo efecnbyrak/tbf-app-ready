@@ -27,6 +27,8 @@ model User {
   isVerified Boolean @default(false)
   isApproved Boolean @default(false)
   suspendedUntil DateTime?
+  isActive Boolean @default(true)
+  lastLoginAt DateTime?
   videoProgress VideoProgress[]
   chats ChatSession[]
 

@@ -1,15 +1,18 @@
 "use client";
 
-import { useState } from "react";
-import { OfficialCard } from "@/components/admin/OfficialCard";
-import { Search, Users, ShieldAlert } from "lucide-react";
+import { useState, useTransition } from "react";
+import { Search, Users, ShieldAlert, Loader2 } from "lucide-react";
+import { OfficialRow } from "@/components/admin/OfficialRow";
+import { ProfileDetailModal } from "@/components/admin/ProfileDetailModal";
+import { toggleUserActiveStatus, promoteToAdmin } from "@/app/actions/auth";
+import { useRouter } from "next/navigation";
 
 interface RefereeListClientProps {
     initialReferees: any[];
     refereeTypeMap: Record<string, string>;
+    currentUserRole?: string | null;
 }
 
-// Mapping of database values to UI display labels
 const CLASSIFICATION_MAP: Record<string, string> = {
     "UNAPPROVED": "Onay Bekleyenler",
     "BELIRLENMEMIS": "Belirtilmemiş",
@@ -20,7 +23,6 @@ const CLASSIFICATION_MAP: Record<string, string> = {
     "ADAY_HAKEM": "Aday Hakem"
 };
 
-// Sort order for classifications
 const ORDERED_CLASSIFICATIONS = [
     "UNAPPROVED",
     "BELIRLENMEMIS",
@@ -31,10 +33,12 @@ const ORDERED_CLASSIFICATIONS = [
     "ADAY_HAKEM"
 ];
 
-export function RefereeListClient({ initialReferees, refereeTypeMap }: RefereeListClientProps) {
+export function RefereeListClient({ initialReferees, refereeTypeMap, currentUserRole }: RefereeListClientProps) {
     const [searchQuery, setSearchQuery] = useState("");
+    const [selectedOfficial, setSelectedOfficial] = useState<any>(null);
+    const [isPending, startTransition] = useTransition();
+    const router = useRouter();
 
-    // Filter referees based on search query
     const filteredReferees = initialReferees.filter(ref => {
         const fullName = `${ref.firstName} ${ref.lastName}`.toLowerCase();
         const tckn = ref.tckn.toLowerCase();
@@ -42,32 +46,47 @@ export function RefereeListClient({ initialReferees, refereeTypeMap }: RefereeLi
         return fullName.includes(query) || tckn.includes(query);
     });
 
-    // Grouping logic with robust catch-all for "Belirtilmemiş"
     const grouped = ORDERED_CLASSIFICATIONS.reduce((acc, code) => {
         const label = CLASSIFICATION_MAP[code];
         acc[label] = filteredReferees.filter(ref => {
-            // First Priority: Check if unapproved
-            if (code === "UNAPPROVED") {
-                return !ref.user?.isApproved;
-            }
-
-            // If we are looking for other classifications, only include approved users
-            if (ref.user?.isApproved === false) return false;
-
-            // For the "Belirtilmemiş" group, catch null, empty, or explicit BELIRLENMEMIS codes
+            if (code === "UNAPPROVED") return !ref.user?.isApproved;
+            if (ref.user?.isApproved === false && code !== "UNAPPROVED") return false;
             if (code === "BELIRLENMEMIS") {
-                return !ref.classification ||
-                    ref.classification === "" ||
-                    ref.classification === "BELIRLENMEMIS" ||
-                    !CLASSIFICATION_MAP[ref.classification]; // Catch any unrecognized codes here too
+                return !ref.classification || ref.classification === "" || ref.classification === "BELIRLENMEMIS" || !CLASSIFICATION_MAP[ref.classification];
             }
             return ref.classification === code;
         });
         return acc;
     }, {} as Record<string, any[]>);
 
+    const handleToggleStatus = (id: number) => {
+        if (!confirm("Kullanıcı durumunu değiştirmek istediğinize emin misiniz?")) return;
+        startTransition(async () => {
+            const res = await toggleUserActiveStatus(id);
+            if (res.error) alert(res.error);
+            else {
+                router.refresh();
+                if (selectedOfficial?.user?.id === id) {
+                    setSelectedOfficial({ ...selectedOfficial, user: { ...selectedOfficial.user, isActive: !selectedOfficial.user.isActive } });
+                }
+            }
+        });
+    };
+
+    const handlePromote = (id: number) => {
+        if (!confirm("Bu kullanıcıyı yönetici yapmak istediğinize emin misiniz? Bu işlem geri alınamaz.")) return;
+        startTransition(async () => {
+            const res = await promoteToAdmin(id);
+            if (res.error) alert(res.error);
+            else {
+                alert(res.message);
+                router.refresh();
+            }
+        });
+    };
+
     return (
-        <div className="space-y-12">
+        <div className="space-y-12 pb-20">
             {/* Top Toolbar */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white dark:bg-zinc-900 p-6 rounded-3xl shadow-sm border border-zinc-200 dark:border-zinc-800">
                 <div className="flex items-center gap-4">
@@ -76,7 +95,7 @@ export function RefereeListClient({ initialReferees, refereeTypeMap }: RefereeLi
                     </div>
                     <div>
                         <h2 className="text-xl font-black text-zinc-900 dark:text-white tracking-tight">Hakem Listesi</h2>
-                        <p className="text-sm text-zinc-500 font-medium">Toplam {filteredReferees.length} sonuç bulundu</p>
+                        <p className="text-sm text-zinc-500 font-medium tracking-tight uppercase italic">{filteredReferees.length} KAYIT BULUNDU</p>
                     </div>
                 </div>
 
@@ -93,42 +112,47 @@ export function RefereeListClient({ initialReferees, refereeTypeMap }: RefereeLi
                 </div>
             </div>
 
-            {/* Grouped Content */}
+            {/* List Content */}
             <div className="space-y-16">
                 {ORDERED_CLASSIFICATIONS.map(code => {
                     const label = CLASSIFICATION_MAP[code];
                     const groupReferees = grouped[label];
 
-                    // Don't show empty sections if there's a search occurring, 
-                    // except if it's the "Belirtilmemiş" section and not searching
                     if (groupReferees.length === 0 && searchQuery !== "") return null;
                     if (groupReferees.length === 0 && code !== "BELIRLENMEMIS") return null;
 
                     return (
                         <section key={code} className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-                            <div className="flex items-center gap-4 mb-8">
-                                <h3 className="text-2xl font-black text-zinc-900 dark:text-white tracking-tighter">
+                            <div className="flex items-center gap-4 mb-8 px-2">
+                                <h3 className="text-2xl font-black text-zinc-900 dark:text-white tracking-tighter uppercase italic">
                                     {label}
                                 </h3>
                                 <div className="h-px flex-1 bg-gradient-to-r from-zinc-200 dark:from-zinc-800 to-transparent" />
-                                <span className="px-4 py-1 bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 rounded-full text-xs font-black">
-                                    {groupReferees.length} HAKEM
+                                <span className="px-5 py-1.5 bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 rounded-xl text-[10px] font-black tracking-[0.2em] uppercase">
+                                    {groupReferees.length} ÖĞE
                                 </span>
                             </div>
 
                             {groupReferees.length === 0 ? (
-                                <div className="p-12 text-center bg-zinc-50 dark:bg-zinc-950 rounded-3xl border-2 border-dashed border-zinc-200 dark:border-zinc-800">
-                                    <p className="text-zinc-400 font-medium italic">Bu klasmanda hakem bulunamadı.</p>
+                                <div className="p-12 text-center bg-zinc-50 dark:bg-zinc-950 rounded-[2.5rem] border-2 border-dashed border-zinc-200 dark:border-zinc-800">
+                                    <p className="text-zinc-400 font-medium italic">Bu klasmanda henüz kayıt bulunamadı.</p>
                                 </div>
                             ) : (
-                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-8">
+                                <div className="grid grid-cols-1 gap-2">
                                     {groupReferees.map((ref) => (
-                                        <OfficialCard
+                                        <OfficialRow
                                             key={ref.id}
                                             official={{
                                                 ...ref,
                                                 officialType: refereeTypeMap[ref.id] || "REFEREE"
                                             }}
+                                            isSuperAdmin={currentUserRole === "SUPER_ADMIN"}
+                                            onClick={() => setSelectedOfficial({
+                                                ...ref,
+                                                officialType: refereeTypeMap[ref.id] || "REFEREE"
+                                            })}
+                                            onToggleActive={() => handleToggleStatus(ref.user?.id)}
+                                            onPromote={() => handlePromote(ref.user?.id)}
                                         />
                                     ))}
                                 </div>
@@ -142,11 +166,30 @@ export function RefereeListClient({ initialReferees, refereeTypeMap }: RefereeLi
                         <div className="w-20 h-20 bg-zinc-100 dark:bg-zinc-800 rounded-full flex items-center justify-center mx-auto mb-6">
                             <ShieldAlert className="w-10 h-10 text-zinc-400" />
                         </div>
-                        <h3 className="text-2xl font-black text-zinc-900 dark:text-white mb-2">Sonuç Bulunamadı</h3>
-                        <p className="text-zinc-500 font-medium">"{searchQuery}" aramasıyla eşleşen bir hakem yok.</p>
+                        <h3 className="text-2xl font-black text-zinc-900 dark:text-white mb-2 tracking-tighter">SONUÇ BULUNAMADI</h3>
+                        <p className="text-zinc-500 font-medium italic">"{searchQuery}" aramasıyla eşleşen bir kayıt yok.</p>
                     </div>
                 )}
             </div>
+
+            {/* Profile Modal */}
+            {selectedOfficial && (
+                <ProfileDetailModal
+                    official={selectedOfficial}
+                    onClose={() => setSelectedOfficial(null)}
+                    onToggleActive={() => handleToggleStatus(selectedOfficial.user?.id)}
+                />
+            )}
+
+            {/* Global Loading Overlay */}
+            {isPending && (
+                <div className="fixed inset-0 z-[110] bg-zinc-950/20 backdrop-blur-[2px] flex items-center justify-center pointer-events-none">
+                    <div className="bg-white dark:bg-zinc-900 p-6 rounded-3xl shadow-2xl border border-zinc-200 dark:border-zinc-800 flex flex-col items-center gap-4">
+                        <Loader2 className="w-10 h-10 text-red-600 animate-spin" />
+                        <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">İşlem Yapılıyor...</p>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
