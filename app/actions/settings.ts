@@ -6,7 +6,8 @@ import { revalidatePath } from "next/cache";
 
 export async function updateSystemSetting(key: string, value: string) {
     const session = await verifySession();
-    if (session.role !== "ADMIN") {
+    const allowedRoles = ["ADMIN", "SUPER_ADMIN"];
+    if (!allowedRoles.includes(session.role || "")) {
         return { error: "Yetkisiz işlem." };
     }
 
@@ -25,9 +26,36 @@ export async function updateSystemSetting(key: string, value: string) {
     }
 }
 
+export async function updateSystemSettingsBatch(settings: { key: string; value: string }[]) {
+    const session = await verifySession();
+    const allowedRoles = ["ADMIN", "SUPER_ADMIN"];
+    if (!allowedRoles.includes(session.role || "")) {
+        return { error: "Yetkisiz işlem." };
+    }
+
+    try {
+        await db.$transaction(
+            settings.map(s => db.systemSetting.upsert({
+                where: { key: s.key },
+                create: { key: s.key, value: s.value },
+                update: { value: s.value }
+            }))
+        );
+
+        revalidatePath("/admin/settings");
+        revalidatePath("/admin/availability");
+        revalidatePath("/referee/availability");
+        return { success: true };
+    } catch (e) {
+        console.error("[SETTINGS] Batch update failed:", e);
+        return { error: "Ayarlar toplu olarak güncellenemedi." };
+    }
+}
+
 export async function advanceWeek() {
     const session = await verifySession();
-    if (session.role !== "ADMIN") return { error: "Yetkisiz işlem" };
+    const allowedRoles = ["ADMIN", "SUPER_ADMIN"];
+    if (!allowedRoles.includes(session.role || "")) return { error: "Yetkisiz işlem" };
 
     try {
         // Get current target or default
@@ -80,7 +108,8 @@ export async function advanceWeek() {
 
 export async function resetWeekCounter() {
     const session = await verifySession();
-    if (session.role !== "ADMIN") return { error: "Yetkisiz işlem" };
+    const allowedRoles = ["ADMIN", "SUPER_ADMIN"];
+    if (!allowedRoles.includes(session.role || "")) return { error: "Yetkisiz işlem" };
 
     try {
         await db.systemSetting.upsert({

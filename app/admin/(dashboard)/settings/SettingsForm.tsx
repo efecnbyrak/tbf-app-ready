@@ -1,8 +1,9 @@
 "use client";
 
-import { updateSystemSetting, advanceWeek, resetWeekCounter } from "@/app/actions/settings";
+import { updateSystemSettingsBatch, advanceWeek, resetWeekCounter } from "@/app/actions/settings";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { Loader2, CalendarClock, ChevronRight, RotateCcw } from "lucide-react";
+import { Loader2, CalendarClock, ChevronRight, RotateCcw, Save } from "lucide-react";
 
 interface SettingsFormProps {
     initialMode: string;
@@ -15,20 +16,30 @@ export function SettingsForm({ initialMode, initialSeason, initialTargetDate, in
     const [loading, setLoading] = useState(false);
     const [advanceLoading, setAdvanceLoading] = useState(false);
     const [resetLoading, setResetLoading] = useState(false);
+    const router = useRouter();
 
     const handleSave = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setLoading(true);
         const formData = new FormData(e.currentTarget);
 
-        await updateSystemSetting("AVAILABILITY_MODE", formData.get("mode") as string);
-        await updateSystemSetting("CURRENT_SEASON", formData.get("season") as string);
-        await updateSystemSetting("CURRENT_WEEK_NUMBER", formData.get("weekNumber") as string);
-        await updateSystemSetting("AVAILABILITY_TARGET_DATE", formData.get("targetDate") as string);
+        const settings = [
+            { key: "AVAILABILITY_MODE", value: formData.get("mode") as string },
+            { key: "CURRENT_SEASON", value: formData.get("season") as string },
+            { key: "CURRENT_WEEK_NUMBER", value: formData.get("weekNumber") as string },
+            { key: "AVAILABILITY_TARGET_DATE", value: formData.get("targetDate") as string },
+        ];
+
+        const result = await updateSystemSettingsBatch(settings);
 
         setLoading(false);
-        alert("Ayarlar kaydedildi!");
-        window.location.reload();
+
+        if (result.success) {
+            router.refresh();
+            alert("Ayarlar başarıyla güncellendi!");
+        } else {
+            alert(result.error || "Bir hata oluştu.");
+        }
     };
 
     const handleAdvance = async () => {
