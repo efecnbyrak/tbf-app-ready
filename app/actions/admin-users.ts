@@ -72,6 +72,64 @@ export async function suspendUser(userId: number, until: Date | null) {
     return { success: true };
 }
 
+export async function updateRefereeProfile(userId: number, data: {
+    classification?: string;
+    officialType?: string;
+    points?: number;
+    rating?: number;
+    regionIds?: number[];
+    suspendedUntil?: Date | null;
+}) {
+    await ensureSchemaColumns();
+    const session = await verifySession();
+    if (session.role !== "SUPER_ADMIN" && session.role !== "ADMIN_IHK" && session.role !== "ADMIN") {
+        throw new Error("Yetkisiz işlem.");
+    }
+
+    await db.$transaction(async (tx: any) => {
+        // Update User fields (suspension)
+        if (data.suspendedUntil !== undefined) {
+            await tx.user.update({
+                where: { id: userId },
+                data: { suspendedUntil: data.suspendedUntil }
+            });
+        }
+
+        // Update Referee fields
+        const updateData: any = {};
+        if (data.classification !== undefined) updateData.classification = data.classification;
+        if (data.officialType !== undefined) updateData.officialType = data.officialType;
+        if (data.points !== undefined) updateData.points = data.points;
+        if (data.rating !== undefined) updateData.rating = data.rating;
+
+        if (Object.keys(updateData).length > 0) {
+            await tx.referee.update({
+                where: { userId: userId },
+                data: updateData
+            });
+        }
+
+        // Update Regions if provided
+        if (data.regionIds !== undefined) {
+            const referee = await tx.referee.findUnique({ where: { userId: userId } });
+            if (referee) {
+                await tx.referee.update({
+                    where: { id: referee.id },
+                    data: {
+                        regions: {
+                            set: data.regionIds.map(id => ({ id }))
+                        }
+                    }
+                });
+            }
+        }
+    });
+
+    revalidatePath("/admin/referees");
+    revalidatePath("/admin/officials");
+    return { success: true, message: "Profil başarıyla güncellendi." };
+}
+
 export async function cleanupOldAvailability() {
     const session = await verifySession();
     if (session.role !== "SUPER_ADMIN" && session.role !== "ADMIN_IHK" && session.role !== "ADMIN") {
@@ -104,3 +162,4 @@ export async function cleanupOldAvailability() {
     revalidatePath("/admin/availability");
     return { success: true, count: deleteCount.count };
 }
+

@@ -1,6 +1,6 @@
 "use client";
 
-import { UserSquare2, ChevronRight, ShieldCheck, Activity, UserX, UserCheck } from "lucide-react";
+import { UserSquare2, ChevronRight, ShieldCheck, Activity, UserX, UserCheck, Star } from "lucide-react";
 import { formatRelative } from "date-fns";
 import { tr } from "date-fns/locale";
 
@@ -49,15 +49,27 @@ export function OfficialRow({ official, onClick, onToggleActive, onPromote, isSu
                     <h3 className="text-lg font-black text-zinc-900 dark:text-white leading-tight flex items-center gap-2">
                         {official.firstName} {official.lastName}
                         {official.user?.role?.name === "SUPER_ADMIN" && <ShieldCheck className="w-4 h-4 text-orange-500" />}
+                        {official.user?.suspendedUntil && new Date(official.user.suspendedUntil) > new Date() && (
+                            <span className="w-2 h-2 rounded-full bg-orange-500 animate-pulse" title="Cezalı" />
+                        )}
                     </h3>
                     <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1">
                         <span className="text-xs font-bold text-zinc-500 uppercase tracking-wider">{official.classification}</span>
                         <span className="w-1 h-1 bg-zinc-300 dark:bg-zinc-700 rounded-full" />
-                        <span className={`text-[11px] font-black px-2 py-0.5 rounded-md uppercase tracking-tight ${isReferee ? 'bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-400' : 'bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400'
+                        <span className={`text-[11px] font-black px-2 py-0.5 rounded-md uppercase tracking-tight ${isReferee ? "bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-400" : "bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400"
                             }`}>
                             {official.officialType === "REFEREE" ? "HAKEM" :
                                 official.officialType === "OBSERVER" ? "GÖZLEMCİ" : "GENEL GÖREVLİ"}
                         </span>
+                        {isReferee && (
+                            <>
+                                <span className="w-1 h-1 bg-zinc-300 dark:bg-zinc-700 rounded-full" />
+                                <div className="flex items-center gap-1.5 ml-1">
+                                    <Star className="w-3.5 h-3.5 text-orange-500 fill-orange-500" />
+                                    <span className="text-[11px] font-black text-zinc-900 dark:text-white italic">{official.points || 0} PN</span>
+                                </div>
+                            </>
+                        )}
                     </div>
                 </div>
             </div>
@@ -90,8 +102,8 @@ export function OfficialRow({ official, onClick, onToggleActive, onPromote, isSu
                         onClick={(e) => { e.stopPropagation(); onToggleActive?.(); }}
                         title={isActive ? "Pasif Yap" : "Aktif Yap"}
                         className={`p-2.5 rounded-xl transition-all ${isActive
-                                ? 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-red-600 hover:text-white'
-                                : 'bg-green-600 text-white shadow-lg shadow-green-600/20'
+                            ? 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-red-600 hover:text-white'
+                            : 'bg-green-600 text-white shadow-lg shadow-green-600/20'
                             }`}
                     >
                         {isActive ? <UserX className="w-5 h-5" /> : <UserCheck className="w-5 h-5" />}
