@@ -4,8 +4,8 @@
 import { Referee } from "@prisma/client"; // Or wherever types are
 import Image from "next/image";
 import { User, Shield, Activity, Save, Table, FileSpreadsheet } from "lucide-react";
-import { DeleteRefereeButton } from "@/app/admin/referees/DeleteRefereeButton";
-import { ClassificationEditor } from "@/app/admin/referees/ClassificationEditor";
+import { DeleteRefereeButton } from "@/app/admin/(dashboard)/referees/DeleteRefereeButton";
+import { ClassificationEditor } from "@/app/admin/(dashboard)/referees/ClassificationEditor";
 
 import { TypeEditor } from "@/components/admin/TypeEditor";
 import { SuspendRefereeButton } from "@/components/admin/SuspendRefereeButton";
