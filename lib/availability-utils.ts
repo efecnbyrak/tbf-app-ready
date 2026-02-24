@@ -44,7 +44,7 @@ export async function getAvailabilityWindow() {
 
     const deadline = new Date(targetWeekStart);
     deadline.setDate(targetWeekStart.getDate() - 4); // Salı
-    deadline.setHours(18, 30, 0, 0); // Tuesday 18:30
+    deadline.setHours(18, 0, 0, 0); // Tuesday 18:00
 
     const targetWeekEnd = new Date(targetWeekStart);
     targetWeekEnd.setDate(targetWeekStart.getDate() + 6); // Cuma
@@ -61,8 +61,14 @@ export async function getAvailabilityWindow() {
 
     let isLocked = today < openTime || today > deadline;
 
+    // Manual Overrides
     if (setting === "OPEN") isLocked = false;
-    if (setting === "CLOSED") isLocked = true;
+    else if (setting === "CLOSED") isLocked = true;
+
+    // Debug Log (Server Console)
+    if (process.env.NODE_ENV === "development" || today > openTime) {
+        console.log(`[AVAILABILITY] Today: ${today.toISOString()}, Deadline: ${deadline.toISOString()}, Setting: ${setting}, Locked: ${isLocked}`);
+    }
 
     return {
         startDate: targetWeekStart, // weekStartDate (form ID)

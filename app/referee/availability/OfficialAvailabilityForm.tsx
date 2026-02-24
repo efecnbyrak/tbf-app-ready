@@ -78,9 +78,24 @@ export function OfficialAvailabilityForm({ referee, days, existingForm, isLocked
     };
 
     return (
-        <form action={handleSubmit} className="space-y-8 relative">
+        <form action={handleSubmit} className="space-y-8 relative overflow-hidden rounded-3xl">
             {isLocked && (
-                <div className="absolute inset-0 z-50 bg-zinc-100/10 dark:bg-zinc-900/10 backdrop-blur-[1px] pointer-events-none rounded-xl" />
+                <>
+                    <div className="absolute inset-0 z-[60] bg-zinc-950/20 backdrop-blur-[2px] pointer-events-none" />
+                    <div className="absolute inset-0 z-[70] flex flex-col items-center justify-center pointer-events-none p-4">
+                        <div className="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md px-8 py-6 rounded-3xl shadow-2xl border-4 border-red-600/50 flex flex-col items-center gap-4 transform -rotate-3 scale-110 md:scale-125">
+                            <div className="w-20 h-20 bg-red-600 rounded-full flex items-center justify-center shadow-lg shadow-red-600/40">
+                                <Lock className="w-10 h-10 text-white" />
+                            </div>
+                            <div className="text-center">
+                                <h3 className="text-3xl font-black text-zinc-900 dark:text-white mb-1 uppercase tracking-tighter">ERİŞİM KAPALI</h3>
+                                <p className="text-zinc-600 dark:text-zinc-400 font-bold text-sm tracking-tight px-4">
+                                    PAZAR 15:00 - SALI 18:00
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </>
             )}
 
             {(state?.error || clientError) && (
@@ -96,7 +111,10 @@ export function OfficialAvailabilityForm({ referee, days, existingForm, isLocked
                 </div>
             )}
 
-            <div className={isLocked ? "grayscale transition-all duration-500 opacity-75" : "transition-all duration-500"}>
+            <div
+                style={isLocked ? { filter: 'grayscale(1)', pointerEvents: 'none', userSelect: 'none' } : {}}
+                className="transition-all duration-700 ease-in-out"
+            >
                 {/* Profile Info Section (Read-Only + Phone) */}
                 <div className="bg-white dark:bg-zinc-900 p-6 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-sm mb-8">
                     <h2 className="text-lg font-semibold mb-4 border-b dark:border-zinc-800 pb-2">Kişisel Bilgiler</h2>
@@ -188,14 +206,14 @@ export function OfficialAvailabilityForm({ referee, days, existingForm, isLocked
                     </button>
                 </div>
             ) : (
-                <div className="p-6 bg-red-50 dark:bg-red-900/20 border-2 border-red-100 dark:border-red-900/30 text-red-800 dark:text-red-400 rounded-3xl flex flex-col md:flex-row items-center gap-4 text-center md:text-left mt-8 shadow-inner">
-                    <div className="w-12 h-12 bg-red-100 dark:bg-red-900/40 rounded-2xl flex items-center justify-center shrink-0">
-                        <Lock className="w-6 h-6 text-red-600" />
+                <div className="p-6 bg-zinc-100 dark:bg-zinc-800/50 border-2 border-zinc-200 dark:border-zinc-700 text-zinc-500 rounded-3xl flex flex-col md:flex-row items-center gap-4 text-center md:text-left mt-8">
+                    <div className="w-12 h-12 bg-zinc-200 dark:bg-zinc-800 rounded-2xl flex items-center justify-center shrink-0">
+                        <Lock className="w-6 h-6 text-zinc-400" />
                     </div>
                     <div>
-                        <h3 className="font-black text-lg">Form Kullanıma Kapalı</h3>
+                        <h3 className="font-black text-lg text-zinc-700 dark:text-zinc-300">Form Şu An Erişime Kapalı</h3>
                         <p className="text-sm font-medium opacity-80">
-                            Yeni bildirimler Pazar 15:00'da açılır ve Salı 18:30'da otomatik olarak kapanır.
+                            Sistem otomatik olarak Pazar 15:00'da açılır ve Salı 18:00'da kilitlenir.
                         </p>
                     </div>
                 </div>

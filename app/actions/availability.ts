@@ -32,7 +32,10 @@ export async function saveAvailability(prevState: ActionState, formData: FormDat
         return { error: `Hesabınız ${dateStr} tarihine kadar dondurulmuştur. Bu süre zarfında uygunluk formu dolduramazsınız.`, success: false };
     }
 
-    const { startDate, deadline, isLocked } = await getAvailabilityWindow();
+    const { startDate, deadline, isLocked, mode } = await getAvailabilityWindow();
+
+    // Audit Logging
+    console.log(`[ACTION] saveAvailability - User: ${referee.firstName} ${referee.lastName}, Locked: ${isLocked}, Mode: ${mode}, TargetWeek: ${startDate.toLocaleDateString()}`);
 
     if (isLocked) {
         return { error: "Form gönderim süresi doldu.", success: false };
