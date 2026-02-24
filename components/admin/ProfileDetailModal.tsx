@@ -85,281 +85,205 @@ export function ProfileDetailModal({ official, onClose, onToggleActive }: Profil
     };
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-zinc-950/80 backdrop-blur-md animate-in fade-in duration-200">
-            <div className="relative w-full max-w-2xl bg-white dark:bg-zinc-900 rounded-[3rem] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.3)] border border-zinc-200 dark:border-zinc-800 overflow-hidden animate-in zoom-in-95 duration-300">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-zinc-950/50 backdrop-blur-sm animate-in fade-in duration-200">
+            <div className="relative w-full max-w-xl bg-white dark:bg-zinc-900 rounded-3xl shadow-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden animate-in zoom-in-95 duration-300">
 
-                {/* Basketball Pattern Overlay */}
-                <div className="absolute inset-0 opacity-[0.03] pointer-events-none dark:invert" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0C13.4315 0 0 13.4315 0 30C0 46.5685 13.4315 60 30 60C46.5685 60 60 46.5685 60 30C60 13.4315 46.5685 0 30 0ZM30 5C35.0664 5 39.7719 6.55173 43.6826 9.17285C40.1706 13.4009 38 18.9103 38 25C38 31.0897 40.1706 36.5991 43.6826 40.8271C39.7719 43.4483 35.0664 45 30 45C24.9336 45 20.2281 43.4483 16.3174 40.8271C19.8294 36.5991 22 31.0897 22 25C22 18.9103 19.8294 13.4009 16.3174 9.17285C20.2281 6.55173 24.9336 5 30 5Z' fill='%23000' fill-rule='evenodd'/%3E%3C/svg%3E")` }} />
-
-                {/* Close & Edit Buttons */}
-                <div className="absolute top-6 right-6 flex gap-2 z-20">
+                {/* Simple Close & Edit Buttons */}
+                <div className="absolute top-4 right-4 flex gap-2 z-20">
                     <button
                         onClick={() => setIsEditing(!isEditing)}
-                        className={`p-2.5 rounded-full transition-all shadow-lg ${isEditing
-                            ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-900"
-                            : "bg-white dark:bg-zinc-800 text-zinc-500 hover:text-red-600"}`}
+                        className={`p-2 rounded-lg transition-all ${isEditing
+                            ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
+                            : "bg-zinc-100 dark:bg-zinc-800 text-zinc-500 hover:text-red-600"}`}
+                        title={isEditing ? "İptal Et" : "Düzenle"}
                     >
-                        {isEditing ? <RotateCcw className="w-5 h-5" /> : <Edit3 className="w-5 h-5" />}
+                        {isEditing ? <RotateCcw className="w-4 h-4" /> : <Edit3 className="w-4 h-4" />}
                     </button>
                     <button
                         onClick={onClose}
-                        className="p-2.5 bg-white dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700 text-zinc-500 rounded-full transition-all shadow-lg"
+                        className="p-2 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-500 rounded-lg transition-all"
                     >
-                        <X className="w-5 h-5" />
+                        <X className="w-4 h-4" />
                     </button>
                 </div>
 
-                {/* Header / Cover */}
-                <div className="h-40 bg-zinc-900 relative overflow-hidden">
-                    <div className="absolute inset-0 bg-gradient-to-r from-red-600 to-orange-600 opacity-90" />
-                    <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-20 -mt-20 blur-3xl animate-pulse" />
-                </div>
-
-                <div className="px-8 pb-10 -mt-20 relative">
-                    <div className="flex flex-col md:flex-row md:items-end gap-6 mb-8">
-                        {/* Avatar */}
-                        <div className="w-40 h-40 rounded-[2.5rem] bg-white dark:bg-zinc-900 p-2.5 shadow-2xl border-[6px] border-white dark:border-zinc-900 relative group">
-                            <div className="w-full h-full rounded-[1.8rem] bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center overflow-hidden">
-                                {official.imageUrl ? (
-                                    <img src={official.imageUrl} alt={official.firstName} className="w-full h-full object-cover" />
-                                ) : (
-                                    <img src="/basketball_placeholder.png" alt="Placeholder" className="w-full h-full object-cover opacity-60 dark:invert grayscale" />
-                                )}
-                            </div>
-                            {/* Score/Points Badge */}
-                            {!isEditing && (
-                                <div className="absolute -bottom-2 -right-2 px-4 py-2 bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 rounded-2xl shadow-xl font-black italic text-sm tracking-tighter flex items-center gap-1.5 border-4 border-white dark:border-zinc-900">
-                                    <Star className="w-4 h-4 text-orange-400 fill-orange-400" />
-                                    {official.points || 0} PN
-                                </div>
+                <div className="p-8">
+                    <div className="flex flex-col md:flex-row gap-8 mb-8">
+                        {/* Profile Image - Simplified */}
+                        <div className="w-32 h-32 rounded-2xl bg-zinc-50 dark:bg-zinc-800 border-2 border-zinc-100 dark:border-zinc-700 shrink-0 overflow-hidden shadow-inner">
+                            {official.imageUrl ? (
+                                <img src={official.imageUrl} alt={official.firstName} className="w-full h-full object-cover" />
+                            ) : (
+                                <img src="/hakem/defaultHakem.png" alt="Default Hakem" className="w-full h-full object-cover" />
                             )}
                         </div>
 
-                        <div className="flex-1 pb-2">
-                            <h2 className="text-4xl font-black text-zinc-900 dark:text-white tracking-tighter uppercase italic leading-none mb-3">
+                        <div className="flex-1 min-w-0">
+                            <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-2 truncate">
                                 {official.firstName} {official.lastName}
                             </h2>
-                            <div className="flex flex-wrap items-center gap-2">
+                            <div className="flex flex-wrap items-center gap-2 mb-4">
                                 {isEditing ? (
-                                    <>
+                                    <div className="flex gap-2 w-full">
                                         <select
                                             value={editData.officialType}
                                             onChange={(e) => setEditData({ ...editData, officialType: e.target.value })}
-                                            className="px-4 py-1.5 bg-zinc-100 dark:bg-zinc-800 border-none rounded-xl text-xs font-black uppercase tracking-tight focus:ring-2 ring-red-500 outline-none"
+                                            className="flex-1 px-3 py-1.5 bg-zinc-100 dark:bg-zinc-800 border-none rounded-lg text-xs font-bold focus:ring-1 ring-red-500 outline-none"
                                         >
                                             {OFFICIAL_TYPES.map(t => <option key={t.id} value={t.id}>{t.label}</option>)}
                                         </select>
                                         <select
                                             value={editData.classification}
                                             onChange={(e) => setEditData({ ...editData, classification: e.target.value })}
-                                            className="px-4 py-1.5 bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400 border-none rounded-xl text-xs font-black uppercase tracking-tight focus:ring-2 ring-red-500 outline-none"
+                                            className="flex-1 px-3 py-1.5 bg-zinc-100 dark:bg-zinc-800 border-none rounded-lg text-xs font-bold focus:ring-1 ring-red-500 outline-none"
                                         >
                                             {CLASSIFICATIONS.map(c => <option key={c} value={c}>{c.replace('_', ' ')}</option>)}
                                         </select>
-                                    </>
+                                    </div>
                                 ) : (
                                     <>
-                                        <span className="px-4 py-1.5 bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 text-[10px] font-black rounded-xl uppercase tracking-widest flex items-center gap-2">
-                                            <Shield className="w-3 h-3" />
+                                        <span className="px-3 py-1 bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 text-[10px] font-bold rounded-lg uppercase tracking-wider">
                                             {OFFICIAL_TYPES.find(t => t.id === official.officialType)?.label || "HAKEM"}
                                         </span>
-                                        <span className="px-4 py-1.5 bg-red-600 text-white text-[10px] font-black rounded-xl uppercase tracking-widest italic shadow-lg shadow-red-600/20">
+                                        <span className="px-3 py-1 bg-red-600 text-white text-[10px] font-bold rounded-lg uppercase tracking-wider">
                                             {official.classification?.replace('_', ' ') || "BELİRTİLMEMİŞ"}
                                         </span>
                                         {isSuspended && (
-                                            <span className="px-4 py-1.5 bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-400 text-[10px] font-black rounded-xl uppercase tracking-widest flex items-center gap-1.5 border border-orange-200 dark:border-orange-800">
-                                                <AlertCircle className="w-3 h-3" />
+                                            <span className="px-3 py-1 bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 text-[10px] font-bold rounded-lg uppercase tracking-wider">
                                                 CEZALI
                                             </span>
                                         )}
                                     </>
                                 )}
                             </div>
+
+                            {!isEditing && (
+                                <div className="flex items-center gap-4 text-xs font-medium text-zinc-500">
+                                    <div className="flex items-center gap-1.5">
+                                        <Star className="w-3.5 h-3.5 text-orange-400 fill-orange-400" />
+                                        <span className="text-zinc-900 dark:text-white font-bold">{official.points || 0} Puan</span>
+                                    </div>
+                                    <div className="flex items-center gap-1.5">
+                                        <Trophy className="w-3.5 h-3.5 text-zinc-400" />
+                                        <span>{official._count?.assignments || 0} Görev</span>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
 
                     {isEditing ? (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 bg-zinc-50 dark:bg-zinc-950 p-8 rounded-[2.5rem] border border-zinc-100 dark:border-zinc-800 mb-8 animate-in slide-in-from-top-4 duration-500 max-h-[50vh] overflow-y-auto custom-scrollbar">
-                            <div className="space-y-6">
-                                <div>
-                                    <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-3 block px-1">Puan Sistemi (PN/RT)</label>
-                                    <div className="flex gap-3">
+                        <div className="space-y-6 animate-in slide-in-from-top-2 duration-300">
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest pl-1">Performance</label>
+                                    <div className="flex gap-2">
                                         <input
                                             type="number"
                                             value={editData.points}
                                             onChange={(e) => setEditData({ ...editData, points: Number(e.target.value) })}
                                             placeholder="Puan"
-                                            className="w-full px-5 py-3.5 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 focus:ring-2 ring-red-500 outline-none font-bold"
+                                            className="w-full px-4 py-2 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:ring-1 ring-red-500 outline-none text-sm"
                                         />
                                         <input
                                             type="number"
                                             value={editData.rating}
                                             onChange={(e) => setEditData({ ...editData, rating: Number(e.target.value) })}
-                                            placeholder="Rating %"
-                                            className="w-full px-5 py-3.5 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 focus:ring-2 ring-red-500 outline-none font-bold"
+                                            placeholder="Rating"
+                                            className="w-full px-4 py-2 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:ring-1 ring-red-500 outline-none text-sm"
                                         />
                                     </div>
                                 </div>
-                                <div>
-                                    <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-3 block px-1">Görev Engeli (Ceza Bitiş)</label>
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest pl-1">Ceza Bitiş Tarihi</label>
                                     <input
                                         type="date"
                                         value={editData.suspendedUntil}
                                         onChange={(e) => setEditData({ ...editData, suspendedUntil: e.target.value })}
-                                        className="w-full px-5 py-3.5 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 focus:ring-2 ring-red-500 outline-none font-bold"
+                                        className="w-full px-4 py-2 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:ring-1 ring-red-500 outline-none text-sm"
                                     />
                                 </div>
-                                <div>
-                                    <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-3 block px-1 truncate">Bölge Transfer (Merkez Değiştir)</label>
-                                    <div className="grid grid-cols-2 gap-2 p-4 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 max-h-40 overflow-y-auto">
-                                        {availableRegions.map((region) => (
-                                            <button
-                                                key={region.id}
-                                                onClick={() => toggleRegion(region.id)}
-                                                className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold transition-all ${editData.regionIds.includes(region.id)
-                                                        ? "bg-red-500 text-white"
-                                                        : "bg-zinc-50 dark:bg-zinc-800 text-zinc-500"
-                                                    }`}
-                                            >
-                                                <span className="truncate">{region.name}</span>
-                                                {editData.regionIds.includes(region.id) && <Check className="w-3 h-3 ml-2 shrink-0" />}
-                                            </button>
-                                        ))}
-                                    </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest pl-1">Bölge Ayarları (Şehir)</label>
+                                <div className="flex flex-wrap gap-2 p-3 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl min-h-[40px]">
+                                    {availableRegions.map((region) => (
+                                        <button
+                                            key={region.id}
+                                            onClick={() => toggleRegion(region.id)}
+                                            className={`px-3 py-1 rounded-lg text-xs font-medium transition-all ${editData.regionIds.includes(region.id)
+                                                    ? "bg-red-600 text-white"
+                                                    : "bg-zinc-200 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-400"
+                                                }`}
+                                        >
+                                            {region.name}
+                                        </button>
+                                    ))}
+                                    {availableRegions.length === 0 && <span className="text-[10px] text-zinc-400 italic">Yükleniyor...</span>}
                                 </div>
                             </div>
-                            <div className="flex flex-col justify-end gap-3 h-full">
+
+                            <div className="flex gap-3 pt-4">
                                 <button
                                     onClick={handleSave}
                                     disabled={isPending}
-                                    className="w-full py-4.5 bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 rounded-2xl font-black uppercase tracking-widest flex items-center justify-center gap-3 shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50"
+                                    className="flex-1 py-3 bg-red-600 text-white rounded-xl font-bold text-sm hover:bg-red-700 transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg shadow-red-600/10"
                                 >
-                                    {isPending ? "GÜNCELLENİYOR..." : <><Save className="w-5 h-5" /> KAYDET VE AKTAR</>}
+                                    {isPending ? "GÜNCELLENİYOR..." : <><Save className="w-4 h-4" /> KAYDET</>}
                                 </button>
                                 <button
                                     onClick={() => setIsEditing(false)}
-                                    className="w-full py-4 bg-zinc-200 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 rounded-2xl font-black uppercase tracking-widest hover:bg-zinc-300 dark:hover:bg-zinc-700 transition-all font-bold"
+                                    className="px-6 py-3 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 rounded-xl font-bold text-sm hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-all"
                                 >
-                                    DEĞİŞİKLİKLERİ İPTAL ET
+                                    İPTAL
                                 </button>
                             </div>
                         </div>
                     ) : (
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-                            <div className="p-5 bg-zinc-50 dark:bg-zinc-950 rounded-3xl border border-zinc-100 dark:border-zinc-800 hover:border-red-100 dark:hover:border-red-900/30 transition-all group">
-                                <div className="flex items-center gap-3 mb-2">
-                                    <Star className="w-4 h-4 text-orange-500 fill-orange-500" />
-                                    <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Rating</span>
-                                </div>
-                                <p className="text-xl font-black text-zinc-900 dark:text-white italic">%{official.rating || 0}</p>
-                            </div>
-                            <div className="p-5 bg-zinc-50 dark:bg-zinc-950 rounded-3xl border border-zinc-100 dark:border-zinc-800">
-                                <div className="flex items-center gap-3 mb-2">
-                                    <Trophy className="w-4 h-4 text-red-600" />
-                                    <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Görevler</span>
-                                </div>
-                                <p className="text-xl font-black text-zinc-900 dark:text-white italic">{official._count?.assignments || 0}</p>
-                            </div>
-                            <div className="p-5 bg-zinc-50 dark:bg-zinc-950 rounded-3xl border border-zinc-100 dark:border-zinc-800">
-                                <div className="flex items-center gap-3 mb-2">
-                                    <Calendar className="w-4 h-4 text-blue-600" />
-                                    <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Kayıt</span>
-                                </div>
-                                <p className="text-xl font-black text-zinc-900 dark:text-white italic">
-                                    {createdAt ? format(createdAt, 'yyyy', { locale: tr }) : 'N/A'}
-                                </p>
-                            </div>
-                            <div className="p-5 bg-zinc-50 dark:bg-zinc-950 rounded-3xl border border-zinc-100 dark:border-zinc-800">
-                                <div className="flex items-center gap-3 mb-2">
-                                    <LogIn className="w-4 h-4 text-zinc-400" />
-                                    <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Giriş</span>
-                                </div>
-                                <p className="text-[11px] font-black text-zinc-900 dark:text-white uppercase leading-tight mt-1">
-                                    {lastLoginAt ? format(lastLoginAt, 'dd MMM', { locale: tr }) : 'HİÇ'}
-                                </p>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Son Görevler */}
-                    {!isEditing && official.assignments && official.assignments.length > 0 && (
-                        <div className="mb-8 space-y-4">
-                            <div className="flex items-center justify-between px-2">
-                                <span className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] italic">SON MÜSABAKALARI</span>
-                                <div className="flex-1 mx-4 h-px bg-zinc-100 dark:bg-zinc-800" />
-                            </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                {official.assignments.slice(0, 2).map((assignment: any) => (
-                                    <div key={assignment.id} className="p-5 bg-white dark:bg-zinc-900 rounded-[2rem] border border-zinc-200 dark:border-zinc-800 shadow-sm flex items-center gap-4 group hover:border-red-500 transition-all">
-                                        <div className="w-12 h-12 rounded-2xl bg-zinc-50 dark:bg-zinc-800 flex items-center justify-center font-black text-xs text-zinc-400 group-hover:text-red-600 transition-colors shrink-0">
-                                            {assignment.role.substring(0, 2).toUpperCase()}
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                            <p className="text-sm font-black text-zinc-900 dark:text-white uppercase italic truncate">
-                                                {assignment.match?.homeTeam} - {assignment.match?.awayTeam}
-                                            </p>
-                                            <p className="text-[10px] font-bold text-zinc-400 uppercase mt-0.5">
-                                                {assignment.match?.date ? format(new Date(assignment.match.date), 'dd MMM yyyy', { locale: tr }) : 'Tarih Belirtilmedi'}
-                                            </p>
-                                        </div>
+                        <div className="space-y-8">
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="p-4 bg-zinc-50 dark:bg-zinc-800/50 rounded-2xl border border-zinc-100 dark:border-zinc-700">
+                                    <p className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest mb-1">İletişim</p>
+                                    <div className="space-y-1.5">
+                                        <p className="text-xs text-zinc-600 dark:text-zinc-300 flex items-center gap-2">
+                                            <Phone className="w-3 h-3" /> {official.phone}
+                                        </p>
+                                        <p className="text-xs text-zinc-600 dark:text-zinc-300 flex items-center gap-2 truncate">
+                                            <Mail className="w-3 h-3" /> {official.email}
+                                        </p>
                                     </div>
-                                ))}
+                                </div>
+                                <div className="p-4 bg-zinc-50 dark:bg-zinc-800/50 rounded-2xl border border-zinc-100 dark:border-zinc-700">
+                                    <p className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest mb-1">Konum & Kariyer</p>
+                                    <div className="space-y-1.5">
+                                        <p className="text-xs text-zinc-600 dark:text-zinc-300 flex items-center gap-2">
+                                            <MapPin className="w-3 h-3" /> {official.regions?.map((r: any) => r.name).join(', ') || 'Belirtilmemiş'}
+                                        </p>
+                                        <p className="text-xs text-zinc-600 dark:text-zinc-300 flex items-center gap-2">
+                                            <Briefcase className="w-3 h-3" /> {official.job || 'Belirtilmemiş'}
+                                        </p>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                    )}
 
-                    {/* Info Grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8 pt-8 border-t border-zinc-100 dark:border-zinc-800">
-                        <div className="flex items-center gap-4 px-4 py-3 bg-zinc-50/50 dark:bg-zinc-800/30 rounded-2xl group hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors">
-                            <Phone className="w-4 h-4 text-zinc-400" />
-                            <div className="min-w-0">
-                                <p className="text-[9px] font-black text-zinc-400 uppercase tracking-widest">Telefon</p>
-                                <p className="text-xs font-bold text-zinc-900 dark:text-white">{official.phone}</p>
+                            <div className="flex items-center justify-between p-4 bg-zinc-900 dark:bg-zinc-50 rounded-2xl shadow-xl">
+                                <div>
+                                    <p className="text-[9px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest leading-none">Hesap Durumu</p>
+                                    <p className="text-xs font-bold text-white dark:text-zinc-900 mt-1">
+                                        {isActive ? "AKTİF" : "ERİŞİM KISITLI"}
+                                    </p>
+                                </div>
+                                <button
+                                    onClick={onToggleActive}
+                                    className={`px-6 py-2 rounded-xl text-[10px] font-bold uppercase transition-all ${isActive
+                                        ? "bg-red-600 text-white hover:bg-red-700"
+                                        : "bg-green-600 text-white hover:bg-green-700"
+                                        }`}
+                                >
+                                    {isActive ? "Pasife Al" : "Aktif Et"}
+                                </button>
                             </div>
-                        </div>
-                        <div className="flex items-center gap-4 px-4 py-3 bg-zinc-50/50 dark:bg-zinc-800/30 rounded-2xl group hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors">
-                            <Mail className="w-4 h-4 text-zinc-400" />
-                            <div className="min-w-0">
-                                <p className="text-[9px] font-black text-zinc-400 uppercase tracking-widest">E-posta</p>
-                                <p className="text-xs font-bold text-zinc-900 dark:text-white truncate">{official.email}</p>
-                            </div>
-                        </div>
-                        <div className="flex items-center gap-4 px-4 py-3 bg-zinc-50/50 dark:bg-zinc-800/30 rounded-2xl group hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors">
-                            <MapPin className="w-4 h-4 text-zinc-400" />
-                            <div className="min-w-0">
-                                <p className="text-[9px] font-black text-zinc-400 uppercase tracking-widest">Atandığı Bölge(ler)</p>
-                                <p className="text-xs font-bold text-zinc-900 dark:text-white truncate">
-                                    {official.regions?.map((r: any) => r.name).join(', ') || 'Bölge Boş'}
-                                </p>
-                            </div>
-                        </div>
-                        <div className="flex items-center gap-4 px-4 py-3 bg-zinc-50/50 dark:bg-zinc-800/30 rounded-2xl group hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors">
-                            <Briefcase className="w-4 h-4 text-zinc-400" />
-                            <div className="min-w-0">
-                                <p className="text-[9px] font-black text-zinc-400 uppercase tracking-widest">Meslek / Kariyer</p>
-                                <p className="text-xs font-bold text-zinc-900 dark:text-white truncate">{official.job || 'N/A'}</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Footer Actions */}
-                    {!isEditing && (
-                        <div className="mt-10 flex flex-col sm:flex-row items-center justify-between gap-4 p-5 bg-zinc-900 dark:bg-zinc-100 rounded-3xl shadow-xl">
-                            <div>
-                                <p className="text-[10px] font-bold text-white/50 dark:text-zinc-900/50 uppercase tracking-[0.2em] px-2 italic">Hesap Statüsü</p>
-                                <p className="text-xs font-black text-white dark:text-zinc-900 px-2 mt-0.5 uppercase tracking-widest">
-                                    {isActive ? "SİSTEME ERİŞİM AKTİF" : "ERİŞİM KISITLANDI"}
-                                </p>
-                            </div>
-                            <button
-                                onClick={onToggleActive}
-                                className={`w-full sm:w-auto px-8 py-3.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shadow-lg ${isActive
-                                    ? "bg-red-600 text-white hover:bg-red-700 shadow-red-600/20"
-                                    : "bg-green-600 text-white hover:bg-green-700 shadow-green-600/20"
-                                    }`}
-                            >
-                                {isActive ? "PASİFE AL" : "AKTİF ET"}
-                            </button>
                         </div>
                     )}
                 </div>

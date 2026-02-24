@@ -29,6 +29,15 @@ export async function ensureSchemaColumns() {
             await db.role.create({ data: { name: 'SUPER_ADMIN' } });
         }
 
+        // Seed City-based Regions
+        const cities = ["İstanbul", "Ankara", "İzmir", "Bursa", "Antalya"];
+        for (const cityName of cities) {
+            const exists = await db.region.findUnique({ where: { name: cityName } });
+            if (!exists) {
+                await db.region.create({ data: { name: cityName } });
+            }
+        }
+
         const adminUsername = 'talat.mustafa.ozdemir50';
         const existingAdmin = await db.user.findUnique({ where: { username: adminUsername } });
         if (!existingAdmin) {
