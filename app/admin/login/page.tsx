@@ -45,6 +45,7 @@ export default function AdminLoginPage() {
 
                 <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-8 shadow-xl">
                     <form onSubmit={handleSubmit} className="space-y-6">
+                        <input type="hidden" name="adminLogin" value="true" />
                         <div>
                             <label className="block text-sm font-medium text-zinc-400 mb-2">
                                 Kullanıcı Adı veya TCKN

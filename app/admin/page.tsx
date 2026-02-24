@@ -125,7 +125,10 @@ export default async function AdminDashboard() {
                                         "TABLE": "Masa Görevlisi",
                                         "OBSERVER": "Gözlemci",
                                         "HEALTH": "Sağlıkçı",
-                                        "STATISTICIAN": "İstatistikçi"
+                                        "STATISTICIAN": "İstatistikçi",
+                                        "TABLE_STATISTICIAN": "Masa & İstatistik",
+                                        "TABLE_HEALTH": "Masa & Sağlık",
+                                        "FIELD_COMMISSIONER": "Saha Komiseri"
                                     };
                                     const roleLabel = roleLabels[user.officialType || ""] || user.officialType || "Belirsiz";
 

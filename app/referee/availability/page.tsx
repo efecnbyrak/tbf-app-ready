@@ -8,12 +8,20 @@ export default async function AvailabilityPage() {
     const session = await verifySession();
     const referee = await db.referee.findUnique({
         where: { userId: session.userId },
-        include: { regions: true, forms: { include: { days: true } } },
+        include: {
+            user: true,
+            regions: true,
+            forms: { include: { days: true } }
+        },
     });
 
     if (!referee) return <div>Profil Hatası</div>;
 
-    const { startDate, endDate, deadline, isLocked } = await getAvailabilityWindow();
+    const { startDate, endDate, deadline, isLocked: windowLocked } = await getAvailabilityWindow();
+
+    // Check if user is suspended
+    const isSuspended = !!(referee.user.suspendedUntil && referee.user.suspendedUntil > new Date());
+    const isLocked = windowLocked || isSuspended;
 
     const existingForm = await db.availabilityForm.findUnique({
         where: {
@@ -42,7 +50,11 @@ export default async function AvailabilityPage() {
                         Dönem: <b>{startDate.toLocaleDateString('tr-TR')} - {endDate.toLocaleDateString('tr-TR')}</b>
                     </span>
                 </div>
-                {!isLocked ? (
+                {isSuspended ? (
+                    <div className="mt-4 p-4 bg-red-100 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg text-red-700 dark:text-red-400 font-medium">
+                        Hesabınız {referee.user.suspendedUntil!.toLocaleDateString('tr-TR')} tarihine kadar dondurulmuştur. Bu süre zarfında uygunluk formu dolduramazsınız.
+                    </div>
+                ) : !isLocked ? (
                     <div className="mt-2 text-sm text-green-600 font-medium flex items-center gap-1">
                         <Lock className="w-4 h-4" /> Form Açık. Son Gün: {deadline.toLocaleDateString('tr-TR', { weekday: 'long' })}
                     </div>

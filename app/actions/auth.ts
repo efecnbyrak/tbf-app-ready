@@ -132,10 +132,19 @@ export async function login(prevState: ActionState, formData: FormData): Promise
             return { error: "Başvurunuz Yönetici tarafından onay beklemektedir. Onaylandığı zaman bilgilendirileceksiniz.", success: false };
         }
 
-        // 1.6 Check if suspended
-        if (user.suspendedUntil && user.suspendedUntil > new Date()) {
-            const formattedDate = user.suspendedUntil.toLocaleDateString('tr-TR');
-            return { error: `Hesabınız ${formattedDate} tarihine kadar dondurulmuştur.`, success: false };
+        // 1.6 Check if suspended - REMOVED restriction for login, will check in forms instead
+        // if (user.suspendedUntil && user.suspendedUntil > new Date()) { ... }
+
+        // 1.7 Check login path
+        const isAdminLogin = formData.get("adminLogin") === "true";
+        if (isAdminLogin) {
+            if (user.role.name !== "SUPER_ADMIN") {
+                return { error: "Bu sayfadan sadece Süper Admin girişi yapılabilir.", success: false };
+            }
+        } else {
+            if (user.role.name === "SUPER_ADMIN") {
+                return { error: "Süper Admin girişi için lütfen yönetici giriş sayfasını kullanın.", success: false };
+            }
         }
 
         // 2. Check password
@@ -383,6 +392,55 @@ export async function register(prevState: ActionState, formData: FormData): Prom
         }
     }
     return { error: "Kayıt olurken bir hata oluştu.", success: false };
+}
+
+export async function createAdmin(prevState: ActionState, formData: FormData): Promise<ActionState> {
+    const tckn = formData.get("tckn") as string;
+    const password = formData.get("password") as string;
+
+    if (!tckn || !password) {
+        return { error: "Lütfen TCKN ve şifre giriniz.", success: false };
+    }
+
+    if (tckn.length !== 11) {
+        return { error: "TCKN 11 haneli olmalıdır.", success: false };
+    }
+
+    try {
+        const session = await import("@/lib/session");
+        const currentSession = await session.getSession();
+        if (currentSession?.role !== "SUPER_ADMIN") {
+            return { error: "Yetkisiz işlem.", success: false };
+        }
+
+        const existingUser = await db.user.findUnique({ where: { tckn } });
+        if (existingUser) {
+            return { error: "Bu TCKN ile kayıtlı bir kullanıcı zaten var.", success: false };
+        }
+
+        let adminRole = await db.role.findUnique({ where: { name: "ADMIN" } });
+        if (!adminRole) {
+            adminRole = await db.role.create({ data: { name: "ADMIN" } });
+        }
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        await db.user.create({
+            data: {
+                username: tckn,
+                tckn: tckn,
+                password: hashedPassword,
+                roleId: adminRole.id,
+                isApproved: true,
+                isVerified: true
+            }
+        });
+
+        return { success: true, message: "Admin başarıyla oluşturuldu." };
+    } catch (error) {
+        console.error("Create Admin error:", error);
+        return { error: "Admin oluşturulurken bir hata oluştu.", success: false };
+    }
 }
 
 export async function logout() {

@@ -13,23 +13,34 @@ import { tr } from "date-fns/locale";
 export const dynamic = 'force-dynamic';
 
 interface PageProps {
-    searchParams: Promise<{ group?: string; type?: string }>;
+    searchParams: Promise<{ group?: string; type?: string; week?: string }>;
 }
 
 export default async function AvailabilityAdminPage({ searchParams }: PageProps) {
     await ensureSchemaColumns();
     const params = await searchParams;
-    const { startDate, endDate } = await getAvailabilityWindow();
+    const { startDate: currentStartDate, endDate: currentEndDate } = await getAvailabilityWindow();
+
+    const isLastWeek = params.week === "last";
+    let startDate = currentStartDate;
+    let endDate = currentEndDate;
+
+    if (isLastWeek) {
+        startDate = new Date(currentStartDate);
+        startDate.setDate(currentStartDate.getDate() - 7);
+        endDate = new Date(currentEndDate);
+        endDate.setDate(currentEndDate.getDate() - 7);
+    }
 
     // Fetch week number
     const weekNumberSetting = await db.systemSetting.findUnique({ where: { key: "CURRENT_WEEK_NUMBER" } });
-    const currentWeekNumber = weekNumberSetting?.value || "1";
+    const currentWeekNumberRaw = parseInt(weekNumberSetting?.value || "1");
+    const displayWeekNumber = isLastWeek ? currentWeekNumberRaw - 1 : currentWeekNumberRaw;
 
     const formattedStart = format(startDate, "d MMMM", { locale: tr });
     const formattedEnd = format(endDate, "d MMMM yyyy", { locale: tr });
 
     // Fetch Referee Types manually via Raw Query to bypass stale Prisma Client
-    // Table name is "referees" as per schema @@map
     const refereeTypesRaw = await db.$queryRaw<Array<{ id: number, officialType: string }>>`
         SELECT id, "officialType" FROM referees
     `;
@@ -39,7 +50,7 @@ export default async function AvailabilityAdminPage({ searchParams }: PageProps)
     const activeGroup = params.group || "REFEREE"; // "REFEREE" or "GENERAL"
     const activeType = params.type; // "TABLE", "OBSERVER", etc.
 
-    // Fetch submitted forms (Fetch ALL for this week, filter in memory)
+    // Fetch submitted forms
     const allForms = await db.availabilityForm.findMany({
         where: {
             weekStartDate: startDate,
@@ -75,9 +86,9 @@ export default async function AvailabilityAdminPage({ searchParams }: PageProps)
         { id: "OBSERVER", label: "Gözlemciler", icon: Shield },
         { id: "STATISTICIAN", label: "İstatistik Görevlileri", icon: FileSpreadsheet },
         { id: "HEALTH", label: "Sağlık Görevlileri", icon: Activity },
-        { id: "COMMISSIONER", label: "Saha Komiserleri", icon: Shield },
-        { id: "TABLE_HEALTH", label: "Masa & Sağlık", icon: Table },
-        { id: "TABLE_STATISTICIAN", label: "Masa & İstatistik", icon: Table },
+        { id: "FIELD_COMMISSIONER", label: "Saha Komiserleri", icon: Shield },
+        { id: "TABLE_HEALTH", label: "Masa & Sağlık", icon: Activity },
+        { id: "TABLE_STATISTICIAN", label: "Masa & İstatistik", icon: FileSpreadsheet },
     ];
 
     return (
@@ -89,16 +100,33 @@ export default async function AvailabilityAdminPage({ searchParams }: PageProps)
                             Uygunluk Formları
                         </h1>
                         <span className="px-3 py-1 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded-full text-sm font-bold border border-red-200 dark:border-red-800">
-                            {currentWeekNumber}. Hafta
+                            {displayWeekNumber}. Hafta {isLastWeek ? "(Geçen Hafta)" : "(Güncel)"}
                         </span>
                     </div>
                     <p className="text-zinc-500 font-medium">
                         Dönem: {formattedStart} - {formattedEnd}
                     </p>
                 </div>
-                <div className="flex gap-2">
-                    <CleanupButton />
-                    <ExportButton group={activeGroup} type={activeType} />
+                <div className="flex flex-col sm:flex-row gap-2">
+                    {/* Week Selector */}
+                    <div className="bg-zinc-100 dark:bg-zinc-800 p-1 rounded-xl flex">
+                        <Link
+                            href={`/admin/availability?week=current&group=${activeGroup}${activeType ? `&type=${activeType}` : ''}`}
+                            className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${!isLastWeek ? "bg-white dark:bg-zinc-700 shadow-sm text-red-600" : "text-zinc-500 hover:text-zinc-700 hover:bg-zinc-200/50 dark:hover:bg-zinc-700/50"}`}
+                        >
+                            Güncel Hafta
+                        </Link>
+                        <Link
+                            href={`/admin/availability?week=last&group=${activeGroup}${activeType ? `&type=${activeType}` : ''}`}
+                            className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${isLastWeek ? "bg-white dark:bg-zinc-700 shadow-sm text-red-600" : "text-zinc-500 hover:text-zinc-700 hover:bg-zinc-200/50 dark:hover:bg-zinc-700/50"}`}
+                        >
+                            Geçen Hafta
+                        </Link>
+                    </div>
+                    <div className="flex gap-2">
+                        <CleanupButton />
+                        <ExportButton group={activeGroup} type={activeType} />
+                    </div>
                 </div>
             </div>
 
@@ -106,7 +134,7 @@ export default async function AvailabilityAdminPage({ searchParams }: PageProps)
             <div className="border-b border-zinc-200 dark:border-zinc-800">
                 <nav className="-mb-px flex space-x-8" aria-label="Tabs">
                     <Link
-                        href="/admin/availability?group=REFEREE"
+                        href={`/admin/availability?group=REFEREE&week=${isLastWeek ? 'last' : 'current'}`}
                         className={`
                             whitespace-nowrap pb-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2
                             ${activeGroup === "REFEREE"
@@ -118,7 +146,7 @@ export default async function AvailabilityAdminPage({ searchParams }: PageProps)
                         Hakemler
                     </Link>
                     <Link
-                        href="/admin/availability?group=GENERAL"
+                        href={`/admin/availability?group=GENERAL&week=${isLastWeek ? 'last' : 'current'}`}
                         className={`
                             whitespace-nowrap pb-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2
                             ${activeGroup === "GENERAL"
@@ -136,7 +164,7 @@ export default async function AvailabilityAdminPage({ searchParams }: PageProps)
             {activeGroup === "GENERAL" && (
                 <div className="flex gap-2 overflow-x-auto pb-2">
                     <Link
-                        href="/admin/availability?group=GENERAL"
+                        href={`/admin/availability?group=GENERAL&week=${isLastWeek ? 'last' : 'current'}`}
                         className={`
                             px-4 py-2 rounded-full text-sm font-medium border transition-colors whitespace-nowrap
                             ${!activeType
@@ -152,7 +180,7 @@ export default async function AvailabilityAdminPage({ searchParams }: PageProps)
                         return (
                             <Link
                                 key={t.id}
-                                href={`/admin/availability?group=GENERAL&type=${t.id}`}
+                                href={`/admin/availability?group=GENERAL&type=${t.id}&week=${isLastWeek ? 'last' : 'current'}`}
                                 className={`
                                     px-4 py-2 rounded-full text-sm font-medium border transition-colors flex items-center gap-2 whitespace-nowrap
                                     ${isActive
