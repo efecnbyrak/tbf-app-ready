@@ -53,8 +53,12 @@ export function OfficialRow({ official, onClick, onToggleActive, onPromote, isSu
                         {official.user?.role?.name === "SUPER_ADMIN" && <ShieldCheck className="w-4 h-4 text-orange-500" />}
                     </div>
                     <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mt-1">
-                        <span className="text-[10px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">{classLabel}</span>
-                        <span className="w-1 h-1 bg-zinc-300 dark:bg-zinc-700 rounded-full hidden sm:block" />
+                        {(isReferee || official.classification !== "BELIRLENMEMIS") && (
+                            <>
+                                <span className="text-[10px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">{classLabel}</span>
+                                <span className="w-1 h-1 bg-zinc-300 dark:bg-zinc-700 rounded-full hidden sm:block" />
+                            </>
+                        )}
                         <span className={`text-[10px] font-black uppercase tracking-widest ${isReferee ? 'text-red-600' : 'text-zinc-500'}`}>
                             {typeLabel}
                         </span>

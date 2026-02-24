@@ -66,45 +66,66 @@ export function OfficialListClient({ initialOfficials, refereeTypeMap, currentUs
     return (
         <div className="space-y-8 pb-20">
             {/* Header / Navigation Folders */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-3">
+            <div className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 gap-3">
                 <Link
                     href="/admin/officials"
-                    className={`group p-4 rounded-3xl border transition-all ${(!selectedType && !selectedStatus)
-                        ? "bg-zinc-900 text-white border-zinc-900 shadow-xl scale-105"
-                        : "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 hover:border-red-200"}`}
+                    className={`group relative p-5 rounded-[2rem] border-2 transition-all duration-300 ${(!selectedType && !selectedStatus)
+                        ? "bg-zinc-950 text-white border-zinc-950 shadow-2xl scale-[1.02] z-10"
+                        : "bg-white dark:bg-zinc-900 border-zinc-100 dark:border-zinc-800 hover:border-red-400/50 hover:shadow-lg"}`}
                 >
-                    <div className="flex flex-col items-center gap-2">
-                        <Users className={`w-7 h-7 ${(!selectedType && !selectedStatus) ? "text-white" : "text-zinc-400 group-hover:text-red-500"}`} />
-                        <span className="text-[10px] font-black uppercase tracking-widest italic">TÜMÜ</span>
+                    <div className="flex flex-col items-center gap-3">
+                        <div className={`p-3 rounded-2xl ${(!selectedType && !selectedStatus) ? "bg-red-600 shadow-lg shadow-red-600/30" : "bg-zinc-100 dark:bg-zinc-800"}`}>
+                            <Users className={`w-6 h-6 ${(!selectedType && !selectedStatus) ? "text-white" : "text-zinc-400 group-hover:text-red-500"}`} />
+                        </div>
+                        <span className="text-[10px] font-black uppercase tracking-[0.2em] italic">TÜMÜ</span>
                     </div>
                 </Link>
 
                 <Link
                     href="/admin/officials?status=unapproved"
-                    className={`group p-4 rounded-3xl border transition-all ${selectedStatus === "unapproved"
-                        ? "bg-red-600 text-white border-red-600 shadow-xl scale-105"
-                        : "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 hover:border-red-200"}`}
+                    className={`group relative p-5 rounded-[2rem] border-2 transition-all duration-300 ${selectedStatus === "unapproved"
+                        ? "bg-red-600 text-white border-red-600 shadow-2xl scale-[1.02] z-10"
+                        : "bg-white dark:bg-zinc-900 border-zinc-100 dark:border-zinc-800 hover:border-red-400/50 hover:shadow-lg"}`}
                 >
-                    <div className="flex flex-col items-center gap-2">
-                        <ShieldAlert className={`w-7 h-7 ${selectedStatus === "unapproved" ? "text-white" : "text-red-500"}`} />
-                        <span className="text-[10px] font-black uppercase tracking-widest italic text-center">ONAY BEKLEYEN</span>
+                    <div className="flex flex-col items-center gap-3">
+                        <div className={`p-3 rounded-2xl ${selectedStatus === "unapproved" ? "bg-white shadow-lg" : "bg-red-50 dark:bg-red-900/20"}`}>
+                            <ShieldAlert className={`w-6 h-6 ${selectedStatus === "unapproved" ? "text-red-600" : "text-red-500"}`} />
+                        </div>
+                        <span className="text-[10px] font-black uppercase tracking-[0.2em] italic text-center leading-tight">ONAY BEKLEYEN</span>
+                    </div>
+                </Link>
+
+                <Link
+                    href="/admin/officials?status=managers"
+                    className={`group relative p-5 rounded-[2rem] border-2 transition-all duration-300 ${selectedStatus === "managers"
+                        ? "bg-indigo-600 text-white border-indigo-600 shadow-2xl scale-[1.02] z-10"
+                        : "bg-white dark:bg-zinc-900 border-zinc-100 dark:border-zinc-800 hover:border-indigo-400/50 hover:shadow-lg"}`}
+                >
+                    <div className="flex flex-col items-center gap-3">
+                        <div className={`p-3 rounded-2xl ${selectedStatus === "managers" ? "bg-white shadow-lg" : "bg-indigo-50 dark:bg-indigo-900/20"}`}>
+                            <Shield className={`w-6 h-6 ${selectedStatus === "managers" ? "text-indigo-600" : "text-indigo-500"}`} />
+                        </div>
+                        <span className="text-[10px] font-black uppercase tracking-[0.2em] italic text-center leading-tight">YÖNETİCİLER</span>
                     </div>
                 </Link>
 
                 {TYPES.map((t) => {
                     const isSelected = selectedType === t.id;
                     const Icon = t.icon;
+                    const activeColorClass = t.color.replace('text-', 'bg-');
                     return (
                         <Link
                             key={t.id}
                             href={`/admin/officials?type=${t.id}`}
-                            className={`group p-4 rounded-3xl border transition-all ${isSelected
-                                ? `${t.bg} ${t.borderColor} shadow-xl scale-105`
-                                : "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 hover:border-red-200"}`}
+                            className={`group relative p-5 rounded-[2rem] border-2 transition-all duration-300 ${isSelected
+                                ? `${t.bg} ${t.borderColor} shadow-2xl scale-[1.02] z-10`
+                                : "bg-white dark:bg-zinc-900 border-zinc-100 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-600 hover:shadow-lg"}`}
                         >
-                            <div className="flex flex-col items-center gap-2">
-                                <Icon className={`w-7 h-7 ${isSelected ? t.color : "text-zinc-400 group-hover:text-zinc-600"}`} />
-                                <span className={`text-[10px] font-black uppercase tracking-widest italic text-center ${isSelected ? "text-zinc-900 dark:text-white" : "text-zinc-400"}`}>
+                            <div className="flex flex-col items-center gap-3">
+                                <div className={`p-3 rounded-2xl ${isSelected ? "bg-white shadow-lg" : "bg-zinc-50 dark:bg-zinc-800 group-hover:bg-white transition-colors"}`}>
+                                    <Icon className={`w-6 h-6 ${isSelected ? t.color : "text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-white"}`} />
+                                </div>
+                                <span className={`text-[10px] font-black uppercase tracking-[0.2em] italic text-center leading-tight ${isSelected ? "text-zinc-900 dark:text-white" : "text-zinc-400"}`}>
                                     {t.label}
                                 </span>
                             </div>
@@ -170,8 +191,10 @@ export function OfficialListClient({ initialOfficials, refereeTypeMap, currentUs
             {selectedOfficial && (
                 <ProfileDetailModal
                     official={selectedOfficial}
+                    isSuperAdmin={currentUserRole === "SUPER_ADMIN"}
                     onClose={() => setSelectedOfficial(null)}
                     onToggleActive={() => handleToggleStatus(selectedOfficial.user?.id)}
+                    onPromote={() => handlePromote(selectedOfficial.user?.id)}
                 />
             )}
 

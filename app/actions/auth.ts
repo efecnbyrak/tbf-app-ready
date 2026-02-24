@@ -378,7 +378,8 @@ export async function register(prevState: ActionState, formData: FormData): Prom
         // 4. Username = TCKN (Requested by user)
         const generatedUsername = tckn;
 
-        let createdUser;
+        const selectedCity = formData.get("selectedCity") as string || "İstanbul";
+        let createdUser: any;
 
         // 5. Transaction
         await db.$transaction(async (tx: any) => {
@@ -392,11 +393,13 @@ export async function register(prevState: ActionState, formData: FormData): Prom
                 }
             });
 
+            // Find or create the region based on full city name
+            let region = await tx.region.findUnique({ where: { name: selectedCity } });
+            if (!region) {
+                region = await tx.region.create({ data: { name: selectedCity } });
+            }
+
             // Use Raw SQL to bypass stale Prisma Client validation for officialType and new fields
-            // NOTE: job/address might be null, handle strings properly in SQL
-            // ${job} if null might be issue? No, prisma sql template handles it?
-            // Safer to use empty string if null, or verify prisma raw sql support for null.
-            // Raw SQL with Prisma handles values.
             await tx.referee.create({
                 data: {
                     userId: createdUser.id,
@@ -408,7 +411,10 @@ export async function register(prevState: ActionState, formData: FormData): Prom
                     classification: 'BELIRLENMEMIS',
                     officialType: roleType,
                     job: job || null,
-                    address: address || null
+                    address: address || null,
+                    regions: {
+                        connect: { id: region.id }
+                    }
                 }
             });
         });

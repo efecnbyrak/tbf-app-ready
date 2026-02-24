@@ -69,6 +69,8 @@ export default async function OfficialsPage({ searchParams }: PageProps) {
         // Status filter
         if (selectedStatus === "unapproved") {
             if (off.user?.isApproved) return false;
+        } else if (selectedStatus === "managers") {
+            return off.user?.role?.name === "ADMIN";
         } else if (off.user?.isApproved === false) {
             return false; // Default: hide unapproved
         }
@@ -77,7 +79,9 @@ export default async function OfficialsPage({ searchParams }: PageProps) {
         if (selectedType) {
             return type === selectedType;
         }
-        return type !== "REFEREE"; // Default: all non-referees
+
+        // Default: all non-referees that are not admins (unless status=managers is set)
+        return type !== "REFEREE" && off.user?.role?.name !== "ADMIN";
     });
 
     // Plain data for client component

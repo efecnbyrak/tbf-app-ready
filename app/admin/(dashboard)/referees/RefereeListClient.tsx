@@ -14,23 +14,25 @@ interface RefereeListClientProps {
 }
 
 const CLASSIFICATION_MAP: Record<string, string> = {
+    "MANAGERS": "Yöneticiler",
     "UNAPPROVED": "Onay Bekleyenler",
-    "BELIRLENMEMIS": "Belirtilmemiş",
     "A": "A Klasmanı",
     "B": "B Klasmanı",
     "C": "C Klasmanı",
     "IL_HAKEMI": "İl Hakemi",
-    "ADAY_HAKEM": "Aday Hakem"
+    "ADAY_HAKEM": "Aday Hakem",
+    "BELIRLENMEMIS": "Belirtilmemiş",
 };
 
 const ORDERED_CLASSIFICATIONS = [
+    "MANAGERS",
     "UNAPPROVED",
-    "BELIRLENMEMIS",
     "A",
     "B",
     "C",
     "IL_HAKEMI",
-    "ADAY_HAKEM"
+    "ADAY_HAKEM",
+    "BELIRLENMEMIS"
 ];
 
 export function RefereeListClient({ initialReferees, refereeTypeMap, currentUserRole }: RefereeListClientProps) {
@@ -49,8 +51,13 @@ export function RefereeListClient({ initialReferees, refereeTypeMap, currentUser
     const grouped = ORDERED_CLASSIFICATIONS.reduce((acc, code) => {
         const label = CLASSIFICATION_MAP[code];
         acc[label] = filteredReferees.filter(ref => {
+            if (code === "MANAGERS") return ref.user?.role?.name === "ADMIN";
+            // If it's a manager, don't show in other categories
+            if (ref.user?.role?.name === "ADMIN") return false;
+
             if (code === "UNAPPROVED") return !ref.user?.isApproved;
             if (ref.user?.isApproved === false && code !== "UNAPPROVED") return false;
+
             if (code === "BELIRLENMEMIS") {
                 return !ref.classification || ref.classification === "" || ref.classification === "BELIRLENMEMIS" || !CLASSIFICATION_MAP[ref.classification];
             }
@@ -87,29 +94,45 @@ export function RefereeListClient({ initialReferees, refereeTypeMap, currentUser
 
     return (
         <div className="space-y-12 pb-20">
-            {/* Top Toolbar */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white dark:bg-zinc-900 p-6 rounded-3xl shadow-sm border border-zinc-200 dark:border-zinc-800">
-                <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-red-50 dark:bg-red-900/20 rounded-2xl flex items-center justify-center">
-                        <Users className="w-6 h-6 text-red-600" />
+            {/* Header / Navigation Folders Aesthetic */}
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 px-4">
+                <div>
+                    <div className="flex items-center gap-3 mb-2">
+                        <div className="w-10 h-10 bg-red-600 rounded-2xl flex items-center justify-center shadow-lg shadow-red-600/30">
+                            <Users className="w-5 h-5 text-white" />
+                        </div>
+                        <h1 className="text-3xl font-black text-zinc-900 dark:text-white tracking-tight uppercase italic underline decoration-red-600/30 underline-offset-8">
+                            Hakem Yönetimi
+                        </h1>
                     </div>
-                    <div>
-                        <h2 className="text-xl font-black text-zinc-900 dark:text-white tracking-tight">Hakem Listesi</h2>
-                        <p className="text-sm text-zinc-500 font-medium tracking-tight uppercase italic">{filteredReferees.length} KAYIT BULUNDU</p>
-                    </div>
+                    <p className="text-zinc-500 font-bold tracking-tight uppercase italic text-[10px] ml-13">Klasman bazlı gruplandırma ve gelişmiş arama sistemi.</p>
                 </div>
 
-                {/* Search Bar */}
-                <div className="relative flex-1 max-w-md w-full">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400" />
+                <div className="relative w-full md:w-96 group">
+                    <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400 group-focus-within:text-red-500 transition-colors" />
                     <input
                         type="text"
-                        placeholder="İsim veya TCKN ile ara..."
+                        placeholder="Hakemlerde ara (İsim, TCKN)..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full pl-12 pr-6 py-3.5 bg-zinc-50 dark:bg-zinc-950 border-2 border-zinc-100 dark:border-zinc-800 rounded-2xl focus:border-red-600 outline-none transition-all font-medium text-zinc-900 dark:text-white"
+                        className="w-full pl-14 pr-6 py-4 bg-white dark:bg-zinc-900 border-2 border-zinc-100 dark:border-zinc-800 rounded-3xl focus:border-red-600 outline-none transition-all font-bold text-zinc-900 dark:text-white shadow-sm hover:shadow-md"
                     />
                 </div>
+            </div>
+
+            {/* Stats Summary */}
+            <div className="flex gap-4 overflow-x-auto pb-4 px-4 scrollbar-hide">
+                {ORDERED_CLASSIFICATIONS.map(code => {
+                    const label = CLASSIFICATION_MAP[code];
+                    const count = grouped[label]?.length || 0;
+                    if (count === 0 && code !== "MANAGERS") return null;
+                    return (
+                        <div key={code} className="flex-shrink-0 bg-white dark:bg-zinc-900 px-6 py-3 rounded-2xl border-2 border-zinc-50 dark:border-zinc-800 shadow-sm">
+                            <span className="block text-[8px] font-black text-zinc-400 uppercase tracking-widest mb-1">{label}</span>
+                            <span className="text-lg font-black text-zinc-900 dark:text-white italic">{count}</span>
+                        </div>
+                    )
+                })}
             </div>
 
             {/* List Content */}
@@ -176,8 +199,10 @@ export function RefereeListClient({ initialReferees, refereeTypeMap, currentUser
             {selectedOfficial && (
                 <ProfileDetailModal
                     official={selectedOfficial}
+                    isSuperAdmin={currentUserRole === "SUPER_ADMIN"}
                     onClose={() => setSelectedOfficial(null)}
                     onToggleActive={() => handleToggleStatus(selectedOfficial.user?.id)}
+                    onPromote={() => handlePromote(selectedOfficial.user?.id)}
                 />
             )}
 
