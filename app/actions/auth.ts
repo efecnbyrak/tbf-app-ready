@@ -5,6 +5,7 @@ import { createSession, deleteSession } from "@/lib/session";
 import bcrypt from "bcryptjs";
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
+import { revalidatePath } from "next/cache";
 
 // Self-healing helper to add missing columns if they don't exist
 export async function ensureSchemaColumns() {
@@ -397,6 +398,7 @@ export async function register(prevState: ActionState, formData: FormData): Prom
 export async function createAdmin(prevState: ActionState, formData: FormData): Promise<ActionState> {
     const tckn = formData.get("tckn") as string;
     const password = formData.get("password") as string;
+    const roleName = (formData.get("role") as string) || "ADMIN";
 
     if (!tckn || !password) {
         return { error: "Lütfen TCKN ve şifre giriniz.", success: false };
@@ -418,9 +420,14 @@ export async function createAdmin(prevState: ActionState, formData: FormData): P
             return { error: "Bu TCKN ile kayıtlı bir kullanıcı zaten var.", success: false };
         }
 
-        let adminRole = await db.role.findUnique({ where: { name: "ADMIN" } });
-        if (!adminRole) {
-            adminRole = await db.role.create({ data: { name: "ADMIN" } });
+        // Validate role selection
+        if (roleName !== "ADMIN" && roleName !== "SUPER_ADMIN") {
+            return { error: "Geçersiz rol seçimi.", success: false };
+        }
+
+        let targetRole = await db.role.findUnique({ where: { name: roleName } });
+        if (!targetRole) {
+            targetRole = await db.role.create({ data: { name: roleName } });
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
@@ -430,16 +437,56 @@ export async function createAdmin(prevState: ActionState, formData: FormData): P
                 username: tckn,
                 tckn: tckn,
                 password: hashedPassword,
-                roleId: adminRole.id,
+                roleId: targetRole.id,
                 isApproved: true,
                 isVerified: true
             }
         });
 
-        return { success: true, message: "Admin başarıyla oluşturuldu." };
+        revalidatePath("/admin/manage-admins");
+        return { success: true, message: "Yönetici başarıyla oluşturuldu." };
     } catch (error) {
         console.error("Create Admin error:", error);
-        return { error: "Admin oluşturulurken bir hata oluştu.", success: false };
+        return { error: "Yönetici oluşturulurken bir hata oluştu.", success: false };
+    }
+}
+
+export async function deleteAdmin(userId: number) {
+    try {
+        const session = await import("@/lib/session");
+        const currentSession = await session.getSession();
+
+        if (currentSession?.role !== "SUPER_ADMIN") {
+            throw new Error("Yetkisiz işlem.");
+        }
+
+        // Prevent deleting yourself
+        if (currentSession.userId === userId) {
+            throw new Error("Kendi hesabınızı silemezsiniz.");
+        }
+
+        const userToDelete = await db.user.findUnique({
+            where: { id: userId },
+            include: { role: true }
+        });
+
+        if (!userToDelete) {
+            throw new Error("Kullanıcı bulunamadı.");
+        }
+
+        // Safety check: Don't allow deleting other SUPER_ADMINs if needed, 
+        // or at least require caution. The user asked for double click anyway.
+        // We'll allow it if they are SUPER_ADMIN, as they are the boss.
+
+        await db.user.delete({
+            where: { id: userId }
+        });
+
+        revalidatePath("/admin/manage-admins");
+        return { success: true };
+    } catch (error: any) {
+        console.error("Delete Admin error:", error);
+        return { error: error.message || "Silme işlemi sırasında bir hata oluştu." };
     }
 }
 

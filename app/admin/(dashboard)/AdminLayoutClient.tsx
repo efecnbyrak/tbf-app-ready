@@ -166,7 +166,7 @@ export function AdminLayoutClient({ children, role }: AdminLayoutClientProps) {
                                     }`}
                             >
                                 <Shield className="w-4 h-4 text-purple-400" />
-                                Yönetici Yönetimi
+                                Admin Yönetici Paneli
                             </Link>
                         )}
 

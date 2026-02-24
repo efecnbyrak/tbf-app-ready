@@ -52,6 +52,20 @@ export function CreateAdminForm() {
                 />
             </div>
 
+            <div>
+                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+                    Yetki Seviyesi
+                </label>
+                <select
+                    name="role"
+                    required
+                    className="w-full px-4 py-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg focus:ring-2 focus:ring-red-600 outline-none transition-all"
+                >
+                    <option value="ADMIN">Yönetici (Admin)</option>
+                    <option value="SUPER_ADMIN">Süper Yönetici (Super Admin)</option>
+                </select>
+            </div>
+
             {state?.error && (
                 <p className="text-red-500 text-sm font-medium">{state.error}</p>
             )}

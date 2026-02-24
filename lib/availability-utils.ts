@@ -39,12 +39,12 @@ export async function getAvailabilityWindow() {
     // Bu demek ki: target - 6 gün @ 15:30 ve target - 4 gün @ 18:30
 
     const openTime = new Date(targetWeekStart);
-    openTime.setDate(targetWeekStart.getDate() - 6); // Önceki Pazar → Cumartesi (6 gün önce)
-    openTime.setHours(15, 30, 0, 0);
+    openTime.setDate(targetWeekStart.getDate() - 6); // Önceki Pazar
+    openTime.setHours(15, 0, 0, 0); // Sunday 15:00
 
     const deadline = new Date(targetWeekStart);
-    deadline.setDate(targetWeekStart.getDate() - 4); // Salı → Pazartesi (4 gün önce)
-    deadline.setHours(18, 30, 0, 0);
+    deadline.setDate(targetWeekStart.getDate() - 4); // Salı
+    deadline.setHours(18, 30, 0, 0); // Tuesday 18:30
 
     const targetWeekEnd = new Date(targetWeekStart);
     targetWeekEnd.setDate(targetWeekStart.getDate() + 6); // Cuma

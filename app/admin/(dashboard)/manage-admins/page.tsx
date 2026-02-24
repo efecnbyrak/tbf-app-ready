@@ -4,6 +4,7 @@ import { getSession } from "@/lib/session";
 import { redirect } from "next/navigation";
 import { UserPlus, Shield, Trash2, Key } from "lucide-react";
 import { CreateAdminForm } from "./CreateAdminForm";
+import { AdminRow } from "./AdminRow";
 
 export const dynamic = 'force-dynamic';
 
@@ -31,78 +32,59 @@ export default async function ManageAdminsPage() {
     return (
         <div className="space-y-8">
             <header>
-                <h1 className="text-3xl font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-3">
-                    <Shield className="w-8 h-8 text-red-600" />
-                    Yönetici Yönetimi
-                </h1>
-                <p className="text-zinc-500 mt-2">
-                    Yeni yöneticiler ekleyin ve mevcut yöneticileri görüntüleyin.
-                </p>
+                <div className="flex items-center gap-4 mb-2">
+                    <div className="w-12 h-12 bg-red-600 rounded-2xl flex items-center justify-center shadow-lg shadow-red-600/20">
+                        <Shield className="w-7 h-7 text-white" />
+                    </div>
+                    <div>
+                        <h1 className="text-3xl font-black text-zinc-900 dark:text-zinc-100 tracking-tight">
+                            Admin Yönetici Paneli
+                        </h1>
+                        <p className="text-zinc-500 font-medium">
+                            Sistem yöneticilerini ekleyin, yetkilendirin ve yönetin.
+                        </p>
+                    </div>
+                </div>
             </header>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Create Admin Form */}
                 <div className="lg:col-span-1">
-                    <div className="bg-white dark:bg-zinc-900 rounded-2xl p-6 border border-zinc-200 dark:border-zinc-800 shadow-sm sticky top-8">
-                        <div className="flex items-center gap-2 mb-6">
-                            <UserPlus className="w-5 h-5 text-red-600" />
-                            <h2 className="text-xl font-bold">Yeni Yönetici Ekle</h2>
+                    <div className="bg-white dark:bg-zinc-900 rounded-3xl p-8 border-2 border-zinc-100 dark:border-zinc-800 shadow-xl sticky top-8">
+                        <div className="flex items-center gap-3 mb-8">
+                            <div className="w-10 h-10 bg-red-50 dark:bg-red-900/20 rounded-xl flex items-center justify-center">
+                                <UserPlus className="w-5 h-5 text-red-600" />
+                            </div>
+                            <h2 className="text-xl font-black tracking-tight">Yeni Yönetici Ekle</h2>
                         </div>
                         <CreateAdminForm />
                     </div>
                 </div>
 
                 {/* Admin List */}
-                <div className="lg:col-span-2">
-                    <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-sm overflow-hidden">
-                        <div className="px-6 py-4 border-b border-zinc-100 dark:border-zinc-800">
-                            <h2 className="font-bold text-zinc-900 dark:text-white">Sistem Yöneticileri</h2>
-                        </div>
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-left text-sm">
-                                <thead className="bg-zinc-50 dark:bg-zinc-900/50 text-zinc-500 uppercase text-xs font-semibold">
-                                    <tr>
-                                        <th className="px-6 py-4">Kullanıcı Adı / TCKN</th>
-                                        <th className="px-6 py-4">Rol</th>
-                                        <th className="px-6 py-4">Kayıt Tarihi</th>
-                                        <th className="px-6 py-4 text-right">İşlemler</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
-                                    {admins.map((admin) => (
-                                        <tr key={admin.id} className="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/30 transition-colors">
-                                            <td className="px-6 py-4">
-                                                <div className="flex items-center gap-2">
-                                                    <div className="w-8 h-8 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
-                                                        <Key className="w-4 h-4 text-zinc-400" />
-                                                    </div>
-                                                    <span className="font-medium">{admin.tckn}</span>
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                <span className={`px-2 py-1 rounded-full text-xs font-bold ${admin.role.name === "SUPER_ADMIN"
-                                                        ? "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400"
-                                                        : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
-                                                    }`}>
-                                                    {admin.role.name === "SUPER_ADMIN" ? "Süper Admin" : "Yönetici"}
-                                                </span>
-                                            </td>
-                                            <td className="px-6 py-4 text-zinc-500">
-                                                {new Date(admin.createdAt).toLocaleDateString('tr-TR')}
-                                            </td>
-                                            <td className="px-6 py-4 text-right">
-                                                {admin.role.name !== "SUPER_ADMIN" && (
-                                                    <button className="p-2 text-zinc-400 hover:text-red-600 transition-colors">
-                                                        <Trash2 className="w-4 h-4" />
-                                                    </button>
-                                                )}
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
+                <div className="lg:col-span-2 space-y-4">
+                    <div className="flex items-center justify-between px-2">
+                        <h2 className="font-black text-zinc-900 dark:text-white flex items-center gap-2 uppercase tracking-widest text-sm">
+                            <span className="w-2 h-2 bg-red-600 rounded-full animate-pulse" />
+                            Aktif Yöneticiler ({admins.length})
+                        </h2>
                     </div>
+
+                    <div className="grid grid-cols-1 gap-4">
+                        {admins.map((admin) => (
+                            <AdminRow
+                                key={admin.id}
+                                admin={admin}
+                                isCurrentUser={session?.userId === admin.id}
+                            />
+                        ))}
+                    </div>
+
+                    {admins.length === 0 && (
+                        <div className="py-20 text-center bg-zinc-50 dark:bg-zinc-900/50 rounded-3xl border-2 border-dashed border-zinc-200 dark:border-zinc-800">
+                            <p className="text-zinc-400 font-medium italic">Kayıtlı yönetici bulunamadı.</p>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>
