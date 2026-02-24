@@ -9,6 +9,14 @@ export const TURKEY_CITIES = [
     "Kırıkkale", "Batman", "Şırnak", "Bartın", "Ardahan", "Iğdır", "Yalova", "Karabük", "Kilis", "Osmaniye", "Düzce"
 ].sort((a, b) => a.localeCompare(b, 'tr'));
 
+export const ISTANBUL_DISTRICTS = [
+    "Adalar", "Arnavutköy", "Ataşehir", "Avcılar", "Bağcılar", "Bahçelievler", "Bakırköy", "Başakşehir", "Bayrampaşa",
+    "Beşiktaş", "Beykoz", "Beylikdüzü", "Beyoğlu", "Büyükçekmece", "Çatalca", "Çekmeköy", "Esenler", "Esenyurt",
+    "Eyüpsultan", "Fatih", "Gaziosmanpaşa", "Güngören", "Kadıköy", "Kağıthane", "Kartal", "Küçükçekmece", "Maltepe",
+    "Pendik", "Sancaktepe", "Sarıyer", "Silivri", "Sultanbeyli", "Sultangazi", "Şile", "Şişli", "Tuzla", "Ümraniye",
+    "Üsküdar", "Zeytinburnu"
+].sort((a, b) => a.localeCompare(b, 'tr'));
+
 export const OFFICIAL_TYPES = [
     { id: "REFEREE", label: "Hakem" },
     { id: "TABLE", label: "Masa Görevlisi" },
