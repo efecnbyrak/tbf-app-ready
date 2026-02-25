@@ -307,5 +307,14 @@ model UploadChunk {
   index           Int
   data            String        @db.Text
 
-  @@map("upload_chunks")
+model Announcement {
+  id        Int      @id @default(autoincrement())
+  subject   String
+  content   String   @db.Text
+  target    String   @default("ALL") // "ALL", "REFEREE", "TABLE", etc.
+  senderId  Int?
+  sentCount Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@map("announcements")
 }

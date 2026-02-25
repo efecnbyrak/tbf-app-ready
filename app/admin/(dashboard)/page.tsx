@@ -1,6 +1,8 @@
 import { db } from "@/lib/db";
 import { getAvailabilityWindow } from "@/lib/availability-utils";
-import { Users, FileText, CheckCircle } from "lucide-react";
+import { Users, FileText, CheckCircle, BarChart3 } from "lucide-react";
+import { formatClassification } from "@/lib/format-utils";
+import { AdminDashboardCharts } from "@/components/admin/AdminDashboardCharts";
 
 export const dynamic = 'force-dynamic';
 
@@ -8,7 +10,15 @@ export default async function AdminDashboard() {
     const { startDate } = await getAvailabilityWindow();
 
     // Execute all queries in parallel
-    const [refereesCountRaw, officialsCountRaw, formsThisWeek, latestRegistrations] = await Promise.all([
+    const [
+        refereesCountRaw,
+        officialsCountRaw,
+        formsThisWeek,
+        latestRegistrations,
+        monthlyRegistrations,
+        classificationDistribution,
+        regionDistribution
+    ] = await Promise.all([
         // 1. Total Referees
         db.$queryRaw<Array<{ count: bigint }>>`SELECT COUNT(*) as count FROM referees WHERE "officialType" = 'REFEREE'`,
 
@@ -31,11 +41,57 @@ export default async function AdminDashboard() {
             FROM referees 
             ORDER BY "createdAt" DESC 
             LIMIT 5
+        `,
+
+        // 5. Monthly Registrations (Last 6 Months)
+        db.$queryRaw<Array<{ month: string; count: bigint }>>`
+            SELECT 
+                TO_CHAR("createdAt", 'Mon') as month,
+                COUNT(*) as count
+            FROM referees
+            WHERE "createdAt" > NOW() - INTERVAL '6 months'
+            GROUP BY month, TO_CHAR("createdAt", 'MM')
+            ORDER BY TO_CHAR("createdAt", 'MM') ASC
+        `,
+
+        // 6. Classification Distribution
+        db.$queryRaw<Array<{ classification: string; count: bigint }>>`
+            SELECT classification, COUNT(*) as count
+            FROM referees
+            WHERE classification IS NOT NULL
+            GROUP BY classification
+        `,
+
+        // 7. Region Distribution (Top 10 Cities)
+        db.$queryRaw<Array<{ name: string; count: bigint }>>`
+            SELECT r.name, COUNT(ref."id") as count
+            FROM regions r
+            JOIN "_RefereeToRegion" rtr ON r.id = rtr."B"
+            JOIN referees ref ON rtr."A" = ref.id
+            GROUP BY r.name
+            ORDER BY count DESC
+            LIMIT 10
         `
     ]);
 
     const totalReferees = Number(refereesCountRaw[0]?.count || 0);
     const totalOfficials = Number(officialsCountRaw[0]?.count || 0);
+
+    // Format chart data
+    const registrationChartData = monthlyRegistrations.map(r => ({
+        month: r.month,
+        count: Number(r.count)
+    }));
+
+    const classificationChartData = classificationDistribution.map(c => ({
+        name: formatClassification(c.classification),
+        value: Number(c.count)
+    }));
+
+    const regionChartData = regionDistribution.map(r => ({
+        name: r.name,
+        count: Number(r.count)
+    }));
 
     return (
         <div>
@@ -87,6 +143,24 @@ export default async function AdminDashboard() {
                         </p>
                     </div>
                 </div>
+            </div>
+
+            {/* Charts Section */}
+            <div className="mt-8">
+                <div className="flex items-center gap-3 mb-6">
+                    <div className="w-10 h-10 bg-red-600 rounded-xl flex items-center justify-center shadow-lg shadow-red-600/20">
+                        <BarChart3 className="w-5 h-5 text-white" />
+                    </div>
+                    <div>
+                        <h2 className="text-xl font-black text-zinc-900 dark:text-white uppercase italic tracking-tight">İstatistiksel Analiz</h2>
+                        <p className="text-[10px] text-zinc-500 font-bold uppercase italic">Veri Görselleştirme</p>
+                    </div>
+                </div>
+                <AdminDashboardCharts
+                    registrationData={registrationChartData}
+                    classificationData={classificationChartData}
+                    regionData={regionChartData}
+                />
             </div>
 
             {/* Recent Registrations Section */}

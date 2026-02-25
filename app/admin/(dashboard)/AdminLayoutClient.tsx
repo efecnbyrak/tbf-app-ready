@@ -1,12 +1,13 @@
 
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { logout } from "@/app/actions/auth";
-import { Users, Calendar, LayoutDashboard, Settings, LogOut, Menu, X, Briefcase, FileText, Trophy, CheckCircle, Shield, History as LucideHistory } from "lucide-react";
+import { Users, Calendar, LayoutDashboard, Settings, LogOut, Menu, X, Briefcase, FileText, Trophy, CheckCircle, Shield, History as LucideHistory, Sun, Moon, Megaphone } from "lucide-react";
+import { useTheme } from "next-themes";
+import { useEffect, useState, useState as ReactuseState } from "react";
 
 interface AdminLayoutClientProps {
     children: React.ReactNode;
@@ -15,7 +16,13 @@ interface AdminLayoutClientProps {
 
 export function AdminLayoutClient({ children, role }: AdminLayoutClientProps) {
     const [isOpen, setIsOpen] = useState(false);
+    const { theme, setTheme } = useTheme();
+    const [mounted, setMounted] = ReactuseState(false);
     const pathname = usePathname();
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     const isActive = (path: string) => {
         if (path === "/admin") {
@@ -32,12 +39,22 @@ export function AdminLayoutClient({ children, role }: AdminLayoutClientProps) {
                     <Image src="/favicon.png" alt="TBF Logo" width={32} height={32} className="rounded" />
                     <span className="font-bold text-lg tracking-tight">TBF Panel</span>
                 </div>
-                <button
-                    onClick={() => setIsOpen(!isOpen)}
-                    className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors"
-                >
-                    {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-                </button>
+                <div className="flex items-center gap-2">
+                    {mounted && (
+                        <button
+                            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                            className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors"
+                        >
+                            {theme === "dark" ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+                        </button>
+                    )}
+                    <button
+                        onClick={() => setIsOpen(!isOpen)}
+                        className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors"
+                    >
+                        {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+                    </button>
+                </div>
             </div>
 
             {/* Admin Sidebar */}
@@ -109,6 +126,17 @@ export function AdminLayoutClient({ children, role }: AdminLayoutClientProps) {
                         >
                             <Calendar className="w-4 h-4" />
                             Uygunluklar
+                        </Link>
+                        <Link
+                            href="/admin/announcements"
+                            onClick={() => setIsOpen(false)}
+                            className={`flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-all ${isActive("/admin/announcements")
+                                ? "bg-red-600 text-white shadow-md border-l-4 border-red-800"
+                                : "hover:bg-zinc-800/50 text-zinc-400 hover:text-white"
+                                }`}
+                        >
+                            <Megaphone className="w-4 h-4" />
+                            Duyuru Sistemi
                         </Link>
                         <Link
                             href="/admin/questions"
@@ -196,6 +224,19 @@ export function AdminLayoutClient({ children, role }: AdminLayoutClientProps) {
                             Ayarlar
                         </Link>
                     </nav>
+
+                    <div className="mt-4 px-4 py-3 flex items-center justify-between bg-zinc-800/30 rounded-xl border border-zinc-800">
+                        <span className="text-xs font-bold text-zinc-500 uppercase">Tema</span>
+                        {mounted && (
+                            <button
+                                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                                className="p-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white rounded-lg transition-all"
+                                title={theme === "dark" ? "Açık Tema" : "Koyu Tema"}
+                            >
+                                {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+                            </button>
+                        )}
+                    </div>
 
                     <div className="mt-auto pt-6 border-t border-zinc-800">
                         <button
