@@ -120,7 +120,7 @@ export function ProfileDetailModal({ official, onClose, onToggleActive, onPromot
                 <div className="grid grid-cols-1 lg:grid-cols-12 h-full max-h-[90vh] overflow-y-auto lg:overflow-visible">
 
                     {/* LEFT PANEL: Profile Overview (Col 4) */}
-                    <div className="lg:col-span-4 bg-zinc-50 dark:bg-zinc-950/50 p-8 lg:p-12 border-b lg:border-b-0 lg:border-r border-zinc-100 dark:border-zinc-800 flex flex-col items-center text-center">
+                    <div className="lg:col-span-4 bg-zinc-50 dark:bg-zinc-950/50 p-8 lg:p-12 border-b lg:border-b-0 lg:border-r border-zinc-100 dark:border-zinc-800 flex flex-col items-center text-center pb-32">
                         <div className="relative group">
                             <div className="w-40 h-40 sm:w-48 sm:h-48 rounded-[3rem] bg-white dark:bg-zinc-800 border-8 border-white dark:border-zinc-800 shadow-2xl overflow-hidden mb-6 group-hover:scale-[1.02] transition-transform duration-500">
                                 {official.imageUrl ? (
@@ -163,7 +163,7 @@ export function ProfileDetailModal({ official, onClose, onToggleActive, onPromot
                                     </span>
                                 </button>
                                 {editingField === 'type' && (
-                                    <div className="absolute top-[calc(100%+8px)] left-0 w-full bg-white dark:bg-zinc-900 border-2 border-zinc-100 dark:border-zinc-800 rounded-2xl shadow-2xl z-50 overflow-hidden py-2 animate-in slide-in-from-top-2 duration-200">
+                                    <div className="absolute top-[calc(100%+8px)] left-0 w-full bg-white dark:bg-zinc-900 border-2 border-zinc-100 dark:border-zinc-800 rounded-2xl shadow-2xl z-[100] overflow-hidden py-2 animate-in slide-in-from-top-2 duration-200">
                                         {OFFICIAL_TYPES.map(t => (
                                             <button
                                                 key={t.id}
@@ -192,7 +192,7 @@ export function ProfileDetailModal({ official, onClose, onToggleActive, onPromot
                                         </span>
                                     </button>
                                     {editingField === 'class' && (
-                                        <div className="absolute top-[calc(100%+8px)] left-0 w-full bg-white dark:bg-zinc-900 border-2 border-zinc-100 dark:border-zinc-800 rounded-2xl shadow-2xl z-50 overflow-hidden py-2 animate-in slide-in-from-top-2 duration-200">
+                                        <div className="absolute top-[calc(100%+8px)] left-0 w-full bg-white dark:bg-zinc-900 border-2 border-zinc-100 dark:border-zinc-800 rounded-2xl shadow-2xl z-[100] overflow-hidden py-2 animate-in slide-in-from-top-2 duration-200">
                                             {CLASSIFICATIONS.map(c => (
                                                 <button
                                                     key={c.id}

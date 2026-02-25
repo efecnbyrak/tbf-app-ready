@@ -107,6 +107,16 @@ export function LoginModal({ isOpen, onClose, onSwitchToRegister }: LoginModalPr
                             Kayıt Ol
                         </button>
                     </div>
+
+                    <div className="mt-4">
+                        <button
+                            type="button"
+                            onClick={() => alert("Şifrenizi sıfırlamak için lütfen bağlı bulunduğunuz İl Hakem Kurulu veya Federasyon yetkilisi ile iletişime geçiniz.")}
+                            className="text-zinc-400 hover:text-red-700 text-xs font-medium transition-colors"
+                        >
+                            Şifremi Unuttum
+                        </button>
+                    </div>
                 </form>
             ) : (
                 <form onSubmit={handleVerify} className="space-y-4">

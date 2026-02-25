@@ -152,7 +152,17 @@ export function OfficialAvailabilityForm({ referee, days, existingForm, isLocked
 
                 {/* Region Section */}
                 <div className="bg-white dark:bg-zinc-900 p-6 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-sm mb-8">
-                    <h2 className="text-lg font-semibold mb-4 border-b dark:border-zinc-800 pb-2">Görev Bölgesi Seçimi</h2>
+                    <h2 className="text-lg font-semibold mb-2 border-b dark:border-zinc-800 pb-2 flex items-center gap-2">
+                        Görev Bölgesi Seçimi
+                        {referee.regions?.[0] && (
+                            <span className="text-sm font-normal text-zinc-500 bg-zinc-100 dark:bg-zinc-800 px-3 py-1 rounded-full border border-zinc-200 dark:border-zinc-700">
+                                {referee.regions[0].name}
+                            </span>
+                        )}
+                    </h2>
+                    <p className="text-xs text-zinc-500 mb-4 italic">
+                        * {referee.regions?.[0]?.name || "Şehriniz"} içerisindeki görev alabileceğiniz bölgeleri seçiniz.
+                    </p>
                     <div className="flex gap-4 flex-wrap">
                         {["Avrupa", "Asya", "BGM"].map(region => (
                             <label key={region} className="flex items-center gap-2 cursor-pointer border p-3 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors">

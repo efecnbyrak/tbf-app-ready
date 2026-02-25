@@ -85,6 +85,16 @@ export default function AdminLoginPage() {
                         >
                             {isLoading ? "Giriş Yapılıyor..." : "Panele Giriş"}
                         </button>
+
+                        <div className="text-center">
+                            <button
+                                type="button"
+                                onClick={() => alert("Şifrenizi sıfırlamak için lütfen sistem yöneticisi ile iletişime geçiniz.")}
+                                className="text-zinc-500 hover:text-red-600 text-xs font-medium transition-colors"
+                            >
+                                Şifremi Unuttum
+                            </button>
+                        </div>
                     </form>
                 </div>
 
