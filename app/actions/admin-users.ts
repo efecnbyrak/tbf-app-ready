@@ -163,3 +163,73 @@ export async function cleanupOldAvailability() {
     return { success: true, count: deleteCount.count };
 }
 
+export async function deleteUser(userId: number) {
+    try {
+        const session = await verifySession();
+        // Only allow SUPER_ADMIN to delete accounts
+        if (session.role !== "SUPER_ADMIN") {
+            return { success: false, message: "Yetkisiz işlem. Sadece Süper Admin silebilir." };
+        }
+
+        // Prevent self-deletion via UI
+        if (session.userId === userId) {
+            return { success: false, message: "Kendi hesabınızı sistemden silemezsiniz." };
+        }
+
+        const userToDelete = await db.user.findUnique({
+            where: { id: userId },
+            include: { role: true }
+        });
+
+        if (!userToDelete) return { success: false, message: "Kullanıcı bulunamadı." };
+
+        // Protect other SUPER_ADMIN accounts
+        if (userToDelete.role.name === "SUPER_ADMIN") {
+            return { success: false, message: "Bir Süper Admin hesabı bu panelden silinemez." };
+        }
+
+        await db.$transaction(async (tx: any) => {
+            // Delete related tables manually to avoid FK issues
+            // 1. Availability
+            const availFormIds = await tx.availabilityForm.findMany({
+                where: { referee: { userId: userId } },
+                select: { id: true }
+            });
+            const formIds = availFormIds.map((f: any) => f.id);
+            if (formIds.length > 0) {
+                await tx.availabilityDay.deleteMany({ where: { formId: { in: formIds } } });
+                await tx.availabilityForm.deleteMany({ where: { id: { in: formIds } } });
+            }
+
+            // 2. Match Assignments
+            await tx.matchAssignment.deleteMany({ where: { referee: { userId: userId } } });
+
+            // 3. Exam Attempts
+            await tx.userAnswer.deleteMany({ where: { attempt: { referee: { userId: userId } } } });
+            await tx.examAttempt.deleteMany({ where: { referee: { userId: userId } } });
+
+            // 4. Video Progress
+            await tx.videoProgress.deleteMany({ where: { userId: userId } });
+
+            // 5. Chat Sessions
+            await tx.message.deleteMany({ where: { session: { userId: userId } } });
+            await tx.chatSession.deleteMany({ where: { userId: userId } });
+
+            // 6. Referee Profile
+            await tx.referee.deleteMany({ where: { userId: userId } });
+
+            // 7. Finally the User
+            await tx.user.delete({ where: { id: userId } });
+        });
+
+        revalidatePath("/admin/referees");
+        revalidatePath("/admin/officials");
+        revalidatePath("/admin/approvals");
+
+        return { success: true, message: "Kullanıcı ve tüm verileri başarıyla silindi." };
+    } catch (error: any) {
+        console.error("Delete user error:", error);
+        return { success: false, message: "Silme işlemi sırasında bir hata oluştu: " + error.message };
+    }
+}
+

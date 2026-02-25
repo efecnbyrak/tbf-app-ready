@@ -4,7 +4,7 @@ import { useState, useTransition, useEffect } from "react";
 import { X, Calendar, LogIn, Trophy, UserSquare2, Phone, Mail, MapPin, Briefcase, Hash, Edit3, Save, RotateCcw, Shield, Star, AlertCircle, Check, Search, ShieldCheck, ChevronDown, UserMinus } from "lucide-react";
 import { format } from "date-fns";
 import { tr } from "date-fns/locale";
-import { updateRefereeProfile } from "@/app/actions/admin-users";
+import { updateRefereeProfile, deleteUser } from "@/app/actions/admin-users";
 import { demoteFromAdmin } from "@/app/actions/auth";
 import { useRouter } from "next/navigation";
 import { TURKEY_CITIES, OFFICIAL_TYPES, CLASSIFICATIONS } from "@/lib/constants";
@@ -61,7 +61,7 @@ export function ProfileDetailModal({ official, onClose, onToggleActive, onPromot
     const isSuspended = official.user?.suspendedUntil && new Date(official.user.suspendedUntil) > new Date();
     const isReferee = official.officialType === "REFEREE";
     const isObserver = official.officialType === "OBSERVER";
-    const isAdmin = official.user?.role?.name === "ADMIN";
+    const isAdmin = ["ADMIN", "ADMIN_IHK", "SUPER_ADMIN"].includes(official.user?.role?.name || "");
 
     const handleSave = () => {
         startTransition(async () => {
@@ -95,6 +95,21 @@ export function ProfileDetailModal({ official, onClose, onToggleActive, onPromot
         });
     };
 
+    const handleDelete = () => {
+        if (!confirm("DİKKAT! Bu işlem geri alınamaz.\nBu kullanıcıyı ve kullanıcıya ait TÜM VERİLERİ (Uygunluklar, Maçlar, Sınav Sonuçları vb.) kalıcı olarak silmek istediğinize emin misiniz?")) return;
+
+        startTransition(async () => {
+            const res = await deleteUser(official.userId);
+            if (res.success) {
+                alert(res.message);
+                router.refresh();
+                onClose();
+            } else {
+                alert("Hata: " + res.message);
+            }
+        });
+    };
+
     const toggleRegion = (id: number) => {
         setEditData(prev => ({
             ...prev,
@@ -107,7 +122,7 @@ export function ProfileDetailModal({ official, onClose, onToggleActive, onPromot
 
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-2 sm:p-6 bg-zinc-950/80 backdrop-blur-xl animate-in fade-in duration-300">
-            <div className="relative w-full max-w-5xl bg-white dark:bg-zinc-900 rounded-[3rem] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.3)] border border-zinc-200 dark:border-zinc-800 overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-8 duration-500">
+            <div className="relative w-full max-w-5xl bg-white dark:bg-zinc-900 rounded-[3rem] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.3)] border border-zinc-200 dark:border-zinc-800 animate-in zoom-in-95 slide-in-from-bottom-8 duration-500">
 
                 {/* Header/Close Button (Mobile Overlay) */}
                 <button
@@ -222,7 +237,7 @@ export function ProfileDetailModal({ official, onClose, onToggleActive, onPromot
                                 </button>
                             )}
 
-                            {isSuperAdmin && isAdmin && (
+                            {isSuperAdmin && isAdmin && official.user?.role?.name !== "SUPER_ADMIN" && (
                                 <button
                                     onClick={handleDemote}
                                     className="w-full p-4 bg-indigo-600 text-white rounded-[1.5rem] flex flex-col items-center gap-1 group transition-all hover:bg-indigo-700 hover:shadow-xl hover:shadow-indigo-600/20 mt-4"
@@ -231,6 +246,19 @@ export function ProfileDetailModal({ official, onClose, onToggleActive, onPromot
                                     <span className="text-sm font-black tracking-tight uppercase flex items-center gap-2">
                                         <UserMinus className="w-4 h-4" />
                                         YÖNETİCİLİĞİ AL
+                                    </span>
+                                </button>
+                            )}
+
+                            {isSuperAdmin && official.user?.role?.name !== "SUPER_ADMIN" && (
+                                <button
+                                    onClick={handleDelete}
+                                    className="w-full p-4 bg-zinc-950 text-red-500 rounded-[1.5rem] flex flex-col items-center gap-1 group transition-all hover:bg-red-600 hover:text-white hover:shadow-xl hover:shadow-red-600/20 mt-4 border-2 border-red-900/20"
+                                >
+                                    <span className="text-[8px] font-black tracking-[0.3em] uppercase opacity-70">KALICI İŞLEM</span>
+                                    <span className="text-sm font-black tracking-tight uppercase flex items-center gap-2">
+                                        <AlertCircle className="w-4 h-4" />
+                                        KULLANICIYI SİL
                                     </span>
                                 </button>
                             )}
