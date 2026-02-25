@@ -46,18 +46,48 @@ export async function sendAnnouncement(subject: string, content: string, target:
 
         // 2. Send emails
         let successCount = 0;
+        const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://tbf-hakem-sistemi.vercel.app";
+
         for (const user of recipients) {
             try {
                 const html = `
-                    <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
-                        <img src="${process.env.NEXT_PUBLIC_APP_URL}/favicon.png" width="50" height="50" style="display: block; margin-bottom: 20px;">
-                        <h2 style="color: #ef4444; text-transform: uppercase;">Duyuru</h2>
-                        <div style="font-size: 16px; line-height: 1.6; color: #333;">
-                            ${content.replace(/\n/g, '<br/>')}
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <meta charset="utf-8">
+                        <style>
+                            body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f4f4f5; margin: 0; padding: 0; }
+                            .container { max-width: 600px; margin: 40px auto; background-color: #ffffff; border-radius: 24px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.05); border: 1px solid #e4e4e7; }
+                            .header { background-color: #ef4444; padding: 40px 20px; text-align: center; }
+                            .header img { width: 80px; height: auto; filter: brightness(0) invert(1); }
+                            .content { padding: 40px; color: #18181b; line-height: 1.6; }
+                            .title { font-size: 24px; font-weight: 800; color: #ef4444; margin-bottom: 24px; text-transform: uppercase; letter-spacing: -0.025em; }
+                            .message { font-size: 16px; color: #3f3f46; white-space: pre-wrap; }
+                            .footer { background-color: #f9fafb; padding: 30px; text-align: center; border-top: 1px solid #f1f1f1; }
+                            .footer p { font-size: 12px; color: #a1a1aa; margin: 5px 0; }
+                            .button { display: inline-block; padding: 14px 28px; background-color: #ef4444; color: #ffffff !important; text-decoration: none; border-radius: 12px; font-weight: 700; font-size: 14px; margin-top: 30px; }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="container">
+                            <div class="header">
+                                <img src="${appUrl}/download.png" alt="TBF Logo">
+                            </div>
+                            <div class="content">
+                                <h1 class="title">${subject}</h1>
+                                <div class="message">${content}</div>
+                                <a href="${appUrl}" class="button">Sisteme Giriş Yap</a>
+                            </div>
+                            <div class="footer">
+                                <p>© ${new Date().getFullYear()} Türkiye Basketbol Federasyonu</p>
+                                <p>Bu otomatik bir sistem e-postasıdır. Lütfen yanıtlamayınız.</p>
+                                <div style="margin-top: 15px;">
+                                    <img src="${appUrl}/favicon.png" width="24" height="24" style="opacity: 0.5;">
+                                </div>
+                            </div>
                         </div>
-                        <hr style="margin: 30px 0; border: 0; border-top: 1px solid #eee;">
-                        <p style="font-size: 12px; color: #999;">Bu bir sistem duyurusudur. Lütfen bu e-postayı yanıtlamayın.</p>
-                    </div>
+                    </body>
+                    </html>
                 `;
                 await sendEmailSafe(user.email, subject, html);
                 successCount++;

@@ -351,6 +351,12 @@ export async function register(prevState: ActionState, formData: FormData): Prom
     if (!phone) errors.phone = "Telefon gerekli.";
     if (!password) errors.password = "Şifre gerekli.";
     if (password !== passwordConfirm) errors.password = "Şifreler eşleşmiyor.";
+
+    // Password Complexity Check
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    if (password && !passwordRegex.test(password)) {
+        errors.password = "Şifre en az 8 karakter, bir büyük harf, bir rakam ve bir özel karakter içermelidir.";
+    }
     if (!roleType) errors.roleType = "Görev seçimi gerekli.";
     if (!kvkk) return { error: "KVKK ve Aydınlatma Metni'ni onaylamanız gerekmektedir.", success: false };
 

@@ -24,6 +24,8 @@ export function RegisterModal({ isOpen, onClose, onSwitchToLogin }: RegisterModa
     const [city, setCity] = useState("İstanbul");
     const [district, setDistrict] = useState("");
     const [details, setDetails] = useState("");
+    const [password, setPassword] = useState("");
+    const [strength, setStrength] = useState(0);
 
     // Derived address string for the hidden input
     const fullAddress = `${city} / ${district} - ${details}`;
@@ -126,9 +128,45 @@ export function RegisterModal({ isOpen, onClose, onSwitchToLogin }: RegisterModa
                             type="password"
                             name="password"
                             required
+                            onChange={(e) => {
+                                const val = e.target.value;
+                                setPassword(val);
+                                // Password strength logic
+                                let score = 0;
+                                if (val.length >= 8) score++;
+                                if (/[A-Z]/.test(val)) score++;
+                                if (/[0-9]/.test(val)) score++;
+                                if (/[@$!%*?&]/.test(val)) score++;
+                                setStrength(score);
+                            }}
                             className={`w-full px-3 py-2 border rounded-lg focus:ring-2 outline-none bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white transition-colors ${state.errors?.password ? 'border-red-500 ring-red-200' : 'border-zinc-300 dark:border-zinc-700 focus:ring-red-600 focus:border-transparent'}`}
                             placeholder="Şifre"
                         />
+                        {/* Password Strength Indicator */}
+                        {password && (
+                            <div className="mt-2 space-y-1">
+                                <div className="flex h-1 gap-1">
+                                    {[1, 2, 3, 4].map((step) => (
+                                        <div
+                                            key={step}
+                                            className={`h-full flex-1 rounded-full transition-all duration-500 ${strength >= step
+                                                ? strength <= 1
+                                                    ? "bg-red-500"
+                                                    : strength <= 3
+                                                        ? "bg-yellow-500"
+                                                        : "bg-emerald-500"
+                                                : "bg-zinc-200 dark:bg-zinc-800"
+                                                }`}
+                                        />
+                                    ))}
+                                </div>
+                                <p className={`text-[10px] font-bold uppercase italic ${strength <= 1 ? "text-red-500" : strength <= 3 ? "text-yellow-600" : "text-emerald-500"
+                                    }`}>
+                                    {strength <= 1 ? "Zayıf" : strength <= 2 ? "Orta" : strength <= 3 ? "İyi" : "Güçlü"}
+                                </p>
+                            </div>
+                        )}
+                        {state.errors?.password && <p className="text-red-500 text-xs mt-1">{state.errors.password}</p>}
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
