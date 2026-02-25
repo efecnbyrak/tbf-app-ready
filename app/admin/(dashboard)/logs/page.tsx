@@ -3,6 +3,7 @@ import { getSession } from "@/lib/session";
 import { redirect } from "next/navigation";
 import { History, User as UserIcon, Activity, Globe, Clock, ShieldAlert } from "lucide-react";
 import { ensureAuditLogTable } from "@/lib/logger";
+import { LogsClient } from "./LogsClient";
 
 export const dynamic = 'force-dynamic';
 
@@ -82,6 +83,7 @@ export default async function AuditLogsPage() {
                         <p className="text-sm text-zinc-500 font-bold uppercase italic">Son 100 işlem günlüğü</p>
                     </div>
                 </div>
+                <LogsClient />
             </div>
 
             <div className="bg-white dark:bg-zinc-900 rounded-[2rem] shadow-sm border border-zinc-200 dark:border-zinc-800 overflow-hidden">

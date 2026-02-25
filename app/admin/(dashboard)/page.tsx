@@ -78,15 +78,25 @@ export default async function AdminDashboard() {
     const totalOfficials = Number(officialsCountRaw[0]?.count || 0);
 
     // Format chart data
+    const MONTH_TR: Record<string, string> = {
+        'Jan': 'Oca', 'Feb': 'Şub', 'Mar': 'Mar', 'Apr': 'Nis',
+        'May': 'May', 'Jun': 'Haz', 'Jul': 'Tem', 'Aug': 'Ağu',
+        'Sep': 'Eyl', 'Oct': 'Eki', 'Nov': 'Kas', 'Dec': 'Ara'
+    };
+
     const registrationChartData = monthlyRegistrations.map(r => ({
-        month: r.month,
+        month: MONTH_TR[r.month] || r.month,
         count: Number(r.count)
     }));
 
-    const classificationChartData = classificationDistribution.map(c => ({
-        name: formatClassification(c.classification),
-        value: Number(c.count)
-    }));
+    const classificationChartData = classificationDistribution
+        .filter(c => c.classification !== 'BELIRLENMEMIS' || Number(c.count) > 0)
+        .map(c => ({
+            name: formatClassification(c.classification),
+            value: Number(c.count)
+        }))
+        // Filter out items with 0 count to prevent clutter if Belirlenmemiş is 0
+        .filter(item => item.value > 0);
 
     const regionChartData = regionDistribution.map(r => ({
         name: r.name,
