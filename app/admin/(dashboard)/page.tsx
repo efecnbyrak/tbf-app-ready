@@ -95,7 +95,9 @@ export default async function AdminDashboard() {
                     <h2 className="text-lg font-bold text-zinc-900 dark:text-white">Son Kayıt Olanlar</h2>
                     <a href="/admin/referees" className="text-sm text-red-600 hover:text-red-700 font-medium">Tümünü Gör</a>
                 </div>
-                <div className="overflow-x-auto">
+
+                {/* Desktop View (Table) */}
+                <div className="hidden md:block overflow-x-auto">
                     <table className="w-full text-sm text-left">
                         <thead className="bg-zinc-50 dark:bg-zinc-900/50 text-zinc-500 uppercase text-xs font-semibold">
                             <tr>
@@ -114,12 +116,10 @@ export default async function AdminDashboard() {
                                 </tr>
                             ) : (
                                 latestRegistrations.map((user) => {
-                                    // Mask TCKN: First 2, masked, last 2
                                     const maskedTckn = user.tckn
                                         ? `${user.tckn.substring(0, 2)}*******${user.tckn.substring(9)}`
                                         : '***********';
 
-                                    // Map Role
                                     const roleLabels: Record<string, string> = {
                                         "REFEREE": "Hakem",
                                         "TABLE": "Masa Görevlisi",
@@ -161,6 +161,59 @@ export default async function AdminDashboard() {
                             )}
                         </tbody>
                     </table>
+                </div>
+
+                {/* Mobile View (Cards) */}
+                <div className="md:hidden divide-y divide-zinc-100 dark:divide-zinc-800">
+                    {latestRegistrations.length === 0 ? (
+                        <div className="px-6 py-8 text-center text-zinc-500">
+                            Henüz kayıtlı kullanıcı yok.
+                        </div>
+                    ) : (
+                        latestRegistrations.map((user) => {
+                            const maskedTckn = user.tckn
+                                ? `${user.tckn.substring(0, 2)}*******${user.tckn.substring(9)}`
+                                : '***********';
+
+                            const roleLabels: Record<string, string> = {
+                                "REFEREE": "Hakem",
+                                "TABLE": "Masa Görevlisi",
+                                "OBSERVER": "Gözlemci",
+                                "HEALTH": "Sağlıkçı",
+                                "STATISTICIAN": "İstatistikçi",
+                                "TABLE_STATISTICIAN": "Masa & İstatistik",
+                                "TABLE_HEALTH": "Masa & Sağlık",
+                                "FIELD_COMMISSIONER": "Saha Komiseri"
+                            };
+                            const roleLabel = roleLabels[user.officialType || ""] || user.officialType || "Belirsiz";
+
+                            return (
+                                <div key={user.id} className="p-4 space-y-2">
+                                    <div className="flex justify-between items-start">
+                                        <div className="font-bold text-zinc-900 dark:text-zinc-100">
+                                            {user.firstName} {user.lastName}
+                                        </div>
+                                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${user.officialType === 'REFEREE'
+                                            ? 'bg-red-100 text-red-700'
+                                            : 'bg-orange-100 text-orange-700'
+                                            }`}>
+                                            {roleLabel}
+                                        </span>
+                                    </div>
+                                    <div className="flex justify-between text-xs text-zinc-500">
+                                        <span className="font-mono">{maskedTckn}</span>
+                                        <span>
+                                            {new Date(user.createdAt).toLocaleDateString('tr-TR', {
+                                                day: '2-digit',
+                                                month: '2-digit',
+                                                year: 'numeric'
+                                            })}
+                                        </span>
+                                    </div>
+                                </div>
+                            );
+                        })
+                    )}
                 </div>
             </div>
 

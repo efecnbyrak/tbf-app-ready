@@ -33,8 +33,22 @@ model User {
   resetPasswordExpiresAt DateTime?
   videoProgress VideoProgress[]
   chats ChatSession[]
+  auditLogs AuditLog[]
 
   @@map("users")
+}
+
+model AuditLog {
+  id        Int      @id @default(autoincrement())
+  userId    Int?     // Who did the action
+  user      User?    @relation(fields: [userId], references: [id])
+  action    String   // e.g., "PASSWORD_RESET", "EMAIL_CHANGE"
+  details   String?  @db.Text
+  targetId  Int?     // ID of the target resource (if applicable)
+  ipAddress String?
+  createdAt DateTime @default(now())
+
+  @@map("audit_logs")
 }
 
 model Role {

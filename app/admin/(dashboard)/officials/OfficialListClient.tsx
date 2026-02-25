@@ -22,6 +22,8 @@ const TYPES = [
     { id: "STATISTICIAN", label: "İstatistik Görevlileri", icon: FileSpreadsheet, color: "text-purple-600", bg: "bg-purple-50 dark:bg-purple-900/20", borderColor: "border-purple-200 dark:border-purple-800" },
     { id: "HEALTH", label: "Sağlık Görevlileri", icon: Activity, color: "text-green-600", bg: "bg-green-50 dark:bg-green-900/20", borderColor: "border-green-200 dark:border-green-800" },
     { id: "FIELD_COMMISSIONER", label: "Saha Komiserleri", icon: Briefcase, color: "text-amber-600", bg: "bg-amber-50 dark:bg-amber-900/20", borderColor: "border-amber-200 dark:border-amber-800" },
+    { id: "TABLE_STATISTICIAN", label: "Masa & İstatistik", icon: Table, color: "text-rose-600", bg: "bg-rose-50 dark:bg-rose-900/20", borderColor: "border-rose-200 dark:border-rose-800" },
+    { id: "TABLE_HEALTH", label: "Masa & Sağlık", icon: Activity, color: "text-cyan-600", bg: "bg-cyan-50 dark:bg-cyan-900/20", borderColor: "border-cyan-200 dark:border-cyan-800" },
 ];
 
 export function OfficialListClient({ initialOfficials, refereeTypeMap, currentUserRole, selectedType, selectedStatus }: OfficialListClientProps) {

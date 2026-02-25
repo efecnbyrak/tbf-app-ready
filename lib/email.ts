@@ -46,7 +46,7 @@ export async function sendVerificationEmail(to: string | null | undefined, code:
             <h2 style="color: #c00;">TBF Hakem Sistemi</h2>
             <p>Giriş yapmak için doğrulama kodunuz:</p>
             <h1 style="font-size: 32px; letter-spacing: 5px; color: #333;">${code}</h1>
-            <p>Bu kod 5 dakika süreyle geçerlidir.</p>
+            <p>Bu doğrulama kodu 10 dakika (600 saniye) boyunca geçerlidir.</p>
             <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;" />
             <p style="font-size: 12px; color: #888;">Bu e-postayı siz istemediyseniz lütfen dikkate almayınız.</p>
         </div>

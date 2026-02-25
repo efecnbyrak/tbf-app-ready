@@ -6,7 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { logout } from "@/app/actions/auth";
-import { Users, Calendar, LayoutDashboard, Settings, LogOut, Menu, X, Briefcase, FileText, Trophy, CheckCircle, Shield } from "lucide-react";
+import { Users, Calendar, LayoutDashboard, Settings, LogOut, Menu, X, Briefcase, FileText, Trophy, CheckCircle, Shield, History as LucideHistory } from "lucide-react";
 
 interface AdminLayoutClientProps {
     children: React.ReactNode;
@@ -167,6 +167,20 @@ export function AdminLayoutClient({ children, role }: AdminLayoutClientProps) {
                             >
                                 <Shield className="w-4 h-4 text-purple-400" />
                                 Admin Yönetici Paneli
+                            </Link>
+                        )}
+
+                        {role === "SUPER_ADMIN" && (
+                            <Link
+                                href="/admin/logs"
+                                onClick={() => setIsOpen(false)}
+                                className={`flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-all ${isActive("/admin/logs")
+                                    ? "bg-zinc-950 text-white shadow-md border-l-4 border-zinc-700"
+                                    : "hover:bg-zinc-800/50 text-zinc-400 hover:text-white"
+                                    }`}
+                            >
+                                <LucideHistory className="w-4 h-4 text-zinc-400" />
+                                Sistem İşlem Kayıtları
                             </Link>
                         )}
 

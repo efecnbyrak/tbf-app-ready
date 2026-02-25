@@ -8,6 +8,8 @@ import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
 
 import { TURKEY_CITIES } from "@/lib/constants";
+import { logAction } from "@/lib/logger";
+import { getSession } from "@/lib/session";
 
 // Self-healing helper to add missing columns if they don't exist
 export async function ensureSchemaColumns() {
@@ -133,6 +135,22 @@ export async function login(prevState: ActionState, formData: FormData): Promise
 
     // Ensure database columns exist before proceeding
     await ensureSchemaColumns();
+    // Audit log table
+    try {
+        await db.$executeRawUnsafe(`
+            CREATE TABLE IF NOT EXISTS audit_logs (
+                id SERIAL PRIMARY KEY,
+                "userId" INTEGER,
+                action TEXT NOT NULL,
+                details TEXT,
+                "targetId" INTEGER,
+                "ipAddress" TEXT,
+                "createdAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+    } catch (e) {
+        console.warn("[DB-FIX] Audit log table check failed:", (e as any)?.message);
+    }
 
     try {
         // 1. Find user by username OR tckn (with robust case-insensitive matching)
@@ -216,6 +234,8 @@ export async function login(prevState: ActionState, formData: FormData): Promise
             await db.loginAttempt.delete({ where: { ipAddress: ip } });
         }
 
+        await logAction(user.id, "LOGIN_SUCCESS", `User ${user.username} logged in.`);
+
         // ADMIN BYPASS: Allow admins to login without 2FA
         if (user.role.name === "ADMIN" || user.role.name === "SUPER_ADMIN" || user.role.name === "ADMIN_IHK") {
             await createSession(user.id, user.role.name);
@@ -228,7 +248,7 @@ export async function login(prevState: ActionState, formData: FormData): Promise
         // 2FA Logic
         // Generate Code
         const code = Math.floor(100000 + Math.random() * 900000).toString();
-        const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 mins
+        const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 mins
 
         await db.user.update({
             where: { id: user.id },
@@ -586,6 +606,8 @@ export async function promoteToAdmin(userId: number) {
             }
         });
 
+        await logAction(currentSession.userId, "PROMOTE_TO_ADMIN", `Promoted user ${userId} to ADMIN`, userId);
+
         revalidatePath("/admin/manage-admins");
         revalidatePath("/admin/officials");
         return { success: true, message: "Kullanıcı başarıyla yönetici yapıldı." };
@@ -708,6 +730,8 @@ export async function requestPasswordReset(prevState: ActionState, formData: For
             }
         });
 
+        await logAction(user.id, "PASSWORD_RESET_REQUESTED", "User requested password reset.");
+
         // Send Email
         const { sendPasswordResetEmail } = await import("@/lib/email");
 
@@ -772,6 +796,8 @@ export async function resetPassword(prevState: ActionState, formData: FormData):
                 verificationCodeExpiresAt: null
             }
         });
+
+        await logAction(user.id, "PASSWORD_RESET_SUCCESS", "User successfully reset their password.");
 
         return { success: true, message: "Şifreniz başarıyla güncellendi. Yeni şifrenizle giriş yapabilirsiniz." };
     } catch (e: any) {
