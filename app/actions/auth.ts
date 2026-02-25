@@ -710,7 +710,16 @@ export async function requestPasswordReset(prevState: ActionState, formData: For
 
         // Send Email
         const { sendPasswordResetEmail } = await import("@/lib/email");
-        const resetUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/reset-password?token=${token}`;
+
+        // Dynamically determine the app URL from headers if NEXT_PUBLIC_APP_URL is not set
+        let appUrl = process.env.NEXT_PUBLIC_APP_URL;
+        if (!appUrl) {
+            const host = (await headers()).get("host") || "localhost:3000";
+            const protocol = host.includes("localhost") ? "http" : "https";
+            appUrl = `${protocol}://${host}`;
+        }
+
+        const resetUrl = `${appUrl}/reset-password?token=${token}`;
 
         const emailSent = await sendPasswordResetEmail(email, resetUrl);
         if (!emailSent) {

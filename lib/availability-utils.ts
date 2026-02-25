@@ -44,7 +44,7 @@ export async function getAvailabilityWindow() {
 
     const deadline = new Date(targetWeekStart);
     deadline.setDate(targetWeekStart.getDate() - 4); // Salı
-    deadline.setHours(18, 0, 0, 0); // Tuesday 18:00
+    deadline.setHours(20, 30, 0, 0); // Tuesday 20:30
 
     const targetWeekEnd = new Date(targetWeekStart);
     targetWeekEnd.setDate(targetWeekStart.getDate() + 6); // Cuma

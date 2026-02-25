@@ -81,8 +81,8 @@ export function OfficialAvailabilityForm({ referee, days, existingForm, isLocked
         <form action={handleSubmit} className="space-y-8 relative overflow-hidden rounded-3xl">
             {isLocked && (
                 <>
-                    <div className="absolute inset-0 z-[60] bg-zinc-950/20 backdrop-blur-[2px] pointer-events-none" />
-                    <div className="absolute inset-0 z-[70] flex flex-col items-center justify-center pointer-events-none p-4">
+                    <div className="absolute inset-0 z-[30] bg-zinc-950/20 backdrop-blur-[2px] pointer-events-none" />
+                    <div className="absolute inset-0 z-[35] flex flex-col items-center justify-center pointer-events-none p-4">
                         <div className="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md px-8 py-6 rounded-3xl shadow-2xl border-4 border-red-600/50 flex flex-col items-center gap-4 transform -rotate-3 scale-110 md:scale-125">
                             <div className="w-20 h-20 bg-red-600 rounded-full flex items-center justify-center shadow-lg shadow-red-600/40">
                                 <Lock className="w-10 h-10 text-white" />
@@ -90,7 +90,7 @@ export function OfficialAvailabilityForm({ referee, days, existingForm, isLocked
                             <div className="text-center">
                                 <h3 className="text-3xl font-black text-zinc-900 dark:text-white mb-1 uppercase tracking-tighter">ERİŞİM KAPALI</h3>
                                 <p className="text-zinc-600 dark:text-zinc-400 font-bold text-sm tracking-tight px-4">
-                                    PAZAR 15:00 - SALI 18:00
+                                    PAZAR 15:00 - SALI 20:30
                                 </p>
                             </div>
                         </div>
@@ -223,7 +223,7 @@ export function OfficialAvailabilityForm({ referee, days, existingForm, isLocked
                     <div>
                         <h3 className="font-black text-lg text-zinc-700 dark:text-zinc-300">Form Şu An Erişime Kapalı</h3>
                         <p className="text-sm font-medium opacity-80">
-                            Sistem otomatik olarak Pazar 15:00'da açılır ve Salı 18:00'da kilitlenir.
+                            Sistem otomatik olarak Pazar 15:00'da açılır ve Salı 20:30'da kilitlenir.
                         </p>
                     </div>
                 </div>
