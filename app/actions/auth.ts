@@ -15,8 +15,13 @@ export async function ensureSchemaColumns() {
         // Users table (mapped as users)
         await db.$executeRawUnsafe(`ALTER TABLE users ADD COLUMN IF NOT EXISTS "isApproved" BOOLEAN NOT NULL DEFAULT false`);
         await db.$executeRawUnsafe(`ALTER TABLE users ADD COLUMN IF NOT EXISTS "isActive" BOOLEAN NOT NULL DEFAULT true`);
+        await db.$executeRawUnsafe(`ALTER TABLE users ADD COLUMN IF NOT EXISTS "isVerified" BOOLEAN NOT NULL DEFAULT false`);
         await db.$executeRawUnsafe(`ALTER TABLE users ADD COLUMN IF NOT EXISTS "lastLoginAt" TIMESTAMP`);
         await db.$executeRawUnsafe(`ALTER TABLE users ADD COLUMN IF NOT EXISTS "suspendedUntil" TIMESTAMP`);
+        await db.$executeRawUnsafe(`ALTER TABLE users ADD COLUMN IF NOT EXISTS "verificationCode" TEXT`);
+        await db.$executeRawUnsafe(`ALTER TABLE users ADD COLUMN IF NOT EXISTS "verificationCodeExpiresAt" TIMESTAMP`);
+        await db.$executeRawUnsafe(`ALTER TABLE users ADD COLUMN IF NOT EXISTS "resetPasswordCode" TEXT`);
+        await db.$executeRawUnsafe(`ALTER TABLE users ADD COLUMN IF NOT EXISTS "resetPasswordExpiresAt" TIMESTAMP`);
 
         // Referees table (mapped as referees)
         await db.$executeRawUnsafe(`ALTER TABLE referees ADD COLUMN IF NOT EXISTS "address" TEXT`);
@@ -665,6 +670,9 @@ export async function requestPasswordReset(prevState: ActionState, formData: For
     const identifier = (formData.get("identifier") as string || "").trim();
     if (!identifier) return { error: "Lütfen TCKN veya kullanıcı adı giriniz.", success: false };
 
+    // Ensure database columns exist before proceeding
+    await ensureSchemaColumns();
+
     try {
         const user = await db.user.findFirst({
             where: {
@@ -724,6 +732,9 @@ export async function resetPassword(prevState: ActionState, formData: FormData):
     if (!token) return { error: "Geçersiz şifre sıfırlama isteği.", success: false };
     if (!password || password.length < 6) return { error: "Şifre en az 6 karakter olmalıdır.", success: false };
     if (password !== passwordConfirm) return { error: "Şifreler eşleşmiyor.", success: false };
+
+    // Ensure database columns exist before proceeding
+    await ensureSchemaColumns();
 
     try {
         const user = await db.user.findFirst({
