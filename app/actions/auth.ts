@@ -8,7 +8,7 @@ import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
 
 import { TURKEY_CITIES } from "@/lib/constants";
-import { logAction } from "@/lib/logger";
+import { logAction, ensureAuditLogTable } from "@/lib/logger";
 import { getSession } from "@/lib/session";
 
 // Self-healing helper to add missing columns if they don't exist
@@ -136,21 +136,7 @@ export async function login(prevState: ActionState, formData: FormData): Promise
     // Ensure database columns exist before proceeding
     await ensureSchemaColumns();
     // Audit log table
-    try {
-        await db.$executeRawUnsafe(`
-            CREATE TABLE IF NOT EXISTS audit_logs (
-                id SERIAL PRIMARY KEY,
-                "userId" INTEGER,
-                action TEXT NOT NULL,
-                details TEXT,
-                "targetId" INTEGER,
-                "ipAddress" TEXT,
-                "createdAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-            )
-        `);
-    } catch (e) {
-        console.warn("[DB-FIX] Audit log table check failed:", (e as any)?.message);
-    }
+    await ensureAuditLogTable();
 
     try {
         // 1. Find user by username OR tckn (with robust case-insensitive matching)

@@ -2,6 +2,7 @@ import { db } from "@/lib/db";
 import { getSession } from "@/lib/session";
 import { redirect } from "next/navigation";
 import { History, User as UserIcon, Activity, Globe, Clock, ShieldAlert } from "lucide-react";
+import { ensureAuditLogTable } from "@/lib/logger";
 
 export const dynamic = 'force-dynamic';
 
@@ -11,23 +12,56 @@ export default async function AuditLogsPage() {
         redirect("/admin");
     }
 
-    const logs = await db.auditLog.findMany({
-        orderBy: { createdAt: 'desc' },
-        take: 100,
-        include: {
-            user: {
-                select: {
-                    username: true,
-                    referee: {
-                        select: {
-                            firstName: true,
-                            lastName: true
+    // ENSURE TABLE EXISTS
+    await ensureAuditLogTable();
+
+    let logs: any[] = [];
+    try {
+        logs = await (db as any).auditLog.findMany({
+            orderBy: { createdAt: 'desc' },
+            take: 100,
+            include: {
+                user: {
+                    select: {
+                        username: true,
+                        referee: {
+                            select: {
+                                firstName: true,
+                                lastName: true
+                            }
                         }
                     }
                 }
             }
+        });
+    } catch (error) {
+        console.error("[AUDIT LOG ERROR] Prisma fetch failed, trying raw SQL:", error);
+        try {
+            // Raw SQL fallback for when table exists but Prisma client is stale
+            logs = await db.$queryRawUnsafe(`
+                SELECT 
+                    a.id, a.action, a.details, a."targetId", a."ipAddress", a."createdAt", a."userId",
+                    u.username,
+                    r."firstName", r."lastName"
+                FROM audit_logs a
+                LEFT JOIN users u ON a."userId" = u.id
+                LEFT JOIN referees r ON u.id = r."userId"
+                ORDER BY a."createdAt" DESC
+                LIMIT 100
+            `);
+
+            // Map raw results to the expected format for UI
+            logs = logs.map((l: any) => ({
+                ...l,
+                user: l.username ? {
+                    username: l.username,
+                    referee: l.firstName ? { firstName: l.firstName, lastName: l.lastName } : null
+                } : null
+            }));
+        } catch (rawError) {
+            console.error("[AUDIT LOG ERROR] Raw fallback failed:", rawError);
         }
-    });
+    }
 
     const getActionColor = (action: string) => {
         if (action.includes("LOGIN")) return "text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20";
