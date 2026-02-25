@@ -115,3 +115,41 @@ export async function sendAvailabilityConfirmationEmail(
 
     return await sendEmailSafe(to, `TBF - ${weekLabel} Uygunluk Formu Onayı`, html);
 }
+
+export async function sendPasswordResetEmail(to: string, resetUrl: string) {
+    const html = `
+        <div style="font-family:'Segoe UI',Arial,sans-serif;max-width:600px;margin:0 auto;border:1px solid #e5e5e5;border-radius:12px;overflow:hidden;">
+            <div style="background:#c00;padding:24px 28px;">
+                <h1 style="color:#fff;margin:0;font-size:20px;font-weight:700;">TBF Hakem Sistemi</h1>
+                <p style="color:rgba(255,255,255,0.85);margin:6px 0 0;font-size:14px;">Şifre Sıfırlama İsteği</p>
+            </div>
+            <div style="padding:28px;">
+                <p style="color:#1a1a1a;font-size:15px;">Merhaba,</p>
+                <p style="color:#555;font-size:14px;line-height:1.6;">
+                    Hesabınız için bir şifre sıfırlama isteği aldık. Şifrenizi sıfırlamak için aşağıdaki butona tıklayabilirsiniz.
+                </p>
+                
+                <div style="margin:24px 0;text-align:center;">
+                    <a href="${resetUrl}" 
+                       style="display:inline-block;background:#c00;color:#fff;text-decoration:none;padding:14px 32px;border-radius:8px;font-size:14px;font-weight:700;letter-spacing:.3px;box-shadow:0 4px 12px rgba(192,0,0,0.2);">
+                        🔒 Şifremi Sıfırla
+                    </a>
+                </div>
+                
+                <p style="color:#888;font-size:12px;line-height:1.6;">
+                    Bu bağlantı 1 saat boyunca geçerlidir. Eğer şifre sıfırlama isteğinde bulunmadıysanız bu e-postayı dikkate almayınız.
+                </p>
+                
+                <p style="color:#aaa;font-size:11px;margin-top:24px;border-top:1px solid #eee;padding-top:16px;">
+                    Buton çalışmıyorsa aşağıdaki bağlantıyı tarayıcınıza kopyalayabilirsiniz:<br>
+                    <a href="${resetUrl}" style="color:#c00;word-break:break-all;">${resetUrl}</a>
+                </p>
+            </div>
+            <div style="background:#f7f7f7;padding:16px 28px;border-top:1px solid #e5e5e5;">
+                <p style="color:#aaa;font-size:11px;margin:0;">Bu e-posta TBF Hakem Sistemi tarafından otomatik olarak gönderilmiştir.</p>
+            </div>
+        </div>
+    `;
+
+    return await sendEmailSafe(to, 'TBF Hakem Sistemi - Şifre Sıfırlama', html);
+}

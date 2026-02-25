@@ -19,13 +19,13 @@ export const ISTANBUL_DISTRICTS = [
 
 export const OFFICIAL_TYPES = [
     { id: "REFEREE", label: "Hakem" },
-    { id: "TABLE", label: "Masa Görevlisi" },
     { id: "OBSERVER", label: "Gözlemci" },
+    { id: "TABLE", label: "Masa Görevlisi" },
     { id: "STATISTICIAN", label: "İstatistik Görevlisi" },
     { id: "HEALTH", label: "Sağlık Görevlisi" },
-    { id: "FIELD_COMMISSIONER", label: "Saha Komiseri" },
+    { id: "TABLE_STATISTICIAN", label: "Masa & İstatistikçi" },
     { id: "TABLE_HEALTH", label: "Masa & Sağlıkçı" },
-    { id: "TABLE_STATISTICIAN", label: "Masa & İstatistikçi" }
+    { id: "FIELD_COMMISSIONER", label: "Saha Komiseri" }
 ];
 
 export const CLASSIFICATIONS = [

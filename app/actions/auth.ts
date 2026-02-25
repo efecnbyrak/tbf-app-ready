@@ -661,6 +661,105 @@ export async function logout() {
     redirect("/");
 }
 
+export async function requestPasswordReset(prevState: ActionState, formData: FormData): Promise<ActionState> {
+    const identifier = (formData.get("identifier") as string || "").trim();
+    if (!identifier) return { error: "Lütfen TCKN veya kullanıcı adı giriniz.", success: false };
+
+    try {
+        const user = await db.user.findFirst({
+            where: {
+                OR: [
+                    { username: { equals: identifier, mode: 'insensitive' } },
+                    { tckn: identifier }
+                ]
+            },
+            include: { referee: true }
+        });
+
+        // Security: Don't reveal if user exists unless it's a success
+        if (!user) {
+            // Subtle delay or generic message to prevent enumeration? 
+            // The user wants a direct flow, so we'll be helpful but careful.
+            return { success: true, message: "Eğer sistemde kayıtlı bir hesabınız varsa, şifre sıfırlama talimatları e-posta adresinize gönderilecektir." };
+        }
+
+        const email = user.referee?.email;
+        if (!email) {
+            return { error: "Hesabınıza tanımlı bir e-posta adresi bulunamadı. Lütfen yönetici ile iletişime geçin.", success: false };
+        }
+
+        // Generate a random 32-char hex token
+        const token = Array.from({ length: 32 }, () => Math.floor(Math.random() * 16).toString(16)).join('');
+        const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+
+        await db.user.update({
+            where: { id: user.id },
+            data: {
+                resetPasswordCode: token,
+                resetPasswordExpiresAt: expiresAt
+            }
+        });
+
+        // Send Email
+        const { sendPasswordResetEmail } = await import("@/lib/email");
+        const resetUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/reset-password?token=${token}`;
+
+        const emailSent = await sendPasswordResetEmail(email, resetUrl);
+        if (!emailSent) {
+            return { error: "Şifre sıfırlama e-postası gönderilirken bir hata oluştu.", success: false };
+        }
+
+        return { success: true, message: "Şifre sıfırlama bağlantısı e-posta adresinize gönderilmiştir. Lütfen gelen kutunuzu kontrol edin." };
+    } catch (e: any) {
+        console.error("Reset request error:", e);
+        return { error: "İşlem sırasında bir hata oluştu.", success: false };
+    }
+}
+
+export async function resetPassword(prevState: ActionState, formData: FormData): Promise<ActionState> {
+    const token = formData.get("token") as string;
+    const password = formData.get("password") as string;
+    const passwordConfirm = formData.get("passwordConfirm") as string;
+
+    if (!token) return { error: "Geçersiz şifre sıfırlama isteği.", success: false };
+    if (!password || password.length < 6) return { error: "Şifre en az 6 karakter olmalıdır.", success: false };
+    if (password !== passwordConfirm) return { error: "Şifreler eşleşmiyor.", success: false };
+
+    try {
+        const user = await db.user.findFirst({
+            where: {
+                resetPasswordCode: token,
+                resetPasswordExpiresAt: {
+                    gt: new Date()
+                }
+            }
+        });
+
+        if (!user) {
+            return { error: "Şifre sıfırlama bağlantısı geçersiz veya süresi dolmuş.", success: false };
+        }
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        await db.user.update({
+            where: { id: user.id },
+            data: {
+                password: hashedPassword,
+                resetPasswordCode: null,
+                resetPasswordExpiresAt: null,
+                // Also clear any 2FA codes for security
+                verificationCode: null,
+                verificationCodeExpiresAt: null
+            }
+        });
+
+        return { success: true, message: "Şifreniz başarıyla güncellendi. Yeni şifrenizle giriş yapabilirsiniz." };
+    } catch (e: any) {
+        console.error("Reset password error:", e);
+        return { error: "Şifre güncellenirken bir hata oluştu.", success: false };
+    }
+}
+
 async function handleFailedLogin(ip: string, loginAttempt: any) {
     const now = new Date();
     if (!loginAttempt) {
