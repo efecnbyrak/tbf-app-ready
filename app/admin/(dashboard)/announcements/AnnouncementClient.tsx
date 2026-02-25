@@ -31,11 +31,11 @@ export default function AnnouncementClient() {
         try {
             const res = await sendAnnouncement(subject, content, target);
             if (res.success) {
-                setStatus({ type: 'success', message: `${res.count} adet e-posta başarıyla sıraya alındı ve gönderildi.` });
+                setStatus({ type: 'success', message: res.message });
                 setSubject("");
                 setContent("");
             } else {
-                setStatus({ type: 'error', message: res.message || "Mesaj gönderilirken bir hata oluştu." });
+                setStatus({ type: 'error', message: res.message });
             }
         } catch (error) {
             setStatus({ type: 'error', message: "Beklenmedik bir hata oluştu." });

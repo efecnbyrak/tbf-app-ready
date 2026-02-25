@@ -72,9 +72,9 @@ export async function sendAnnouncement(subject: string, content: string, target:
 
         await logAction(session.userId, "ANNOUNCEMENT_SENT", `Sent to ${successCount} users: ${subject}`);
 
-        return { success: true, count: successCount };
+        return { success: true, message: `${successCount} adet e-posta başarıyla gönderildi.`, count: successCount };
     } catch (error) {
         console.error("[ANNOUNCEMENT ERROR]", error);
-        return { success: false, error: (error as any).message };
+        return { success: false, message: (error as any).message || "Bilinmeyen bir hata oluştu." };
     }
 }
