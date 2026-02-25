@@ -1,3 +1,5 @@
+"use server";
+
 import { db } from "@/lib/db";
 import { sendEmailSafe } from "@/lib/email";
 import { getSession } from "@/lib/session";
