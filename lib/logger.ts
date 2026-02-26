@@ -1,7 +1,10 @@
 import { db } from "./db";
 import { headers } from "next/headers";
 
+let isAuditLogTableChecked = false;
+
 export async function ensureAuditLogTable() {
+    if (isAuditLogTableChecked) return;
     try {
         await db.$executeRawUnsafe(`
             CREATE TABLE IF NOT EXISTS audit_logs (
@@ -16,6 +19,8 @@ export async function ensureAuditLogTable() {
         `);
     } catch (e) {
         // Silently fail if exists or other DB issue
+    } finally {
+        isAuditLogTableChecked = true;
     }
 }
 

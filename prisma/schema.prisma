@@ -35,6 +35,8 @@ model User {
   chats ChatSession[]
   auditLogs AuditLog[]
 
+  @@index([roleId])
+  @@index([username])
   @@map("users")
 }
 
@@ -48,6 +50,8 @@ model AuditLog {
   ipAddress String?
   createdAt DateTime @default(now())
 
+  @@index([userId])
+  @@index([createdAt])
   @@map("audit_logs")
 }
 
@@ -90,6 +94,9 @@ model Referee {
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
+  @@index([userId])
+  @@index([classification])
+  @@index([officialType])
   @@map("referees")
 }
 
@@ -103,6 +110,7 @@ model AvailabilityForm {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
+  @@index([weekStartDate])
   @@unique([refereeId, weekStartDate]) // One form per week per referee
   @@map("availability_forms")
 }

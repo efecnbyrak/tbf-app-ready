@@ -20,13 +20,15 @@ export function AvailabilityList({ forms, startDate, endDate }: AvailabilityList
     const [searchTerm, setSearchTerm] = useState("");
     const [expandedId, setExpandedId] = useState<number | null>(null);
 
-    const filteredForms = forms.filter((form) => {
-        const fullName = `${form.referee.firstName} ${form.referee.lastName}`.toLowerCase();
-        const search = searchTerm.toLowerCase();
-        return fullName.includes(search) ||
-            form.referee.classification.toLowerCase().includes(search) ||
-            form.referee.regions.some((r) => r.name.toLowerCase().includes(search));
-    });
+    const filteredForms = React.useMemo(() => {
+        return forms.filter((form) => {
+            const fullName = `${form.referee.firstName} ${form.referee.lastName}`.toLowerCase();
+            const search = searchTerm.toLowerCase();
+            return fullName.includes(search) ||
+                form.referee.classification.toLowerCase().includes(search) ||
+                form.referee.regions.some((r) => r.name.toLowerCase().includes(search));
+        });
+    }, [forms, searchTerm]);
 
     const toggleExpand = (id: number) => {
         if (expandedId === id) setExpandedId(null);

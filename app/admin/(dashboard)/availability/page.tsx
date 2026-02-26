@@ -40,20 +40,19 @@ export default async function AvailabilityAdminPage({ searchParams }: PageProps)
     const formattedStart = format(startDate, "d MMMM", { locale: tr });
     const formattedEnd = format(endDate, "d MMMM yyyy", { locale: tr });
 
-    // Fetch Referee Types manually via Raw Query to bypass stale Prisma Client
-    const refereeTypesRaw = await db.$queryRaw<Array<{ id: number, officialType: string }>>`
-        SELECT id, "officialType" FROM referees
-    `;
-    const refereeTypeMap = new Map(refereeTypesRaw.map((r: any) => [r.id, r.officialType || "REFEREE"]));
-
     // Determine active group and type
     const activeGroup = params.group || "REFEREE"; // "REFEREE" or "GENERAL"
     const activeType = params.type; // "TABLE", "OBSERVER", etc.
 
-    // Fetch submitted forms
-    const allForms = await db.availabilityForm.findMany({
+    // Fetch forms with database-level filtering
+    const forms = await db.availabilityForm.findMany({
         where: {
             weekStartDate: startDate,
+            referee: {
+                officialType: activeGroup === "REFEREE"
+                    ? "REFEREE"
+                    : (activeType ? activeType : { not: "REFEREE" })
+            }
         },
         include: {
             referee: {
@@ -62,22 +61,6 @@ export default async function AvailabilityAdminPage({ searchParams }: PageProps)
             days: true
         },
         orderBy: { updatedAt: 'desc' }
-    });
-
-    // In-Memory Filtering
-    const forms = allForms.filter((form: any) => {
-        const type = refereeTypeMap.get(form.refereeId) || "REFEREE";
-
-        if (activeGroup === "REFEREE") {
-            return type === "REFEREE";
-        } else {
-            // GENERAL
-            if (activeType) {
-                return type === activeType;
-            } else {
-                return type !== "REFEREE";
-            }
-        }
     });
 
     // Sub-types for General
@@ -197,13 +180,7 @@ export default async function AvailabilityAdminPage({ searchParams }: PageProps)
             )}
 
             <AvailabilityList
-                forms={forms.map((form: any) => ({
-                    ...form,
-                    referee: {
-                        ...form.referee,
-                        officialType: refereeTypeMap.get(form.refereeId) || "REFEREE"
-                    }
-                }))}
+                forms={forms as any}
                 startDate={startDate}
                 endDate={endDate}
             />

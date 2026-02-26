@@ -11,8 +11,12 @@ import { TURKEY_CITIES } from "@/lib/constants";
 import { logAction, ensureAuditLogTable } from "@/lib/logger";
 import { getSession } from "@/lib/session";
 
+// Cache to prevent redundant schema checks in the same execution context
+let isSchemaChecked = false;
+
 // Self-healing helper to add missing columns if they don't exist
 export async function ensureSchemaColumns() {
+    if (isSchemaChecked) return;
     try {
         // Users table (mapped as users)
         await db.$executeRawUnsafe(`ALTER TABLE users ADD COLUMN IF NOT EXISTS "isApproved" BOOLEAN NOT NULL DEFAULT false`);
@@ -80,6 +84,8 @@ export async function ensureSchemaColumns() {
     } catch (e) {
         // Silently fail if columns exist or other DB issues
         console.warn("[DB-FIX] Self-healing attempt finished with warning:", (e as any)?.message);
+    } finally {
+        isSchemaChecked = true;
     }
 }
 
