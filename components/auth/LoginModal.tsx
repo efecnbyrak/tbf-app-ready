@@ -184,6 +184,19 @@ export function LoginModal({ isOpen, onClose, onSwitchToRegister }: LoginModalPr
                             </div>
                         </div>
 
+                        <div className="flex items-center justify-between px-1">
+                            <label className="flex items-center gap-2 cursor-pointer group">
+                                <input
+                                    type="checkbox"
+                                    name="remember"
+                                    className="w-4 h-4 rounded border-2 border-zinc-200 dark:border-zinc-700 text-red-600 focus:ring-red-600 transition-all cursor-pointer"
+                                />
+                                <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400 dark:text-zinc-500 group-hover:text-zinc-700 dark:group-hover:text-zinc-300 transition-colors">
+                                    Beni Hatırla
+                                </span>
+                            </label>
+                        </div>
+
                         {loginState?.error && (
                             <div className="bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/50 p-3 rounded-xl flex items-center gap-2 text-red-600 text-[10px] font-bold animate-in shake-in duration-300">
                                 <AlertCircle className="w-4 h-4" />

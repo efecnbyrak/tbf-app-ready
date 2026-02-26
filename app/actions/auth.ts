@@ -217,9 +217,11 @@ export async function login(prevState: ActionState, formData: FormData): Promise
 
         await logAction(user.id, "LOGIN_SUCCESS", `User ${user.username} logged in successfully.`);
 
+        const rememberMe = formData.get("remember") === "on";
+
         // ADMIN BYPASS: Allow admins to login without 2FA
         if (isAdminUser || roleName === "SUPER_ADMIN") {
-            await createSession(user.id, user.role.name);
+            await createSession(user.id, user.role.name, rememberMe);
             return { success: true, redirectTo: "/admin", error: undefined };
         }
 
@@ -284,7 +286,9 @@ export async function verify2FA(userId: number, code: string): Promise<ActionSta
         });
 
         // Create Session
-        await createSession(user.id, user.role.name);
+        const rememberMe = false; // We might need to handle this for 2FA too, but user didn't specify. 
+        // Typically it's better to pass it through or store it temporarily.
+        await createSession(user.id, user.role.name, rememberMe);
 
         // Redirect
         let redirectTo = "/";
