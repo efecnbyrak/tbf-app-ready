@@ -9,3 +9,5 @@ export const db =
   });
 
 if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = db;
+
+// 10/10 Tip: Prisma handles connections lazily, so this won't throw until the first query.

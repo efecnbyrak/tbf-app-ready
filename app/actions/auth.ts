@@ -44,25 +44,6 @@ export async function ensureSchemaColumns() {
             await db.role.create({ data: { name: 'SUPER_ADMIN' } });
         }
 
-        // Seed City-based Regions
-        const currentRegionCount = await db.region.count();
-        if (currentRegionCount < 81) {
-            await db.region.deleteMany({
-                where: {
-                    name: {
-                        in: ["Avrupa", "Asya", "BGM", "Anadolu", "İl Hakemi", "Aday Hakem"]
-                    }
-                }
-            });
-
-            for (const cityName of TURKEY_CITIES) {
-                await db.region.upsert({
-                    where: { name: cityName },
-                    update: {},
-                    create: { name: cityName }
-                });
-            }
-        }
 
         const adminUsername = 'talat.mustafa.ozdemir50';
         const existingAdmin = await db.user.findUnique({ where: { username: adminUsername } });

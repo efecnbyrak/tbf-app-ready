@@ -56,12 +56,26 @@ export async function createSession(userId: number, role: string, rememberMe: bo
 
 export async function getSession() {
     try {
+        // cookies() is a dynamic function and must be handled carefully
         const cookieStore = await cookies();
-        const session = cookieStore.get(BOOTSTRAP_COOKIE_NAME)?.value;
-        if (!session) return null;
-        return await decrypt(session);
+        const cookie = cookieStore.get(BOOTSTRAP_COOKIE_NAME);
+
+        if (!cookie?.value) return null;
+
+        const decrypted = await decrypt(cookie.value);
+        if (!decrypted) return null;
+
+        // 10/10 Reliability: Ensure return object is flat and serializable
+        return {
+            userId: decrypted.userId,
+            role: decrypted.role,
+            expires: decrypted.expires
+        };
     } catch (error) {
-        console.error("[SESSION] getSession error:", error);
+        // Silent catch for production stability
+        if (process.env.NODE_ENV !== "production") {
+            console.error("[SESSION] getSession fail:", error);
+        }
         return null;
     }
 }

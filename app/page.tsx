@@ -38,6 +38,6 @@ export default async function Home() {
     }
   }
 
-  // If not logged in or error occurred, show the login/register page
+  // Final fallthrough: If not logged in or error occurred, show the login/register page
   return <HomePage />;
 }
