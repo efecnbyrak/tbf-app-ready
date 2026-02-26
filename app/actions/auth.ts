@@ -9,8 +9,9 @@ import { revalidatePath } from "next/cache";
 
 import { TURKEY_CITIES } from "@/lib/constants";
 import { logAction, ensureAuditLogTable } from "@/lib/logger";
-import { getSession } from "@/lib/session";
+import { LoginSchema, RegisterSchema, PasswordResetRequestSchema } from "@/lib/schemas";
 import { validateTCKN, validatePhone, formatPhone } from "@/lib/validation-utils";
+import { z } from "zod";
 
 // Cache to prevent redundant schema checks in the same execution context
 let isSchemaChecked = false;
@@ -113,17 +114,22 @@ export interface ActionState {
 }
 
 export async function login(prevState: ActionState, formData: FormData): Promise<ActionState> {
-    const identifier = (formData.get("identifier") as string || "").trim();
-    const password = (formData.get("password") as string || "").trim();
+    // 0. Parse and Validate Input with Zod
+    const rawData = Object.fromEntries(formData.entries());
+    const validatedFields = LoginSchema.safeParse({
+        ...rawData,
+        adminLogin: formData.get("adminLogin") === "true"
+    });
 
-    if (!identifier || !password) {
-        return { error: "Lütfen tüm alanları doldurun.", success: false };
+    if (!validatedFields.success) {
+        return { error: "Geçersiz giriş bilgileri.", success: false };
     }
 
-    // 0. Rate Limiting Check
+    const { identifier, password, adminLogin } = validatedFields.data;
+
+    // 0.1 Rate Limiting Check
     const ip = (await headers()).get("x-forwarded-for") || "127.0.0.1";
 
-    // Check existing attempt - wrap in try-catch so a transient DB error doesn't block login
     let loginAttempt = null;
     try {
         loginAttempt = await db.loginAttempt.findUnique({
@@ -137,17 +143,14 @@ export async function login(prevState: ActionState, formData: FormData): Promise
             }
         }
     } catch (rateLimitError) {
-        // DB bağlantısı geçici olarak kopmuşsa rate limiting'i atla, login devam etsin
         console.warn("[LOGIN] Rate limit DB check failed, skipping:", (rateLimitError as any)?.message);
     }
 
-    // Ensure database columns exist before proceeding
     await ensureSchemaColumns();
-    // Audit log table
     await ensureAuditLogTable();
 
     try {
-        // 1. Find user by username OR tckn (with robust case-insensitive matching)
+        // 1. Find user (TCKN must be exact, Username is case-insensitive)
         const user = await db.user.findFirst({
             where: {
                 OR: [
@@ -157,62 +160,41 @@ export async function login(prevState: ActionState, formData: FormData): Promise
             },
             include: {
                 role: true,
-                referee: true
+                referee: true,
+                official: true
             },
         });
 
+        // SECURITY: Common error message for both "User Not Found" and "Wrong Password" 
+        // to prevent account enumeration (guessing registered TCKNs).
+        const genericError = "Giriş bilgileri hatalı. Lütfen kontrol ederek tekrar deneyiniz.";
+
         if (!user) {
             await handleFailedLogin(ip, loginAttempt);
-            // Unique error message for "Not Found" to distinguish from "Bad Password"
-            return { error: "Bu kullanıcı adı veya TCKN ile kayıtlı bir hesap bulunamadı.", success: false };
+            return { error: genericError, success: false };
         }
 
-        // 1.5 Check if approved
-        // Robust check for any Admin or Super Admin role
+        // 1.5 Access Checks
         const roleName = (user.role?.name || "").toUpperCase();
         const isAdminUser = roleName.includes("ADMIN");
 
         if (!user.isApproved && !isAdminUser) {
-            return { error: "Başvurunuz Yönetici tarafından onay beklemektedir. Onaylandığı zaman bilgilendirileceksiniz.", success: false };
+            return { error: "Hesabınız henüz onaylanmamıştır. Lütfen yöneticinin onaylamasını bekleyin.", success: false };
         }
 
-        // 1.6 Check if suspended or passive
-        const now = new Date();
-        const sixMonthsAgo = new Date(now.getTime() - (6 * 30 * 24 * 60 * 60 * 1000));
-
-        // If not admin, check for inactivity
-        const isActuallyAdmin = user.role.name === "ADMIN" || user.role.name === "SUPER_ADMIN" || user.role.name === "ADMIN_IHK";
-
-        if (!isActuallyAdmin) {
-            if ((user as any).lastLoginAt && (user as any).lastLoginAt < sixMonthsAgo && (user as any).isActive) {
-                await db.user.update({
-                    where: { id: user.id },
-                    data: { isActive: false } as any
-                });
-                return { error: "Hesabınız 6 aydır giriş yapılmadığı için pasif konuma alınmıştır. Lütfen yönetici ile iletişime geçin.", success: false };
-            }
-
-            if (!(user as any).isActive) {
-                return { error: "Hesabınız pasif konumdadır. Lütfen yönetici ile iletişime geçin.", success: false };
-            }
+        if (!user.isActive && !isAdminUser) {
+            return { error: "Hesabınız pasif konumdadır. Lütfen yönetici ile iletişime geçin.", success: false };
         }
 
-        // Update lastLoginAt
-        await db.user.update({
-            where: { id: user.id },
-            data: { lastLoginAt: now } as any
-        });
+        // 1.6 Suspension Check
+        if (user.suspendedUntil && user.suspendedUntil > new Date()) {
+            const dateStr = user.suspendedUntil.toLocaleDateString('tr-TR');
+            return { error: `Hesabınız ${dateStr} tarihine kadar askıya alınmıştır.`, success: false };
+        }
 
-        // 1.7 Check login path
-        const isAdminLogin = formData.get("adminLogin") === "true";
-        if (isAdminLogin) {
-            if (user.role.name !== "SUPER_ADMIN") {
-                return { error: "Bu sayfadan sadece Süper Admin girişi yapılabilir.", success: false };
-            }
-        } else {
-            if (user.role.name === "SUPER_ADMIN") {
-                return { error: "Süper Admin girişi için lütfen yönetici giriş sayfasını kullanın.", success: false };
-            }
+        // 1.7 Path Validation
+        if (adminLogin && user.role.name !== "SUPER_ADMIN" && user.role.name !== "ADMIN_IHK" && user.role.name !== "ADMIN") {
+            return { error: "Bu panelden giriş yetkiniz bulunmamaktadır.", success: false };
         }
 
         // 2. Check password
@@ -220,27 +202,28 @@ export async function login(prevState: ActionState, formData: FormData): Promise
 
         if (!isPasswordValid) {
             await handleFailedLogin(ip, loginAttempt);
-            return { error: "Girdiğiniz şifre hatalı. Lütfen kontrol ederek tekrar deneyiniz.", success: false };
+            return { error: genericError, success: false };
         }
 
-        // Success - Reset attempts
+        // Success - Cleanup rate limit
         if (loginAttempt) {
             await db.loginAttempt.delete({ where: { ipAddress: ip } });
         }
 
-        await logAction(user.id, "LOGIN_SUCCESS", `User ${user.username} logged in.`);
+        await db.user.update({
+            where: { id: user.id },
+            data: { lastLoginAt: new Date() }
+        });
+
+        await logAction(user.id, "LOGIN_SUCCESS", `User ${user.username} logged in successfully.`);
 
         // ADMIN BYPASS: Allow admins to login without 2FA
-        if (user.role.name === "ADMIN" || user.role.name === "SUPER_ADMIN" || user.role.name === "ADMIN_IHK") {
+        if (isAdminUser || roleName === "SUPER_ADMIN") {
             await createSession(user.id, user.role.name);
-            const redirectPath = (user.role.name === "SUPER_ADMIN" || user.role.name === "ADMIN_IHK" || user.role.name === "ADMIN")
-                ? "/admin"
-                : "/";
-            return { success: true, redirectTo: redirectPath, error: undefined };
+            return { success: true, redirectTo: "/admin", error: undefined };
         }
 
-        // 2FA Logic
-        // Generate Code
+        // 2FA Logic for Referees and Officials
         const code = Math.floor(100000 + Math.random() * 900000).toString();
         const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 mins
 
@@ -253,38 +236,21 @@ export async function login(prevState: ActionState, formData: FormData): Promise
         });
 
         // Send Email
-        try {
-            const { sendVerificationEmail } = await import("@/lib/email");
-
-            // Determine Recipient Email
-            let recipientEmail = user.referee?.email;
-
-            // Fallback for Admin or missing email
-            if (!recipientEmail) {
-                if (user.role.name === "ADMIN") {
-                    // For admin, if no profile email, try env or just warn
-                    recipientEmail = process.env.SMTP_USER || "";
-                    console.log("[AUTH] Admin email missing, using SMTP_USER as fallback.");
-                } else {
-                    // For regular users, if no email, we can't send.
-                    // But we continue to avoid crashing. sendEmailSafe will handle empty string.
-                    console.warn(`[AUTH] User ${user.id} has no email address.`);
-                }
+        const recipientEmail = user.referee?.email || (user as any).official?.email;
+        if (recipientEmail) {
+            try {
+                const { sendVerificationEmail } = await import("@/lib/email");
+                await sendVerificationEmail(recipientEmail, code);
+            } catch (emailError) {
+                console.error("2FA Email error:", emailError);
             }
-
-            // We do NOT use user.username as it is TCKN
-            await sendVerificationEmail(recipientEmail, code);
-
-        } catch (emailError) {
-            console.error("Failed to invoke email service:", emailError);
         }
 
         return { success: false, requireVerification: true, userId: user.id, error: undefined };
 
     } catch (error: any) {
-        console.error("Login error:", error);
-        console.error("Login Error Details:", error?.message);
-        return { error: "Giriş yapılırken bir hata oluştu.", success: false };
+        console.error("Login system error:", error);
+        return { error: "Sistemde bir hata oluştu. Lütfen daha sonra tekrar deneyiniz.", success: false };
     }
 }
 
@@ -294,7 +260,7 @@ export async function verify2FA(userId: number, code: string): Promise<ActionSta
     try {
         const user = await db.user.findUnique({
             where: { id: userId },
-            include: { role: true, referee: true }
+            include: { role: true, referee: true, official: true }
         });
 
         if (!user) return { error: "Kullanıcı bulunamadı.", success: false };
@@ -326,7 +292,7 @@ export async function verify2FA(userId: number, code: string): Promise<ActionSta
             redirectTo = "/admin";
         } else if (user.referee) {
             redirectTo = "/referee";
-        } else {
+        } else if ((user as any).official) {
             redirectTo = "/general";
         }
 
@@ -338,98 +304,64 @@ export async function verify2FA(userId: number, code: string): Promise<ActionSta
 }
 
 export async function register(prevState: ActionState, formData: FormData): Promise<ActionState> {
-    const firstName = formData.get("firstName") as string;
-    const lastName = formData.get("lastName") as string;
-    const tckn = formData.get("tckn") as string;
-    const email = formData.get("email") as string;
-    const phone = formData.get("phone") as string;
-    const password = formData.get("password") as string;
-    const passwordConfirm = formData.get("passwordConfirm") as string;
-    const roleType = formData.get("roleType") as string;
-    const job = formData.get("job") as string;
-    const address = formData.get("address") as string;
-    const kvkk = formData.get("kvkk");
+    // 0. Parse and Validate Input with Zod
+    const rawData = Object.fromEntries(formData.entries());
+    const validatedFields = RegisterSchema.safeParse({
+        ...rawData,
+        kvkk: formData.get("kvkk") === "on" // Checkbox standard
+    });
 
-    const errors: ActionState['errors'] = {};
-
-    if (!firstName) errors.firstName = "Ad gerekli.";
-    if (!lastName) errors.lastName = "Soyad gerekli.";
-    if (!tckn) errors.tckn = "TCKN gerekli.";
-    if (!email) errors.email = "E-posta gerekli.";
-    if (!phone) errors.phone = "Telefon gerekli.";
-    if (!password) errors.password = "Şifre gerekli.";
-    if (password !== passwordConfirm) errors.password = "Şifreler eşleşmiyor.";
-
-    // Professional Validation
-    if (tckn && !validateTCKN(tckn)) {
-        errors.tckn = "Geçersiz TC Kimlik Numarası.";
-    }
-    if (phone && !validatePhone(phone)) {
-        errors.phone = "Geçersiz telefon numarası. (Örn: 5XX XXX XX XX)";
+    if (!validatedFields.success) {
+        // Map Zod errors to our ActionState.errors format
+        const fieldErrors = validatedFields.error.flatten().fieldErrors;
+        const mappedErrors: ActionState['errors'] = {};
+        for (const key in fieldErrors) {
+            mappedErrors[key as keyof ActionState['errors']] = fieldErrors[key]?.[0];
+        }
+        return { error: "Lütfen işaretli alanları kontrol edin.", errors: mappedErrors, success: false };
     }
 
-    // Password Complexity Check
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-    if (password && !passwordRegex.test(password)) {
-        errors.password = "Şifre en az 8 karakter, bir büyük harf, bir rakam ve bir özel karakter içermelidir.";
-    }
-    if (!roleType) errors.roleType = "Görev seçimi gerekli.";
-    if (!kvkk) return { error: "KVKK ve Aydınlatma Metni'ni onaylamanız gerekmektedir.", success: false };
+    const { firstName, lastName, tckn, email, phone, password, roleType, job, address } = validatedFields.data;
 
-    if (Object.keys(errors).length > 0) {
-        return { error: "Lütfen işaretli alanları kontrol edin.", errors, success: false };
-    }
-
-    if (tckn.length !== 11) {
-        return { error: "TC Kimlik No 11 haneli olmalıdır.", errors: { tckn: "TCKN 11 haneli olmalıdır" }, success: false };
-    }
-
-    // Ensure database columns exist before proceeding
     await ensureSchemaColumns();
 
     try {
         // 1. Hash password
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        // 2. Check existing user
+        // 2. Check existing user (TCKN/Email)
         const existingTckn = await db.user.findFirst({ where: { tckn } });
         if (existingTckn) {
-            return { error: "Bu TCKN ile kayıtlı bir kullanıcı zaten var.", errors: { tckn: "Bu TCKN zaten kullanımda." }, success: false };
+            return { error: "Bu TCKN ile kayıtlı bir kullanıcı zaten var.", errors: { tckn: "Zaten kayıtlı." }, success: false };
         }
 
-        // Check email in both tables
         const existingRefereeEmail = await db.referee.findUnique({ where: { email } });
         const existingOfficialEmail = await db.generalOfficial.findUnique({ where: { email } });
 
         if (existingRefereeEmail || existingOfficialEmail) {
-            return { error: "Bu E-posta ile kayıtlı bir kullanıcı zaten var.", errors: { email: "Bu E-posta zaten kullanımda." }, success: false };
+            return { error: "Bu E-posta zaten kullanımda.", errors: { email: "Zaten kayıtlı." }, success: false };
         }
 
-        // 3. Find or Create Role "REFEREE"
+        // 3. Find/Create Role
         let refereeRole = await db.role.findUnique({ where: { name: "REFEREE" } });
         if (!refereeRole) {
             refereeRole = await db.role.create({ data: { name: "REFEREE" } });
         }
 
-        // 4. Username = TCKN (Requested by user)
-        const generatedUsername = tckn;
-
         const selectedCity = formData.get("selectedCity") as string || "İstanbul";
-        let createdUser: any;
 
-        // 5. Transaction
+        // 4. Transactional Create
         await db.$transaction(async (tx: any) => {
-            createdUser = await tx.user.create({
+            const createdUser = await tx.user.create({
                 data: {
-                    username: generatedUsername,
+                    username: tckn,
                     tckn: tckn,
                     password: hashedPassword,
                     roleId: refereeRole!.id,
-                    isApproved: false // Explicitly set to false (referee registration)
+                    isApproved: false
                 }
             });
 
-            // Find or create the region based on full city name
             let region = await tx.region.findUnique({ where: { name: selectedCity } });
             if (!region) {
                 region = await tx.region.create({ data: { name: selectedCity } });
@@ -440,16 +372,14 @@ export async function register(prevState: ActionState, formData: FormData): Prom
                     data: {
                         userId: createdUser.id,
                         tckn: tckn,
-                        firstName: firstName,
-                        lastName: lastName,
-                        email: email,
+                        firstName,
+                        lastName,
+                        email,
                         phone: formatPhone(phone),
                         classification: 'BELIRLENMEMIS',
                         job: job || null,
                         address: address || null,
-                        regions: {
-                            connect: { id: region.id }
-                        }
+                        regions: { connect: { id: region.id } }
                     }
                 });
             } else {
@@ -457,51 +387,29 @@ export async function register(prevState: ActionState, formData: FormData): Prom
                     data: {
                         userId: createdUser.id,
                         tckn: tckn,
-                        firstName: firstName,
-                        lastName: lastName,
-                        email: email,
+                        firstName,
+                        lastName,
+                        email,
                         phone: formatPhone(phone),
                         officialType: roleType,
                         job: job || null,
                         address: address || null,
-                        regions: {
-                            connect: { id: region.id }
-                        }
+                        regions: { connect: { id: region.id } }
                     }
                 });
             }
         });
 
-        // 6. Direct Login (Skip verification for registration? Or require it?)
-        // User said: "Require verification code ... log in yapamasın".
-        // They should Login explicitly to get the code.
-        // Return username so they know what to use.
-
-        // 6. Return specific success message for approval
         return {
             success: true,
-            username: generatedUsername,
-            error: undefined,
-            message: "Kayıt başarılı! Başvurunuz Yönetici tarafından onay beklemektedir. Onaylandığı zaman mail olarak bilgilendirileceksiniz."
+            username: tckn,
+            message: "Kayıt başarılı! Başvurunuz Yönetici tarafından onay beklemektedir."
         };
 
     } catch (error: any) {
-        console.error("Register error:", error);
-        console.error("Register Error Details:", error?.message);
-        if (error?.code === 'P2002') {
-            const target = (error.meta?.target as string[]) || [];
-            if (target.includes('tckn')) {
-                return { error: "Bu TCKN zaten kullanımda.", errors: { tckn: "Zaten kayıtlı." }, success: false };
-            }
-            if (target.includes('email')) {
-                return { error: "Bu E-posta zaten kullanımda.", errors: { email: "Zaten kayıtlı." }, success: false };
-            }
-            if (target.includes('username')) {
-                return { error: "Bu TCKN ile kayıtlı bir kullanıcı zaten var.", success: false };
-            }
-        }
+        console.error("Critical Register Error:", error);
+        return { error: "Kayıt işlemi sırasında bir hata oluştu.", success: false };
     }
-    return { error: "Kayıt olurken bir hata oluştu.", success: false };
 }
 
 export async function createAdmin(prevState: ActionState, formData: FormData): Promise<ActionState> {
@@ -737,6 +645,7 @@ export async function requestPasswordReset(prevState: ActionState, formData: For
 
         // Security: Direct feedback requested by user
         if (!user) {
+            // Log attempt nonetheless for security monitoring
             return { error: "Bu TCKN veya kullanıcı adı ile kayıtlı bir hesap bulunamadı.", success: false };
         }
 

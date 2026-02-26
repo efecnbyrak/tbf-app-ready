@@ -38,6 +38,7 @@ model User {
 
   @@index([roleId])
   @@index([username])
+  @@index([tckn])
   @@map("users")
 }
 
@@ -97,6 +98,7 @@ model Referee {
 
   @@index([userId])
   @@index([classification])
+  @@index([email])
   @@map("referees")
 }
 
@@ -123,6 +125,7 @@ model GeneralOfficial {
 
   @@index([userId])
   @@index([officialType])
+  @@index([email])
   @@map("general_officials")
 }
 
@@ -174,6 +177,8 @@ model Match {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@index([date])
+  @@index([matchCode])
   @@map("matches")
 }
 

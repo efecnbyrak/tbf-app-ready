@@ -40,8 +40,6 @@ export default function KVKKPage() {
                             </div>
                             <div className="pl-8 space-y-2 text-zinc-600 dark:text-zinc-400">
                                 <p className="font-bold text-zinc-900 dark:text-zinc-100 italic">Türkiye Basketbol Federasyonu (TBF)</p>
-                                <p>Adres: 10. Yıl Caddesi, Ömer Avni Mah. No:11, Zeytinburnu / İSTANBUL</p>
-                                <p>E-posta: kvkk@tbf.org.tr</p>
                             </div>
                         </section>
 
