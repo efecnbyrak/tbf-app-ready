@@ -28,7 +28,14 @@ export default async function Home() {
   }
 
   if (redirectTo) {
-    redirect(redirectTo);
+    try {
+      redirect(redirectTo);
+    } catch (redirectError) {
+      if ((redirectError as any)?.digest?.includes("NEXT_REDIRECT")) {
+        throw redirectError;
+      }
+      console.error("[PAGE] Final redirect error:", redirectError);
+    }
   }
 
   // If not logged in or error occurred, show the login/register page

@@ -9,7 +9,11 @@ const secret = process.env.NEXTAUTH_SECRET || process.env.JWT_SECRET || "tbf-app
 const key = new TextEncoder().encode(secret);
 
 export async function encrypt(payload: any, duration: string = "24h") {
-    return await new SignJWT(payload)
+    // 10/10 Reliability: Ensure all payload data is serializable (strings/numbers/booleans)
+    // Date objects in payload can cause hydration mismatch or server-side exceptions in some environments.
+    const sanitizedPayload = JSON.parse(JSON.stringify(payload));
+
+    return await new SignJWT(sanitizedPayload)
         .setProtectedHeader({ alg: "HS256" })
         .setIssuedAt()
         .setExpirationTime(duration)
@@ -17,17 +21,28 @@ export async function encrypt(payload: any, duration: string = "24h") {
 }
 
 export async function decrypt(input: string): Promise<any> {
-    const { payload } = await jwtVerify(input, key, {
-        algorithms: ["HS256"],
-    });
-    return payload;
+    try {
+        const { payload } = await jwtVerify(input, key, {
+            algorithms: ["HS256"],
+        });
+        return payload;
+    } catch (err) {
+        console.warn("[SESSION] JWT Decryption failed:", (err as any).message);
+        return null;
+    }
 }
 
 export async function createSession(userId: number, role: string, rememberMe: boolean = false) {
     const durationMs = rememberMe ? 30 * 24 * 60 * 60 * 1000 : 24 * 60 * 60 * 1000;
     const durationStr = rememberMe ? "30d" : "24h";
     const expires = new Date(Date.now() + durationMs);
-    const session = await encrypt({ userId, role, expires }, durationStr);
+
+    // Use ISO string for expires to avoid serialization issues
+    const session = await encrypt({
+        userId,
+        role,
+        expires: expires.toISOString()
+    }, durationStr);
 
     const cookieStore = await cookies();
     cookieStore.set(BOOTSTRAP_COOKIE_NAME, session, {
