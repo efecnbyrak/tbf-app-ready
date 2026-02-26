@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { validateTCKN } from "@/lib/validation-utils";
 
 export const LoginSchema = z.object({
     identifier: z.string().min(1, "TCKN veya Kullanıcı Adı gereklidir."),
@@ -12,10 +13,7 @@ export const RegisterSchema = z.object({
     tckn: z.string()
         .length(11, "TCKN 11 haneli olmalıdır.")
         .regex(/^\d+$/, "TCKN sadece rakamlardan oluşmalıdır.")
-        .refine((val) => {
-            const { validateTCKN } = require("@/lib/validation-utils");
-            return validateTCKN(val);
-        }, "Geçersiz TC Kimlik Numarası."),
+        .refine((val) => validateTCKN(val), "Geçersiz TC Kimlik Numarası."),
     email: z.string().email("Geçerli bir e-posta adresi giriniz."),
     phone: z.string().min(10, "Geçerli bir telefon numarası giriniz."),
     password: z.string()
