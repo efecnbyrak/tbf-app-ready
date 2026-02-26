@@ -162,8 +162,8 @@ export async function login(prevState: ActionState, formData: FormData): Promise
                 role: true,
                 referee: true,
                 official: true
-            },
-        });
+            }
+        }) as any;
 
         // SECURITY: Common error message for both "User Not Found" and "Wrong Password" 
         // to prevent account enumeration (guessing registered TCKNs).
@@ -261,7 +261,7 @@ export async function verify2FA(userId: number, code: string): Promise<ActionSta
         const user = await db.user.findUnique({
             where: { id: userId },
             include: { role: true, referee: true, official: true }
-        });
+        }) as any;
 
         if (!user) return { error: "Kullanıcı bulunamadı.", success: false };
 
@@ -312,12 +312,16 @@ export async function register(prevState: ActionState, formData: FormData): Prom
     });
 
     if (!validatedFields.success) {
-        // Map Zod errors to our ActionState.errors format
         const fieldErrors = validatedFields.error.flatten().fieldErrors;
-        const mappedErrors: ActionState['errors'] = {};
-        for (const key in fieldErrors) {
-            mappedErrors[key as keyof ActionState['errors']] = fieldErrors[key]?.[0];
-        }
+        const mappedErrors: NonNullable<ActionState['errors']> = {};
+
+        (Object.keys(fieldErrors) as Array<keyof typeof fieldErrors>).forEach(key => {
+            const errorMsg = fieldErrors[key]?.[0];
+            if (errorMsg) {
+                (mappedErrors as any)[key] = errorMsg;
+            }
+        });
+
         return { error: "Lütfen işaretli alanları kontrol edin.", errors: mappedErrors, success: false };
     }
 
