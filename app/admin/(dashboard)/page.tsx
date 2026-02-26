@@ -20,15 +20,15 @@ export default async function AdminDashboard() {
         regionDistribution
     ] = await Promise.all([
         // 1. Total Referees
-        db.$queryRaw<Array<{ count: bigint }>>`SELECT COUNT(*) as count FROM referees WHERE "officialType" = 'REFEREE'`,
+        db.referee.count(),
 
         // 2. Total Officials
-        db.$queryRaw<Array<{ count: bigint }>>`SELECT COUNT(*) as count FROM referees WHERE "officialType" != 'REFEREE' AND "officialType" IS NOT NULL`,
+        db.generalOfficial.count(),
 
         // 3. Forms Submitted This Week
         db.availabilityForm.count({ where: { weekStartDate: startDate } }),
 
-        // 4. Latest Registrations
+        // 4. Latest Registrations (Combining both)
         db.$queryRaw<Array<{
             id: string;
             firstName: string;
@@ -37,51 +37,58 @@ export default async function AdminDashboard() {
             tckn: string | null;
             createdAt: Date | string;
         }>>`
-            SELECT id, "firstName", "lastName", "officialType", tckn, "createdAt" 
-            FROM referees 
+            (SELECT id::text, "firstName", "lastName", 'REFEREE' as "officialType", tckn, "createdAt" 
+            FROM referees)
+            UNION ALL
+            (SELECT id::text, "firstName", "lastName", "officialType", tckn, "createdAt" 
+            FROM general_officials)
             ORDER BY "createdAt" DESC 
             LIMIT 5
         `,
 
-        // 5. Monthly Registrations (Last 6 Months)
+        // 5. Monthly Registrations (Last 6 Months - Combining both)
         db.$queryRaw<Array<{ month: string; count: bigint }>>`
             SELECT 
-                TO_CHAR("createdAt", 'Mon') as month,
+                TO_CHAR("createdAt", 'MM') as month,
                 COUNT(*) as count
-            FROM referees
+            FROM (
+                SELECT "createdAt" FROM referees
+                UNION ALL
+                SELECT "createdAt" FROM general_officials
+            ) combined
             WHERE "createdAt" > NOW() - INTERVAL '6 months'
-            GROUP BY month, TO_CHAR("createdAt", 'MM')
-            ORDER BY TO_CHAR("createdAt", 'MM') ASC
+            GROUP BY month
+            ORDER BY month ASC
         `,
 
-        // 6. Classification Distribution
-        db.$queryRaw<Array<{ classification: string; count: bigint }>>`
-            SELECT classification, COUNT(*) as count
-            FROM referees
-            WHERE classification IS NOT NULL
-            GROUP BY classification
-        `,
+        // 6. Classification Distribution (Only Referees)
+        db.referee.groupBy({
+            by: ['classification'],
+            _count: {
+                id: true
+            }
+        }),
 
-        // 7. Region Distribution (Top 10 Cities)
+        // 7. Region Distribution (Top 10 Cities - Combining both)
         db.$queryRaw<Array<{ name: string; count: bigint }>>`
-            SELECT r.name, COUNT(ref."id") as count
+            SELECT r.name, COUNT(*) as count
             FROM regions r
-            JOIN "_RefereeToRegion" rtr ON r.id = rtr."B"
-            JOIN referees ref ON rtr."A" = ref.id
+            LEFT JOIN "_RefereeToRegion" rtr ON r.id = rtr."B"
+            LEFT JOIN "_GeneralOfficialToRegion" gotr ON r.id = gotr."B"
             GROUP BY r.name
             ORDER BY count DESC
             LIMIT 10
         `
     ]);
 
-    const totalReferees = Number(refereesCountRaw[0]?.count || 0);
-    const totalOfficials = Number(officialsCountRaw[0]?.count || 0);
+    const totalReferees = Number(refereesCountRaw || 0);
+    const totalOfficials = Number(officialsCountRaw || 0);
 
     // Format chart data
     const MONTH_TR: Record<string, string> = {
-        'Jan': 'Oca', 'Feb': 'Şub', 'Mar': 'Mar', 'Apr': 'Nis',
-        'May': 'May', 'Jun': 'Haz', 'Jul': 'Tem', 'Aug': 'Ağu',
-        'Sep': 'Eyl', 'Oct': 'Eki', 'Nov': 'Kas', 'Dec': 'Ara'
+        '01': 'Ocak', '02': 'Şubat', '03': 'Mart', '04': 'Nisan',
+        '05': 'Mayıs', '06': 'Haziran', '07': 'Temmuz', '08': 'Ağustos',
+        '09': 'Eylül', '10': 'Ekim', '11': 'Kasım', '12': 'Aralık'
     };
 
     const registrationChartData = monthlyRegistrations.map(r => ({
@@ -90,13 +97,12 @@ export default async function AdminDashboard() {
     }));
 
     const classificationChartData = classificationDistribution
-        .filter(c => c.classification !== 'BELIRLENMEMIS' || Number(c.count) > 0)
         .map(c => ({
             name: formatClassification(c.classification),
-            value: Number(c.count)
+            value: Number(c._count.id)
         }))
-        // Filter out items with 0 count to prevent clutter if Belirlenmemiş is 0
         .filter(item => item.value > 0);
+
 
     const regionChartData = regionDistribution.map(r => ({
         name: r.name,

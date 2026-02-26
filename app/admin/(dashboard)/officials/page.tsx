@@ -16,19 +16,9 @@ export default async function OfficialsPage({ searchParams }: PageProps) {
     const selectedType = params.type;
     const selectedStatus = params.status;
 
-    // Fetch Referee Types manually via Raw Query to bypass stale Prisma Client
-    const refereeTypesRaw = await db.$queryRaw<Array<{ id: number, officialType: string }>>`
-        SELECT id, "officialType" FROM referees
-    `;
 
-    // Create mapping for client component
-    const refereeTypeMap: Record<string, string> = {};
-    refereeTypesRaw.forEach((r: any) => {
-        refereeTypeMap[r.id] = r.officialType || "REFEREE";
-    });
-
-    // Fetch all records
-    const allOfficials = await db.referee.findMany({
+    // Fetch all records from the new dedicated table
+    const allOfficials = await db.generalOfficial.findMany({
         include: {
             user: {
                 select: {
@@ -64,7 +54,7 @@ export default async function OfficialsPage({ searchParams }: PageProps) {
 
     // Filtering logic to match URL params
     const officials = allOfficials.filter((off: any) => {
-        const type = refereeTypeMap[off.id] || "REFEREE";
+        const type = off.officialType || "OBSERVER";
 
         // Status filter
         if (selectedStatus === "unapproved") {
@@ -80,8 +70,13 @@ export default async function OfficialsPage({ searchParams }: PageProps) {
             return type === selectedType;
         }
 
-        // Default: all non-referees
-        return type !== "REFEREE";
+        return true; // Show all in this table
+    });
+
+    // Create mapping for client component compatibility
+    const refereeTypeMap: Record<string, string> = {};
+    allOfficials.forEach((off: any) => {
+        refereeTypeMap[off.id] = off.officialType || "OBSERVER";
     });
 
     // Plain data for client component

@@ -9,11 +9,8 @@ export default async function RefereesPage() {
     await ensureSchemaColumns();
     const session = await verifySession();
 
-    // Fetch referees directly with 'REFEREE' filter at DB level (Performance Optimization)
+    // Fetch all referees (table now only contains actual referees)
     const referees = await db.referee.findMany({
-        where: {
-            officialType: 'REFEREE'
-        },
         include: {
             user: true,
             regions: true,

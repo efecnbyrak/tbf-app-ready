@@ -7,7 +7,7 @@ async function main() {
     console.log('🌱 Seeding database...');
 
     // 1. Create Roles
-    const roles = ['SUPER_ADMIN', 'ADMIN_IHK', 'REFEREE'];
+    const roles = ['SUPER_ADMIN', 'ADMIN_IHK', 'REFEREE', 'GENERAL_OFFICIAL'];
     for (const roleName of roles) {
         await prisma.role.upsert({
             where: { name: roleName },
@@ -15,7 +15,7 @@ async function main() {
             update: {}
         });
     }
-    console.log('✅ Synchronized Roles: SUPER_ADMIN, ADMIN_IHK, REFEREE');
+    console.log('✅ Synchronized Roles: SUPER_ADMIN, ADMIN_IHK, REFEREE, GENERAL_OFFICIAL');
 
     const adminRole = await prisma.role.findUniqueOrThrow({ where: { name: 'SUPER_ADMIN' } });
     const refereeRole = await prisma.role.findUniqueOrThrow({ where: { name: 'REFEREE' } });

@@ -15,22 +15,19 @@ export async function approveUser(userId: number) {
     const user = await db.user.update({
         where: { id: userId },
         data: { isApproved: true },
-        include: { referee: true }
+        include: { referee: true, official: true }
     });
 
     // Notify user via email (simplified logic)
-    if (user.referee?.email) {
-        try {
-            const { sendEmailSafe } = await import("@/lib/email");
-            await sendEmailSafe(
-                user.referee.email,
-                "Hesabınız Onaylandı - TBF Hakem Sistemi",
-                `<p>Sayın <strong>${user.referee.firstName} ${user.referee.lastName}</strong>,</p>
-                 <p>Hesabınız yönetici tarafından onaylanmıştır. Artık sisteme giriş yapabilirsiniz.</p>`
-            );
-        } catch (e) {
-            console.error("Approval email failed:", e);
-        }
+    const profile = user.referee || user.official;
+    if (profile?.email) {
+        const { sendEmailSafe } = await import("@/lib/email");
+        await sendEmailSafe(
+            profile.email,
+            "Hesabınız Onaylandı - TBF Hakem Sistemi",
+            `<p>Sayın <strong>${profile.firstName} ${profile.lastName}</strong>,</p>
+                     <p>Hesabınız yönetici tarafından onaylanmıştır. Artık sisteme giriş yapabilirsiniz.</p>`
+        );
     }
 
     revalidatePath("/admin/approvals");
@@ -49,6 +46,7 @@ export async function rejectUser(userId: number) {
     await db.$transaction(async (tx: any) => {
         // Delete related records
         await tx.referee.deleteMany({ where: { userId: userId } });
+        await tx.official.deleteMany({ where: { userId: userId } });
         await tx.user.delete({ where: { id: userId } });
     });
 
@@ -95,7 +93,7 @@ export async function updateRefereeProfile(userId: number, data: {
             });
         }
 
-        // Update Referee fields
+        // Update Profile fields
         const updateData: any = {};
         if (data.classification !== undefined) updateData.classification = data.classification;
         if (data.officialType !== undefined) updateData.officialType = data.officialType;
@@ -103,24 +101,50 @@ export async function updateRefereeProfile(userId: number, data: {
         if (data.rating !== undefined) updateData.rating = data.rating;
 
         if (Object.keys(updateData).length > 0) {
-            await tx.referee.update({
-                where: { userId: userId },
-                data: updateData
-            });
-        }
-
-        // Update Regions if provided
-        if (data.regionIds !== undefined) {
+            // Try updating referee first
             const referee = await tx.referee.findUnique({ where: { userId: userId } });
             if (referee) {
+                // If it's a referee, classification exists
                 await tx.referee.update({
-                    where: { id: referee.id },
-                    data: {
-                        regions: {
-                            set: data.regionIds.map(id => ({ id }))
-                        }
-                    }
+                    where: { userId: userId },
+                    data: updateData
                 });
+
+                // Update Regions for referee
+                if (data.regionIds !== undefined) {
+                    await tx.referee.update({
+                        where: { id: referee.id },
+                        data: {
+                            regions: {
+                                set: data.regionIds.map((id: number) => ({ id }))
+                            }
+                        }
+                    });
+                }
+            } else {
+                // Try general official
+                const generalOfficial = await tx.official.findUnique({ where: { userId: userId } });
+                if (generalOfficial) {
+                    // For general official, classification field might not exist in updateData 
+                    // (we should filter it out if we want to be strict, but Prisma usually ignores extra fields if not in schema)
+                    const { classification, ...genData } = updateData;
+                    await tx.official.update({
+                        where: { userId: userId },
+                        data: genData
+                    });
+
+                    // Update Regions for general official
+                    if (data.regionIds !== undefined) {
+                        await tx.official.update({
+                            where: { id: generalOfficial.id },
+                            data: {
+                                regions: {
+                                    set: data.regionIds.map((id: number) => ({ id }))
+                                }
+                            }
+                        });
+                    }
+                }
             }
         }
     });
@@ -192,7 +216,12 @@ export async function deleteUser(userId: number) {
             // Delete related tables manually to avoid FK issues
             // 1. Availability
             const availFormIds = await tx.availabilityForm.findMany({
-                where: { referee: { userId: userId } },
+                where: {
+                    OR: [
+                        { referee: { userId: userId } },
+                        { official: { userId: userId } }
+                    ]
+                },
                 select: { id: true }
             });
             const formIds = availFormIds.map((f: any) => f.id);
@@ -202,11 +231,34 @@ export async function deleteUser(userId: number) {
             }
 
             // 2. Match Assignments
-            await tx.matchAssignment.deleteMany({ where: { referee: { userId: userId } } });
+            await tx.matchAssignment.deleteMany({
+                where: {
+                    OR: [
+                        { referee: { userId: userId } },
+                        { official: { userId: userId } }
+                    ]
+                }
+            });
 
             // 3. Exam Attempts
-            await tx.userAnswer.deleteMany({ where: { attempt: { referee: { userId: userId } } } });
-            await tx.examAttempt.deleteMany({ where: { referee: { userId: userId } } });
+            await tx.userAnswer.deleteMany({
+                where: {
+                    attempt: {
+                        OR: [
+                            { referee: { userId: userId } },
+                            { official: { userId: userId } }
+                        ]
+                    }
+                }
+            });
+            await tx.examAttempt.deleteMany({
+                where: {
+                    OR: [
+                        { referee: { userId: userId } },
+                        { official: { userId: userId } }
+                    ]
+                }
+            });
 
             // 4. Video Progress
             await tx.videoProgress.deleteMany({ where: { userId: userId } });
@@ -215,8 +267,9 @@ export async function deleteUser(userId: number) {
             await tx.message.deleteMany({ where: { session: { userId: userId } } });
             await tx.chatSession.deleteMany({ where: { userId: userId } });
 
-            // 6. Referee Profile
+            // 6. Profiles
             await tx.referee.deleteMany({ where: { userId: userId } });
+            await tx.official.deleteMany({ where: { userId: userId } });
 
             // 7. Finally the User
             await tx.user.delete({ where: { id: userId } });

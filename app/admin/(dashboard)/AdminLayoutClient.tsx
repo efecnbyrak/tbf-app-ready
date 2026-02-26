@@ -171,17 +171,7 @@ export function AdminLayoutClient({ children, role }: AdminLayoutClientProps) {
                             <span className="w-4 h-4 flex items-center justify-center font-bold">📖</span>
                             Kural Kitabı
                         </Link>
-                        <Link
-                            href="/admin/exam-results"
-                            onClick={() => setIsOpen(false)}
-                            className={`flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-all ${isActive("/admin/exam-results")
-                                ? "bg-red-600 text-white shadow-md border-l-4 border-red-800"
-                                : "hover:bg-zinc-800/50 text-zinc-400 hover:text-white"
-                                }`}
-                        >
-                            <Trophy className="w-4 h-4" />
-                            Sınav Sonuçları
-                        </Link>
+
 
                         {/* Super Admin Only Link */}
                         {role === "SUPER_ADMIN" && (
@@ -225,13 +215,18 @@ export function AdminLayoutClient({ children, role }: AdminLayoutClientProps) {
                         </Link>
                     </nav>
 
-                    <div className="mt-4 px-4 py-3 flex items-center justify-between bg-zinc-800/30 rounded-xl border border-zinc-800">
-                        <span className="text-xs font-bold text-zinc-500 uppercase">Tema</span>
+                    <div className="mt-4 px-4 py-3 flex items-center justify-between bg-zinc-800/80 rounded-xl border border-zinc-700/50 group transition-all hover:bg-zinc-800">
+                        <div className="flex flex-col">
+                            <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest whitespace-nowrap">Görünüm</span>
+                            <span className="text-xs font-bold text-zinc-100 group-hover:text-white transition-colors">
+                                {theme === "dark" ? "Koyu Tema" : "Açık Tema"}
+                            </span>
+                        </div>
                         {mounted && (
                             <button
                                 onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-                                className="p-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white rounded-lg transition-all"
-                                title={theme === "dark" ? "Açık Tema" : "Koyu Tema"}
+                                className="p-2.5 bg-zinc-700 hover:bg-red-600 text-zinc-300 hover:text-white rounded-lg transition-all shadow-inner active:scale-95"
+                                title={theme === "dark" ? "Açık Temaya Geç" : "Koyu Temaya Geç"}
                             >
                                 {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
                             </button>

@@ -20,6 +20,7 @@ model User {
   role     Role     @relation(fields: [roleId], references: [id])
   roleId   Int
   referee  Referee?
+  official GeneralOfficial?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   verificationCode String?
@@ -67,6 +68,7 @@ model Region {
   id       Int       @id @default(autoincrement())
   name     String    @unique // "Anadolu", "Avrupa", "BGM"
   referees Referee[] // Many-to-many relation implicitly handled by Prisma
+  officials GeneralOfficial[]
 
   @@map("regions")
 }
@@ -83,7 +85,6 @@ model Referee {
   address        String?
   job            String?
   classification String // "A", "B", "C", "IL_HAKEMI", "ADAY_HAKEM"
-  officialType   String   @default("REFEREE") // "REFEREE", "TABLE", "OBSERVER", "HEALTH", "STATISTICIAN"
   imageUrl       String?
   regions        Region[]
   forms          AvailabilityForm[]
@@ -96,14 +97,41 @@ model Referee {
 
   @@index([userId])
   @@index([classification])
-  @@index([officialType])
   @@map("referees")
+}
+
+model GeneralOfficial {
+  id             Int      @id @default(autoincrement())
+  user           User     @relation(fields: [userId], references: [id])
+  userId         Int      @unique
+  tckn           String   @unique
+  firstName      String
+  lastName       String
+  email          String   @unique
+  phone          String
+  address        String?
+  job            String?
+  officialType   String   // "TABLE", "OBSERVER", "HEALTH", "STATISTICIAN"
+  imageUrl       String?
+  regions        Region[]
+  forms          AvailabilityForm[]
+  assignments    MatchAssignment[]
+  points         Int      @default(0)
+  rating         Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([userId])
+  @@index([officialType])
+  @@map("general_officials")
 }
 
 model AvailabilityForm {
   id            Int      @id @default(autoincrement())
-  referee       Referee  @relation(fields: [refereeId], references: [id])
-  refereeId     Int
+  referee       Referee? @relation(fields: [refereeId], references: [id])
+  refereeId     Int?
+  official      GeneralOfficial? @relation(fields: [officialId], references: [id])
+  officialId    Int?
   weekStartDate DateTime // The Monday (or specific start) of the week
   status        String   @default("DRAFT") // "DRAFT", "SUBMITTED", "LOCKED"
   days          AvailabilityDay[]
@@ -111,7 +139,6 @@ model AvailabilityForm {
   updatedAt     DateTime @updatedAt
 
   @@index([weekStartDate])
-  @@unique([refereeId, weekStartDate]) // One form per week per referee
   @@map("availability_forms")
 }
 
@@ -154,11 +181,12 @@ model MatchAssignment {
   id        Int      @id @default(autoincrement())
   match     Match    @relation(fields: [matchId], references: [id], onDelete: Cascade)
   matchId   Int
-  referee   Referee  @relation(fields: [refereeId], references: [id], onDelete: Cascade)
-  refereeId Int
+  referee   Referee? @relation(fields: [refereeId], references: [id], onDelete: Cascade)
+  refereeId Int?
+  official  GeneralOfficial? @relation(fields: [officialId], references: [id], onDelete: Cascade)
+  officialId Int?
   role      String
 
-  @@unique([matchId, refereeId])
   @@map("match_assignments")
 }
 

@@ -1,13 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import {
     getAllQuestions,
     createQuestion,
     updateQuestion,
     deleteQuestion,
 } from "@/app/actions/admin-exam";
-import { Plus, Edit, Trash2, Loader2, CheckCircle, XCircle, BookOpen } from "lucide-react";
+import { Plus, Edit, Trash2, Loader2, CheckCircle, XCircle, BookOpen, Trophy } from "lucide-react";
 
 const CATEGORIES = [
     "Oyun",
@@ -180,13 +181,22 @@ export default function QuestionsPage() {
                         </p>
                     </div>
                 </div>
-                <button
-                    onClick={() => handleOpenModal()}
-                    className="flex items-center gap-2 px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl shadow-lg shadow-red-200 dark:shadow-none transition-all hover:scale-[1.02] active:scale-[0.98]"
-                >
-                    <Plus className="w-5 h-5" />
-                    Yeni Soru Ekle
-                </button>
+                <div className="flex items-center gap-4">
+                    <button
+                        onClick={() => handleOpenModal()}
+                        className="flex items-center gap-2 px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl shadow-lg shadow-red-200 dark:shadow-none transition-all hover:scale-[1.02] active:scale-[0.98]"
+                    >
+                        <Plus className="w-5 h-5" />
+                        Yeni Soru Ekle
+                    </button>
+                    <Link
+                        href="/admin/exam-results"
+                        className="flex items-center gap-2 px-6 py-3 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 font-bold rounded-xl hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-all"
+                    >
+                        <Trophy className="w-5 h-5 text-orange-500" />
+                        Sınav Sonuçlarını Görüntüle
+                    </Link>
+                </div>
             </div>
 
             {/* ── Filters ── */}
