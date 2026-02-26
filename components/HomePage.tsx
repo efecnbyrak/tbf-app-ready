@@ -40,7 +40,7 @@ export function HomePage() {
                     </div>
 
                     <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tighter mb-4 italic">
-                        Atama Sistemi
+                        Görevli Atama Sistemi
                     </h1>
                     <p className="text-base md:text-xl text-zinc-200 mb-10 max-w-lg mx-auto font-medium">
                         Türkiye Basketbol Federasyonu <br className="hidden md:block" />
