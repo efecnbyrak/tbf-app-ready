@@ -5,12 +5,16 @@ import { redirect } from "next/navigation";
 
 const BOOTSTRAP_COOKIE_NAME = "session";
 const secret = process.env.NEXTAUTH_SECRET || process.env.JWT_SECRET;
-if (!secret && process.env.NODE_ENV === "production") {
-    throw new Error("FATAL: NEXTAUTH_SECRET or JWT_SECRET must be set in production.");
-}
 const key = new TextEncoder().encode(secret || "dev-only-insecure-key");
 
+function ensureSecret() {
+    if (!secret && process.env.NODE_ENV === "production") {
+        throw new Error("FATAL: NEXTAUTH_SECRET or JWT_SECRET must be set in production.");
+    }
+}
+
 export async function encrypt(payload: any) {
+    ensureSecret();
     return await new SignJWT(payload)
         .setProtectedHeader({ alg: "HS256" })
         .setIssuedAt()
@@ -19,6 +23,7 @@ export async function encrypt(payload: any) {
 }
 
 export async function decrypt(input: string): Promise<any> {
+    ensureSecret();
     const { payload } = await jwtVerify(input, key, {
         algorithms: ["HS256"],
     });
