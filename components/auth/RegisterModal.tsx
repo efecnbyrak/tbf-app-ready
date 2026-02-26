@@ -132,13 +132,7 @@ export function RegisterModal({ isOpen, onClose, onSwitchToLogin }: RegisterModa
                             onChange={(e) => {
                                 const val = e.target.value;
                                 setPassword(val);
-                                // Password strength logic
-                                let score = 0;
-                                if (val.length >= 8) score++;
-                                if (/[A-Z]/.test(val)) score++;
-                                if (/[0-9]/.test(val)) score++;
-                                if (/[@$!%*?&]/.test(val)) score++;
-                                setStrength(score);
+                                setStrength(val.length);
                             }}
                             className={`w-full px-4 py-4 border-2 rounded-2xl outline-none bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-white transition-all ${state.errors?.password ? 'border-red-500' : 'border-transparent focus:border-red-600'}`}
                             placeholder="Şifre"
@@ -150,10 +144,10 @@ export function RegisterModal({ isOpen, onClose, onSwitchToLogin }: RegisterModa
                                     {[1, 2, 3, 4].map((step) => (
                                         <div
                                             key={step}
-                                            className={`h-full flex-1 rounded-full transition-all duration-500 ${strength >= step
-                                                ? strength <= 1
+                                            className={`h-full flex-1 rounded-full transition-all duration-500 ${password.length >= step * 2
+                                                ? password.length <= 4
                                                     ? "bg-red-500"
-                                                    : strength <= 3
+                                                    : password.length <= 8
                                                         ? "bg-yellow-500"
                                                         : "bg-emerald-500"
                                                 : "bg-zinc-200 dark:bg-zinc-800"
@@ -161,9 +155,9 @@ export function RegisterModal({ isOpen, onClose, onSwitchToLogin }: RegisterModa
                                         />
                                     ))}
                                 </div>
-                                <p className={`text-[10px] font-bold uppercase italic ${strength <= 1 ? "text-red-500" : strength <= 3 ? "text-yellow-600" : "text-emerald-500"
+                                <p className={`text-[10px] font-bold uppercase italic ${password.length < 6 ? "text-red-500" : password.length < 10 ? "text-yellow-600" : "text-emerald-500"
                                     }`}>
-                                    {strength <= 1 ? "Zayıf" : strength <= 2 ? "Orta" : strength <= 3 ? "İyi" : "Güçlü"}
+                                    {password.length < 6 ? "Çok Kısa" : password.length < 10 ? "İyi" : "Güçlü"}
                                 </p>
                             </div>
                         )}

@@ -13,10 +13,7 @@ export const RegisterSchema = z.object({
     email: z.string().email("Geçerli bir e-posta adresi giriniz."),
     phone: z.string().min(10, "Geçerli bir telefon numarası giriniz."),
     password: z.string()
-        .min(8, "Şifre en az 8 karakter olmalıdır.")
-        .regex(/[A-Z]/, "Şifre en az bir büyük harf içermelidir.")
-        .regex(/[0-9]/, "Şifre en az bir rakam içermelidir.")
-        .regex(/[@$!%*?&]/, "Şifre en az bir özel karakter içermelidir."),
+        .min(6, "Şifre en az 6 karakter olmalıdır."),
     roleType: z.string().min(1, "Görev seçimi gereklidir."),
     job: z.string().optional(),
     address: z.string().optional(),
@@ -30,7 +27,7 @@ export const PasswordResetRequestSchema = z.object({
 
 export const PasswordResetSchema = z.object({
     token: z.string().min(1, "Geçersiz token."),
-    password: z.string().min(8, "Şifre en az 8 karakter olmalıdır."),
+    password: z.string().min(6, "Şifre en az 6 karakter olmalıdır."),
     passwordConfirm: z.string()
 }).refine((data) => data.password === data.passwordConfirm, {
     message: "Şifreler eşleşmiyor.",
