@@ -67,12 +67,13 @@ export async function ensureSchemaColumns() {
         if (!existingAdmin) {
             const adminRole = await db.role.findUnique({ where: { name: 'SUPER_ADMIN' } });
             if (adminRole) {
-                const hashedPass = await bcrypt.hash('talat!56742', 10);
+                const initialPassword = process.env.INITIAL_ADMIN_PASSWORD || "Admin123!Secure";
+                const hashedPassword = await bcrypt.hash(initialPassword, 10);
                 await db.user.create({
                     data: {
                         username: adminUsername,
                         tckn: '11111111111',
-                        password: hashedPass,
+                        password: hashedPassword,
                         roleId: adminRole.id,
                         isApproved: true,
                         isVerified: true

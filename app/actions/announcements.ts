@@ -33,22 +33,25 @@ export async function sendAnnouncement(subject: string, content: string, target:
         await ensureAnnouncementTable();
 
         // 1. Find target users
-        let query = `SELECT email FROM referees WHERE email IS NOT NULL`;
-        if (target !== "ALL") {
-            query += ` AND "officialType" = '${target}'`;
-        }
+        let recipients: Array<{ email: string }> = [];
 
-        const recipients = await db.$queryRawUnsafe<Array<{ email: string }>>(query);
+        if (target === "ALL") {
+            recipients = await db.$queryRaw<Array<{ email: string }>>`
+                SELECT email FROM referees WHERE email IS NOT NULL
+            `;
+        } else {
+            recipients = await db.$queryRaw<Array<{ email: string }>>`
+                SELECT email FROM referees WHERE email IS NOT NULL AND "officialType" = ${target}
+            `;
+        }
 
         if (recipients.length === 0) {
             return { success: false, message: "Hedef kitlede kullanıcı bulunamadı." };
         }
 
-        // 2. Send emails
-        let successCount = 0;
+        // 2. Send emails in parallel
         const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://tbf-hakem-sistemi.vercel.app";
-
-        for (const user of recipients) {
+        const emailPromises = recipients.map(async (user) => {
             try {
                 const html = `
                     <!DOCTYPE html>
@@ -90,17 +93,21 @@ export async function sendAnnouncement(subject: string, content: string, target:
                     </html>
                 `;
                 await sendEmailSafe(user.email, subject, html);
-                successCount++;
+                return true;
             } catch (e) {
                 console.error(`Failed to send announcement to ${user.email}:`, e);
+                return false;
             }
-        }
+        });
+
+        const results = await Promise.all(emailPromises);
+        const successCount = results.filter(Boolean).length;
 
         // 3. Save announcement record
-        await db.$executeRawUnsafe(`
+        await db.$executeRaw`
             INSERT INTO announcements (subject, content, target, "senderId", "sentCount")
-            VALUES ($1, $2, $3, $4, $5)
-        `, subject, content, target, session.userId, successCount);
+            VALUES (${subject}, ${content}, ${target}, ${session.userId}, ${successCount})
+        `;
 
         await logAction(session.userId, "ANNOUNCEMENT_SENT", `Sent to ${successCount} users: ${subject}`);
 

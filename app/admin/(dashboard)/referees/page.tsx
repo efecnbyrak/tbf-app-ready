@@ -9,19 +9,11 @@ export default async function RefereesPage() {
     await ensureSchemaColumns();
     const session = await verifySession();
 
-    // Fetch Referee Types manually via Raw Query to bypass stale Prisma Client
-    const refereeTypesRaw = await db.$queryRaw<Array<{ id: number, officialType: string }>>`
-        SELECT id, "officialType" FROM referees
-    `;
-
-    // Create a plain object for passing to Client Component
-    const refereeTypeMap: Record<string, string> = {};
-    refereeTypesRaw.forEach((r: any) => {
-        refereeTypeMap[r.id] = r.officialType || "REFEREE";
-    });
-
-    // Fetch all referees and filter in memory
-    const allReferees = await db.referee.findMany({
+    // Fetch referees directly with 'REFEREE' filter at DB level (Performance Optimization)
+    const referees = await db.referee.findMany({
+        where: {
+            officialType: 'REFEREE'
+        },
         include: {
             user: true,
             regions: true,
@@ -43,8 +35,14 @@ export default async function RefereesPage() {
         orderBy: { createdAt: 'desc' }
     });
 
+    // Re-construct the map for component compatibility (Fixed for Client Component)
+    const refereeTypeMap: Record<string, string> = {};
+    referees.forEach(r => {
+        refereeTypeMap[r.id] = r.officialType || "REFEREE";
+    });
+
     // Make data plain for client component
-    const plainReferees = JSON.parse(JSON.stringify(allReferees.filter((ref: any) => refereeTypeMap[ref.id] === "REFEREE")));
+    const plainReferees = JSON.parse(JSON.stringify(referees));
 
     return (
         <div className="space-y-12">
