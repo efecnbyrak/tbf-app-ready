@@ -8,12 +8,11 @@ import {
 interface AdminDashboardChartsProps {
     registrationData: any[];
     classificationData: any[];
-    regionData: any[];
 }
 
 const COLORS = ['#ef4444', '#f97316', '#8b5cf6', '#10b981', '#3b82f6', '#eab308', '#ec4899'];
 
-export function AdminDashboardCharts({ registrationData, classificationData, regionData }: AdminDashboardChartsProps) {
+export function AdminDashboardCharts({ registrationData, classificationData }: AdminDashboardChartsProps) {
     return (
         <div className="flex flex-col gap-8 mt-8">
             {/* Main Insights Grid */}
@@ -129,57 +128,6 @@ export function AdminDashboardCharts({ registrationData, classificationData, reg
                             </PieChart>
                         </ResponsiveContainer>
                     </div>
-                </div>
-            </div>
-
-            {/* Region Distribution (Bar Chart) */}
-            <div className="bg-white dark:bg-zinc-900 p-8 rounded-[2.5rem] shadow-sm border border-zinc-200 dark:border-zinc-800 transition-all hover:shadow-md">
-                <div className="flex items-center justify-between mb-8">
-                    <div>
-                        <h3 className="text-lg font-black text-zinc-900 dark:text-white uppercase tracking-tight italic">Şehir Dağılımı</h3>
-                        <p className="text-xs text-zinc-500 font-bold uppercase italic tracking-widest">En Fazla Üyeye Sahip 10 İl</p>
-                    </div>
-                    <div className="w-12 h-12 bg-purple-50 dark:bg-purple-900/20 rounded-2xl flex items-center justify-center text-purple-600 font-black">
-                        7/24
-                    </div>
-                </div>
-                <div className="h-[350px] w-full">
-                    <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={regionData} layout="vertical" margin={{ left: 30, right: 30 }}>
-                            <XAxis type="number" hide />
-                            <YAxis
-                                dataKey="name"
-                                type="category"
-                                stroke="#71717a"
-                                fontSize={12}
-                                tickLine={false}
-                                axisLine={false}
-                                width={100}
-                            />
-                            <Tooltip
-                                contentStyle={{
-                                    backgroundColor: '#18181b',
-                                    border: 'none',
-                                    borderRadius: '12px',
-                                    fontSize: '12px',
-                                    color: '#fff'
-                                }}
-                                cursor={{ fill: 'rgba(255, 255, 255, 0.05)' }}
-                            />
-                            <Bar
-                                dataKey="count"
-                                fill="#8b5cf6"
-                                radius={[0, 8, 8, 0]}
-                                barSize={24}
-                                animationDuration={1800}
-                                label={{ position: 'right', fill: '#71717a', fontSize: 11, fontWeight: 'bold' }}
-                            >
-                                {regionData.map((entry, index) => (
-                                    <Cell key={`cell-${index}`} fill={index === 0 ? '#ef4444' : '#8b5cf6'} />
-                                ))}
-                            </Bar>
-                        </BarChart>
-                    </ResponsiveContainer>
                 </div>
             </div>
         </div>

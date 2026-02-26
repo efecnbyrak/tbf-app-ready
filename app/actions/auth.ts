@@ -10,6 +10,7 @@ import { revalidatePath } from "next/cache";
 import { TURKEY_CITIES } from "@/lib/constants";
 import { logAction, ensureAuditLogTable } from "@/lib/logger";
 import { getSession } from "@/lib/session";
+import { validateTCKN, validatePhone, formatPhone } from "@/lib/validation-utils";
 
 // Cache to prevent redundant schema checks in the same execution context
 let isSchemaChecked = false;
@@ -359,6 +360,14 @@ export async function register(prevState: ActionState, formData: FormData): Prom
     if (!password) errors.password = "Şifre gerekli.";
     if (password !== passwordConfirm) errors.password = "Şifreler eşleşmiyor.";
 
+    // Professional Validation
+    if (tckn && !validateTCKN(tckn)) {
+        errors.tckn = "Geçersiz TC Kimlik Numarası.";
+    }
+    if (phone && !validatePhone(phone)) {
+        errors.phone = "Geçersiz telefon numarası. (Örn: 5XX XXX XX XX)";
+    }
+
     // Password Complexity Check
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
     if (password && !passwordRegex.test(password)) {
@@ -388,8 +397,11 @@ export async function register(prevState: ActionState, formData: FormData): Prom
             return { error: "Bu TCKN ile kayıtlı bir kullanıcı zaten var.", errors: { tckn: "Bu TCKN zaten kullanımda." }, success: false };
         }
 
-        const existingEmail = await db.referee.findUnique({ where: { email } });
-        if (existingEmail) {
+        // Check email in both tables
+        const existingRefereeEmail = await db.referee.findUnique({ where: { email } });
+        const existingOfficialEmail = await db.generalOfficial.findUnique({ where: { email } });
+
+        if (existingRefereeEmail || existingOfficialEmail) {
             return { error: "Bu E-posta ile kayıtlı bir kullanıcı zaten var.", errors: { email: "Bu E-posta zaten kullanımda." }, success: false };
         }
 
@@ -431,7 +443,7 @@ export async function register(prevState: ActionState, formData: FormData): Prom
                         firstName: firstName,
                         lastName: lastName,
                         email: email,
-                        phone: phone,
+                        phone: formatPhone(phone),
                         classification: 'BELIRLENMEMIS',
                         job: job || null,
                         address: address || null,
@@ -448,7 +460,7 @@ export async function register(prevState: ActionState, formData: FormData): Prom
                         firstName: firstName,
                         lastName: lastName,
                         email: email,
-                        phone: phone,
+                        phone: formatPhone(phone),
                         officialType: roleType,
                         job: job || null,
                         address: address || null,
@@ -723,11 +735,9 @@ export async function requestPasswordReset(prevState: ActionState, formData: For
             include: { referee: true }
         });
 
-        // Security: Don't reveal if user exists unless it's a success
+        // Security: Direct feedback requested by user
         if (!user) {
-            // Subtle delay or generic message to prevent enumeration? 
-            // The user wants a direct flow, so we'll be helpful but careful.
-            return { success: true, message: "Eğer sistemde kayıtlı bir hesabınız varsa, şifre sıfırlama talimatları e-posta adresinize gönderilecektir." };
+            return { error: "Bu TCKN veya kullanıcı adı ile kayıtlı bir hesap bulunamadı.", success: false };
         }
 
         const email = user.referee?.email;

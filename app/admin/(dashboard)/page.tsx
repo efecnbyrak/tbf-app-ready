@@ -16,8 +16,7 @@ export default async function AdminDashboard() {
         formsThisWeek,
         latestRegistrations,
         monthlyRegistrations,
-        classificationDistribution,
-        regionDistribution
+        classificationDistribution
     ] = await Promise.all([
         // 1. Total Referees
         db.referee.count(),
@@ -67,18 +66,7 @@ export default async function AdminDashboard() {
             _count: {
                 id: true
             }
-        }),
-
-        // 7. Region Distribution (Top 10 Cities - Combining both)
-        db.$queryRaw<Array<{ name: string; count: bigint }>>`
-            SELECT r.name, COUNT(*) as count
-            FROM regions r
-            LEFT JOIN "_RefereeToRegion" rtr ON r.id = rtr."B"
-            LEFT JOIN "_GeneralOfficialToRegion" gotr ON r.id = gotr."B"
-            GROUP BY r.name
-            ORDER BY count DESC
-            LIMIT 10
-        `
+        })
     ]);
 
     const totalReferees = Number(refereesCountRaw || 0);
@@ -104,10 +92,6 @@ export default async function AdminDashboard() {
         .filter(item => item.value > 0);
 
 
-    const regionChartData = regionDistribution.map(r => ({
-        name: r.name,
-        count: Number(r.count)
-    }));
 
     return (
         <div>
@@ -175,7 +159,6 @@ export default async function AdminDashboard() {
                 <AdminDashboardCharts
                     registrationData={registrationChartData}
                     classificationData={classificationChartData}
-                    regionData={regionChartData}
                 />
             </div>
 
