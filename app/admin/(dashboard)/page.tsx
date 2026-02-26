@@ -22,7 +22,7 @@ export default async function AdminDashboard() {
         db.referee.count(),
 
         // 2. Total Officials
-        db.generalOfficial.count(),
+        (db as any).generalOfficial.count(),
 
         // 3. Forms Submitted This Week
         db.availabilityForm.count({ where: { weekStartDate: startDate } }),
@@ -79,24 +79,24 @@ export default async function AdminDashboard() {
         '09': 'Eylül', '10': 'Ekim', '11': 'Kasım', '12': 'Aralık'
     };
 
-    const registrationChartData = monthlyRegistrations.map(r => ({
+    const registrationChartData = monthlyRegistrations.map((r: any) => ({
         month: MONTH_TR[r.month] || r.month,
         count: Number(r.count)
     }));
 
     const classificationChartData = classificationDistribution
-        .map(c => ({
+        .map((c: any) => ({
             name: formatClassification(c.classification),
             value: Number(c._count.id)
         }))
-        .filter(item => item.value > 0);
+        .filter((item: any) => item.value > 0);
 
 
 
     return (
         <div>
-            <h1 className="text-3xl font-bold mb-8">Yönetici Paneli</h1>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <h1 className="text-2xl md:text-3xl font-bold mb-8">Yönetici Paneli</h1>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
                 {/* Referees Count */}
                 <div className="bg-white dark:bg-zinc-900 p-6 rounded-xl shadow-sm border border-zinc-200 dark:border-zinc-800 flex items-center gap-4">
                     <div className="p-3 bg-blue-100 text-blue-700 rounded-lg">
@@ -170,8 +170,8 @@ export default async function AdminDashboard() {
                 </div>
 
                 {/* Desktop View (Table) */}
-                <div className="hidden md:block overflow-x-auto">
-                    <table className="w-full text-sm text-left">
+                <div className="hidden md:block overflow-x-auto custom-scrollbar">
+                    <table className="w-full text-sm text-left min-w-[700px]">
                         <thead className="bg-zinc-50 dark:bg-zinc-900/50 text-zinc-500 uppercase text-xs font-semibold">
                             <tr>
                                 <th className="px-6 py-3">Ad Soyad</th>
@@ -188,7 +188,7 @@ export default async function AdminDashboard() {
                                     </td>
                                 </tr>
                             ) : (
-                                latestRegistrations.map((user) => {
+                                latestRegistrations.map((user: any) => {
                                     const maskedTckn = user.tckn
                                         ? `${user.tckn.substring(0, 2)}*******${user.tckn.substring(9)}`
                                         : '***********';

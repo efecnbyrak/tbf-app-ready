@@ -252,7 +252,7 @@ export function AdminLayoutClient({ children, role }: AdminLayoutClientProps) {
 
             {/* Main Content */}
             <main className="flex-1 md:pl-64 min-h-screen flex flex-col">
-                <div className="flex-1 p-4 md:p-8 pt-20 md:pt-8 w-full">
+                <div className="flex-1 p-6 lg:p-8 pt-20 md:pt-8 w-full">
                     <div className="max-w-7xl mx-auto">
                         {children}
                     </div>
