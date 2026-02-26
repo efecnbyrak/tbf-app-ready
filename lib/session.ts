@@ -40,12 +40,13 @@ export async function createSession(userId: number, role: string, rememberMe: bo
 }
 
 export async function getSession() {
-    const cookieStore = await cookies();
-    const session = cookieStore.get(BOOTSTRAP_COOKIE_NAME)?.value;
-    if (!session) return null;
     try {
+        const cookieStore = await cookies();
+        const session = cookieStore.get(BOOTSTRAP_COOKIE_NAME)?.value;
+        if (!session) return null;
         return await decrypt(session);
     } catch (error) {
+        console.error("[SESSION] getSession error:", error);
         return null;
     }
 }
