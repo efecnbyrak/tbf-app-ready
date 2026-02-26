@@ -46,7 +46,7 @@ export async function rejectUser(userId: number) {
     await db.$transaction(async (tx: any) => {
         // Delete related records
         await tx.referee.deleteMany({ where: { userId: userId } });
-        await tx.official.deleteMany({ where: { userId: userId } });
+        await tx.generalOfficial.deleteMany({ where: { userId: userId } });
         await tx.user.delete({ where: { id: userId } });
     });
 
@@ -123,19 +123,19 @@ export async function updateRefereeProfile(userId: number, data: {
                 }
             } else {
                 // Try general official
-                const generalOfficial = await tx.official.findUnique({ where: { userId: userId } });
+                const generalOfficial = await tx.generalOfficial.findUnique({ where: { userId: userId } });
                 if (generalOfficial) {
                     // For general official, classification field might not exist in updateData 
                     // (we should filter it out if we want to be strict, but Prisma usually ignores extra fields if not in schema)
                     const { classification, ...genData } = updateData;
-                    await tx.official.update({
+                    await tx.generalOfficial.update({
                         where: { userId: userId },
                         data: genData
                     });
 
                     // Update Regions for general official
                     if (data.regionIds !== undefined) {
-                        await tx.official.update({
+                        await tx.generalOfficial.update({
                             where: { id: generalOfficial.id },
                             data: {
                                 regions: {
@@ -263,7 +263,7 @@ export async function deleteUser(userId: number) {
 
             // 6. Profiles
             await tx.referee.deleteMany({ where: { userId: userId } });
-            await tx.official.deleteMany({ where: { userId: userId } });
+            await tx.generalOfficial.deleteMany({ where: { userId: userId } });
 
             // 7. Finally the User
             await tx.user.delete({ where: { id: userId } });
