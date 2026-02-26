@@ -244,19 +244,13 @@ export async function deleteUser(userId: number) {
             await tx.userAnswer.deleteMany({
                 where: {
                     attempt: {
-                        OR: [
-                            { referee: { userId: userId } },
-                            { official: { userId: userId } }
-                        ]
+                        referee: { userId: userId }
                     }
                 }
             });
             await tx.examAttempt.deleteMany({
                 where: {
-                    OR: [
-                        { referee: { userId: userId } },
-                        { official: { userId: userId } }
-                    ]
+                    referee: { userId: userId }
                 }
             });
 

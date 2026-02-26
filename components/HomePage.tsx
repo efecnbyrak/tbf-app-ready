@@ -70,8 +70,6 @@ export function HomePage() {
                 </div>
                 <div className="flex items-center gap-6 font-black uppercase tracking-widest">
                     <Link href="/kvkk" target="_blank" className="hover:text-white transition-colors">KVKK Aydınlatma Metni</Link>
-                    <span className="text-zinc-700 hidden md:block">|</span>
-                    <span className="text-zinc-500 italic lowercase tracking-normal font-medium">v1.2.0-stable</span>
                 </div>
             </footer>
 

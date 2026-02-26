@@ -272,29 +272,44 @@ export function RegisterModal({ isOpen, onClose, onSwitchToLogin }: RegisterModa
                     <label className="block text-[10px] font-black uppercase tracking-widest text-zinc-400 dark:text-zinc-500 mb-1 ml-1">
                         Açık Adres Detayı
                     </label>
-                    <input
-                        type="text"
+                    <textarea
                         value={details}
                         onChange={(e) => setDetails(e.target.value)}
                         placeholder="Mahalle, Sokak, No..."
-                        className="w-full px-4 py-3 border-2 border-transparent focus:border-red-600 rounded-2xl outline-none bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-white transition-all"
+                        rows={3}
+                        className="w-full px-4 py-3 border-2 border-transparent focus:border-red-600 rounded-2xl outline-none bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-white transition-all resize-none"
                     />
                 </div>
 
                 <input type="hidden" name="address" value={fullAddress} />
                 <input type="hidden" name="selectedCity" value={city} />
 
-                <div className="flex items-start gap-3 p-3 bg-zinc-50 dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800">
-                    <input
-                        type="checkbox"
-                        name="kvkk"
-                        required
-                        id="kvkk"
-                        className="mt-1 w-4 h-4 text-red-600 rounded focus:ring-red-600"
-                    />
-                    <label htmlFor="kvkk" className="text-xs text-zinc-600 dark:text-zinc-400 cursor-pointer">
-                        <Link href="/kvkk" target="_blank" className="font-semibold text-zinc-900 dark:text-zinc-100 hover:underline">KVKK Aydınlatma Metni</Link>'ni ve <Link href="/kvkk" target="_blank" className="font-semibold text-zinc-900 dark:text-zinc-100 hover:underline">Açık Rıza Metni</Link>'ni okudum, kişisel verilerimin işlenmesini kabul ediyorum.
-                    </label>
+                <div className="space-y-3">
+                    <div className="flex items-start gap-3 p-3 bg-zinc-50 dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800">
+                        <input
+                            type="checkbox"
+                            name="kvkk"
+                            required
+                            id="kvkk"
+                            className="mt-1 w-4 h-4 text-red-600 rounded focus:ring-red-600"
+                        />
+                        <label htmlFor="kvkk" className="text-xs text-zinc-600 dark:text-zinc-400 cursor-pointer">
+                            <Link href="/kvkk" target="_blank" className="font-semibold text-zinc-900 dark:text-zinc-100 hover:underline">KVKK Aydınlatma Metni</Link>'ni okudum ve anladım.
+                        </label>
+                    </div>
+
+                    <div className="flex items-start gap-3 p-3 bg-zinc-50 dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800">
+                        <input
+                            type="checkbox"
+                            name="consent"
+                            required
+                            id="consent"
+                            className="mt-1 w-4 h-4 text-red-600 rounded focus:ring-red-600"
+                        />
+                        <label htmlFor="consent" className="text-xs text-zinc-600 dark:text-zinc-400 cursor-pointer">
+                            <Link href="/kvkk" target="_blank" className="font-semibold text-zinc-900 dark:text-zinc-100 hover:underline">Açık Rıza Metni</Link> kapsamında kişisel verilerimin işlenmesini kabul ediyorum.
+                        </label>
+                    </div>
                 </div>
 
                 {state?.error && (
