@@ -251,10 +251,21 @@ export function AdminLayoutClient({ children, role }: AdminLayoutClientProps) {
             )}
 
             {/* Main Content */}
-            <main className="flex-1 md:pl-64 p-4 md:p-8 overflow-x-hidden pt-20 md:pt-8">
-                <div className="max-w-7xl mx-auto w-full">
-                    {children}
+            <main className="flex-1 md:pl-64 min-h-screen flex flex-col">
+                <div className="flex-1 p-4 md:p-8 pt-20 md:pt-8 w-full">
+                    <div className="max-w-7xl mx-auto">
+                        {children}
+                    </div>
                 </div>
+
+                {/* Dashboard Footer */}
+                <footer className="p-6 border-t border-zinc-200 dark:border-zinc-800 text-center text-zinc-500 text-xs mt-auto">
+                    <div className="flex flex-col md:flex-row items-center justify-center gap-2 md:gap-4 italic font-medium">
+                        <span>© {new Date().getFullYear()} Türkiye Basketbol Federasyonu</span>
+                        <span className="hidden md:inline text-zinc-300 dark:text-zinc-700">|</span>
+                        <Link href="/kvkk" target="_blank" className="hover:text-red-700 transition-colors uppercase tracking-widest text-[10px]">KVKK Aydınlatma Metni</Link>
+                    </div>
+                </footer>
             </main>
         </div>
     );

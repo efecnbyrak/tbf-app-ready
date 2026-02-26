@@ -4,8 +4,10 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { User, Calendar, FileText, Menu, X, LogOut, BookOpen, Trophy, Sparkles, PlayCircle } from "lucide-react";
+import { User, Calendar, FileText, Menu, X, LogOut, BookOpen, Trophy, Sparkles, PlayCircle, Sun, Moon } from "lucide-react";
 import { SignOutButton } from "@/components/auth/SignOutButton";
+import { useTheme } from "next-themes";
+import { useEffect, useState as ReactuseState } from "react";
 
 interface ResponsiveNavProps {
     refereeName: string;
@@ -16,7 +18,13 @@ interface ResponsiveNavProps {
 
 export function ResponsiveNav({ refereeName, roleType, basePath = "/referee", titleOverride }: ResponsiveNavProps) {
     const [isOpen, setIsOpen] = useState(false);
+    const { theme, setTheme } = useTheme();
+    const [mounted, setMounted] = ReactuseState(false);
     const pathname = usePathname();
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     const isActive = (path: string) => {
         if (path === basePath) {
@@ -165,6 +173,24 @@ export function ResponsiveNav({ refereeName, roleType, basePath = "/referee", ti
                             </>
                         )}
                     </nav>
+
+                    <div className="mt-4 px-4 py-3 flex items-center justify-between bg-zinc-100 dark:bg-zinc-800/80 rounded-xl border border-zinc-200 dark:border-zinc-700/50 group transition-all">
+                        <div className="flex flex-col">
+                            <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest whitespace-nowrap">Görünüm</span>
+                            <span className="text-xs font-bold text-zinc-800 dark:text-zinc-100">
+                                {theme === "dark" ? "Koyu Tema" : "Açık Tema"}
+                            </span>
+                        </div>
+                        {mounted && (
+                            <button
+                                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                                className="p-2.5 bg-zinc-200 dark:bg-zinc-700 hover:bg-red-600 dark:hover:bg-red-600 text-zinc-600 dark:text-zinc-300 hover:text-white rounded-lg transition-all shadow-inner active:scale-95"
+                                title={theme === "dark" ? "Açık Temaya Geç" : "Koyu Temaya Geç"}
+                            >
+                                {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+                            </button>
+                        )}
+                    </div>
 
                     <div className="mt-auto pt-6 border-t dark:border-zinc-800">
                         <div className="mb-4 text-xs text-zinc-500 px-1">

@@ -153,7 +153,7 @@ export function LoginModal({ isOpen, onClose, onSwitchToRegister }: LoginModalPr
 
                     <form action={formAction} className="space-y-4">
                         <div className="space-y-1">
-                            <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-1">
+                            <label className="text-[10px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest ml-1">
                                 TC Kimlik No / Kullanıcı Adı
                             </label>
                             <div className="relative">
@@ -169,7 +169,7 @@ export function LoginModal({ isOpen, onClose, onSwitchToRegister }: LoginModalPr
                         </div>
 
                         <div className="space-y-1">
-                            <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-1">
+                            <label className="text-[10px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest ml-1">
                                 Şifre
                             </label>
                             <div className="relative">
