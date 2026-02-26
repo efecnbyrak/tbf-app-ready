@@ -7,7 +7,7 @@ import { OfficialAvailabilityForm } from "../../referee/availability/OfficialAva
 
 export default async function OfficialAvailabilityPage() {
     const session = await verifySession();
-    const referee = await db.referee.findUnique({
+    const official = await db.generalOfficial.findUnique({
         where: { userId: session.userId },
         include: {
             user: true,
@@ -16,20 +16,18 @@ export default async function OfficialAvailabilityPage() {
         },
     });
 
-    if (!referee) return <div>Profil Hatası</div>;
+    if (!official) return <div>Profil Hatası</div>;
 
     const { startDate, endDate, deadline, isLocked: windowLocked } = await getAvailabilityWindow();
 
     // Check if user is suspended
-    const isSuspended = !!(referee.user.suspendedUntil && referee.user.suspendedUntil > new Date());
+    const isSuspended = !!(official.user.suspendedUntil && official.user.suspendedUntil > new Date());
     const isLocked = windowLocked || isSuspended;
 
-    const existingForm = await db.availabilityForm.findUnique({
+    const existingForm = await db.availabilityForm.findFirst({
         where: {
-            refereeId_weekStartDate: {
-                refereeId: referee.id,
-                weekStartDate: startDate
-            }
+            officialId: official.id,
+            weekStartDate: startDate
         },
         include: { days: true }
     });
@@ -41,12 +39,7 @@ export default async function OfficialAvailabilityPage() {
         days.push(d);
     }
 
-    // Workaround: Fetch officialType via raw Query
-    const rawType = await db.$queryRaw<Array<{ officialType: string }>>`
-        SELECT "officialType" FROM referees WHERE id = ${referee.id}
-    `;
-    const realOfficialType = rawType[0]?.officialType || referee.officialType;
-
+    const realOfficialType = official.officialType;
     const roleLabel = realOfficialType ? formatOfficialType(realOfficialType) : "Görevli";
 
     return (
@@ -61,7 +54,7 @@ export default async function OfficialAvailabilityPage() {
                 </div>
                 {isSuspended ? (
                     <div className="mt-4 p-4 bg-red-100 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg text-red-700 dark:text-red-400 font-medium">
-                        Hesabınız {referee.user.suspendedUntil!.toLocaleDateString('tr-TR')} tarihine kadar dondurulmuştur. Bu süre zarfında uygunluk formu dolduramazsınız.
+                        Hesabınız {official.user.suspendedUntil!.toLocaleDateString('tr-TR')} tarihine kadar dondurulmuştur. Bu süre zarfında uygunluk formu dolduramazsınız.
                     </div>
                 ) : !isLocked ? (
                     <div className="mt-2 text-sm text-green-600 font-medium flex items-center gap-1">
@@ -75,7 +68,7 @@ export default async function OfficialAvailabilityPage() {
             </header>
 
             <OfficialAvailabilityForm
-                referee={referee}
+                referee={official}
                 days={days}
                 existingForm={existingForm}
                 isLocked={isLocked}

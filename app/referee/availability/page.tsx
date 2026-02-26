@@ -23,12 +23,10 @@ export default async function AvailabilityPage() {
     const isSuspended = !!(referee.user.suspendedUntil && referee.user.suspendedUntil > new Date());
     const isLocked = windowLocked || isSuspended;
 
-    const existingForm = await db.availabilityForm.findUnique({
+    const existingForm = await db.availabilityForm.findFirst({
         where: {
-            refereeId_weekStartDate: {
-                refereeId: referee.id,
-                weekStartDate: startDate
-            }
+            refereeId: referee.id,
+            weekStartDate: startDate
         },
         include: { days: true }
     });

@@ -16,10 +16,8 @@ export default async function RefereeDashboard() {
 
     if (!referee) return <div>Profil bulunamadı.</div>;
 
-    // Security Redirect: If NOT a REFEREE, go to official dashboard
-    if (referee.officialType && referee.officialType !== 'REFEREE') {
-        redirect("/general");
-    }
+    // Security Redirect: If a general official tries to access referee page, we can let it be or redirect
+    // But since it's in the referee table, it's a REFEREE.
 
     const displayName = `${referee.firstName} ${referee.lastName}`;
     const classificationLabel = formatClassification(referee.classification);

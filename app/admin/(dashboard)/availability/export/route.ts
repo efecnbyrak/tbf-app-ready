@@ -31,29 +31,21 @@ export async function GET(request: Request) {
         }
     });
 
-    // Filter Logic
-    // Fetch Referee Types manually via Raw Query to bypass stale Prisma Client
-    const refereeTypesRaw = await db.$queryRaw<Array<{ id: number, officialType: string }>>`
-        SELECT id, "officialType" FROM referees
-    `;
-    const refereeTypeMap = new Map(refereeTypesRaw.map((r: any) => [r.id, r.officialType || "REFEREE"]));
-
     // 2. Fetch DATA (ALL forms for the window)
     const allForms = await db.availabilityForm.findMany({
-        where: {
-            weekStartDate: startDate,
-        },
+        where: { weekStartDate: startDate },
         include: {
-            referee: {
-                include: { regions: true }
-            },
+            referee: { include: { regions: true } },
+            official: { include: { regions: true } },
             days: true
-        },
-        orderBy: {
-            referee: {
-                lastName: 'asc'
-            }
         }
+    });
+
+    // Sort to emulate the orderBy logic
+    allForms.sort((a, b) => {
+        const lastNameA = a.referee?.lastName || a.official?.lastName || "";
+        const lastNameB = b.referee?.lastName || b.official?.lastName || "";
+        return lastNameA.localeCompare(lastNameB, 'tr-TR');
     });
 
     // In-Memory Categorization
@@ -61,7 +53,7 @@ export async function GET(request: Request) {
     const allEligibleForms = allForms;
 
     allForms.forEach(form => {
-        const type = refereeTypeMap.get(form.refereeId) || "REFEREE";
+        const type = form.official?.officialType || "REFEREE";
         if (!categoryMap.has(type)) categoryMap.set(type, []);
         categoryMap.get(type)!.push(form);
     });
@@ -105,9 +97,12 @@ export async function GET(request: Request) {
 
             // Add Rows
             data.forEach(form => {
-                const ref = form.referee;
+                const isOff = !!form.official;
+                const ref = form.referee || form.official;
+                if (!ref) return;
+
                 const regions = ref.regions.map(r => r.name).join(", ");
-                const oType = refereeTypeMap.get(form.refereeId) || "REFEREE";
+                const oType = isOff ? (form.official?.officialType || "TABLE") : "REFEREE";
                 const oTypeLabel = ({
                     "REFEREE": "Hakem",
                     "OBSERVER": "Gözlemci",
@@ -122,7 +117,7 @@ export async function GET(request: Request) {
                 const rowData: any = {
                     name: `${ref.firstName} ${ref.lastName}`,
                     officialType: oTypeLabel,
-                    class: formatClassification(ref.classification),
+                    class: !isOff ? formatClassification((ref as any).classification) : "GÖREVLİ",
                     phone: ref.phone,
                     regions: regions
                 };
@@ -173,14 +168,16 @@ export async function GET(request: Request) {
 
         // 1. "HEPSİ" Sheet (Sorted: OBSERVER first, then others)
         const sortedAllForms = [...allEligibleForms].sort((a, b) => {
-            const typeA = refereeTypeMap.get(a.refereeId) || "REFEREE";
-            const typeB = refereeTypeMap.get(b.refereeId) || "REFEREE";
+            const typeA = a.official?.officialType || "REFEREE";
+            const typeB = b.official?.officialType || "REFEREE";
 
             if (typeA === "OBSERVER" && typeB !== "OBSERVER") return -1;
             if (typeA !== "OBSERVER" && typeB === "OBSERVER") return 1;
 
             // Sub-sort by name
-            return a.referee.lastName.localeCompare(b.referee.lastName, 'tr-TR');
+            const lastNameA = a.referee?.lastName || a.official?.lastName || "";
+            const lastNameB = b.referee?.lastName || b.official?.lastName || "";
+            return lastNameA.localeCompare(lastNameB, 'tr-TR');
         });
 
         if (sortedAllForms.length > 0) {

@@ -35,7 +35,7 @@ export default async function RefereesPage() {
     // Re-construct the map for component compatibility (Fixed for Client Component)
     const refereeTypeMap: Record<string, string> = {};
     referees.forEach(r => {
-        refereeTypeMap[r.id] = r.officialType || "REFEREE";
+        refereeTypeMap[r.id] = "REFEREE";
     });
 
     // Make data plain for client component

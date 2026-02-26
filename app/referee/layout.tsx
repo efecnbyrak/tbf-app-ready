@@ -26,7 +26,7 @@ export default async function RefereeLayout({
         <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 flex flex-col md:flex-row">
             <ResponsiveNav
                 refereeName={referee?.firstName || "Kullanıcı"}
-                roleType={referee?.officialType || "REFEREE"}
+                roleType="REFEREE"
             />
 
             <main className="flex-1 md:pl-64 p-4 md:p-8 overflow-x-hidden">

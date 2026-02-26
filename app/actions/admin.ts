@@ -53,19 +53,21 @@ export async function updateRefereeClassification(refereeId: number, classificat
         return { error: "Güncelleme başarısız." };
     }
 }
-export async function updateRefereeType(refereeId: number, officialType: string) {
+export async function updateRefereeType(id: number, officialType: string) {
     const session = await verifySession();
-    if (session.role !== "ADMIN") {
+    if (session.role !== "ADMIN" && session.role !== "SUPER_ADMIN") {
         return { error: "Yetkisiz işlem." };
     }
 
     try {
-        // Use Raw Query to update officialType to bypass stale Prisma Client
-        await db.$executeRaw`
-            UPDATE referees 
-            SET "officialType" = ${officialType} 
-            WHERE id = ${refereeId}
-        `;
+        // Find if it's a referee (though referees don't have types anymore, 
+        // they are just REFEREE. If we change it to something else, they should move table)
+        // But for now, this is likely used for GeneralOfficials.
+
+        await db.generalOfficial.update({
+            where: { id },
+            data: { officialType }
+        });
 
         revalidatePath("/admin/referees");
         revalidatePath("/admin/officials");

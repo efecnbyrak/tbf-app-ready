@@ -37,11 +37,20 @@ export async function sendAnnouncement(subject: string, content: string, target:
 
         if (target === "ALL") {
             recipients = await db.$queryRaw<Array<{ email: string }>>`
-                SELECT email FROM referees WHERE email IS NOT NULL
+                SELECT email FROM (
+                    SELECT email FROM referees WHERE email IS NOT NULL
+                    UNION ALL
+                    SELECT email FROM general_officials WHERE email IS NOT NULL
+                ) combined
             `;
         } else {
             recipients = await db.$queryRaw<Array<{ email: string }>>`
-                SELECT email FROM referees WHERE email IS NOT NULL AND "officialType" = ${target}
+                SELECT email FROM (
+                    SELECT email, 'REFEREE' as "officialType" FROM referees WHERE email IS NOT NULL
+                    UNION ALL
+                    SELECT email, "officialType" FROM general_officials WHERE email IS NOT NULL
+                ) combined
+                WHERE "officialType" = ${target}
             `;
         }
 

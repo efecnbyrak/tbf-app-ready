@@ -18,24 +18,34 @@ export async function saveAvailability(prevState: ActionState, formData: FormDat
 
     await ensureSchemaColumns();
 
-    const referee = await db.referee.findUnique({
+    let profile: any = await db.referee.findUnique({
         where: { userId },
         include: {
             regions: true,
             user: true // Include user to check suspension
         }
     });
-    if (!referee) return { error: "Hakem profili bulunamadı.", success: false };
+    let isOfficial = false;
 
-    if (referee.user.suspendedUntil && referee.user.suspendedUntil > new Date()) {
-        const dateStr = referee.user.suspendedUntil.toLocaleDateString('tr-TR');
+    if (!profile) {
+        profile = (await db.generalOfficial.findUnique({
+            where: { userId },
+            include: { regions: true, user: true }
+        })) as any;
+        isOfficial = true;
+    }
+
+    if (!profile) return { error: "Profil bulunamadı.", success: false };
+
+    if (profile.user.suspendedUntil && profile.user.suspendedUntil > new Date()) {
+        const dateStr = profile.user.suspendedUntil.toLocaleDateString('tr-TR');
         return { error: `Hesabınız ${dateStr} tarihine kadar dondurulmuştur. Bu süre zarfında uygunluk formu dolduramazsınız.`, success: false };
     }
 
     const { startDate, deadline, isLocked, mode } = await getAvailabilityWindow();
 
     // Audit Logging
-    console.log(`[ACTION] saveAvailability - User: ${referee.firstName} ${referee.lastName}, Locked: ${isLocked}, Mode: ${mode}, TargetWeek: ${startDate.toLocaleDateString()}`);
+    console.log(`[ACTION] saveAvailability - User: ${profile.firstName} ${profile.lastName}, Locked: ${isLocked}, Mode: ${mode}, TargetWeek: ${startDate.toLocaleDateString()}`);
 
     if (isLocked) {
         return { error: "Form gönderim süresi doldu.", success: false };
@@ -61,33 +71,57 @@ export async function saveAvailability(prevState: ActionState, formData: FormDat
         }
 
         // Update phone and regions
-        await db.referee.update({
-            where: { id: referee.id },
-            data: {
-                phone,
-                regions: {
-                    set: verifiedRegionIds.map(id => ({ id }))
+        if (isOfficial) {
+            await db.generalOfficial.update({
+                where: { id: profile.id },
+                data: {
+                    phone,
+                    regions: { set: verifiedRegionIds.map(id => ({ id })) }
                 }
+            });
+        } else {
+            await db.referee.update({
+                where: { id: profile.id },
+                data: {
+                    phone,
+                    regions: { set: verifiedRegionIds.map(id => ({ id })) }
+                }
+            });
+        }
+
+        // 2. Save Form Days
+        let form = await db.availabilityForm.findFirst({
+            where: {
+                ...(isOfficial ? { officialId: profile.id } : { refereeId: profile.id }),
+                weekStartDate: startDate
             }
         });
 
-        // 2. Save Form Days
-        const form = await db.availabilityForm.upsert({
-            where: {
-                refereeId_weekStartDate: {
-                    refereeId: referee.id,
-                    weekStartDate: startDate
-                }
-            },
-            create: {
-                refereeId: referee.id,
-                weekStartDate: startDate,
-                status: "SUBMITTED"
-            },
-            update: {
-                status: "SUBMITTED"
+        if (form) {
+            form = await db.availabilityForm.update({
+                where: { id: form.id },
+                data: { status: "SUBMITTED" }
+            });
+        } else {
+            if (isOfficial) {
+                form = await db.availabilityForm.create({
+                    data: {
+                        officialId: profile.id,
+                        weekStartDate: startDate,
+                        status: "SUBMITTED"
+                    }
+                });
+            } else {
+                form = await db.availabilityForm.create({
+                    data: {
+                        refereeId: profile.id,
+                        weekStartDate: startDate,
+                        status: "SUBMITTED"
+                    }
+                });
             }
-        });
+        }
+
 
         // Collect day data for email summary
         const savedDays: { dayName: string; date: string; slots: string }[] = [];
@@ -142,11 +176,11 @@ export async function saveAvailability(prevState: ActionState, formData: FormDat
             const appUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.VERCEL_URL
                 ? `https://${process.env.VERCEL_URL}`
                 : 'http://localhost:3000';
-            const formUrl = `${appUrl}/referee/availability`;
+            const formUrl = isOfficial ? `${appUrl}/general/availability` : `${appUrl}/referee/availability`;
 
             await sendAvailabilityConfirmationEmail(
-                referee.email,
-                `${referee.firstName} ${referee.lastName}`,
+                profile.email,
+                `${profile.firstName} ${profile.lastName}`,
                 weekLabel,
                 savedDays,
                 deadlineStr,

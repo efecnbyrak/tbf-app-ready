@@ -9,25 +9,26 @@ import { redirect } from "next/navigation";
 
 export default async function GeneralDashboard() {
     const session = await verifySession();
-    const referee = await db.referee.findUnique({
+
+    // First check generalOfficial table
+    const official = await db.generalOfficial.findUnique({
         where: { userId: session.userId },
         include: { regions: true }
     });
 
-    if (!referee) return <div>Profil bulunamadı.</div>;
-
-    // Security Redirect: If actually a REFEREE, go to referee dashboard
-    if (referee.officialType === 'REFEREE') {
-        redirect("/referee");
+    if (!official) {
+        // Not an official, check if they are a referee
+        const referee = await db.referee.findUnique({
+            where: { userId: session.userId }
+        });
+        if (referee) {
+            redirect("/referee");
+        }
+        return <div>Profil bulunamadı.</div>;
     }
 
-    const displayName = `${referee.firstName} ${referee.lastName}`;
-
-    // Workaround: Fetch officialType via raw Query to avoid stale Prisma Client issues
-    const rawType = await db.$queryRaw<Array<{ officialType: string }>>`
-        SELECT "officialType" FROM referees WHERE id = ${referee.id}
-    `;
-    const realOfficialType = rawType[0]?.officialType || referee.officialType;
+    const displayName = `${official.firstName} ${official.lastName}`;
+    const realOfficialType = official.officialType;
 
     // Label for the official role
     const typeLabels: Record<string, string> = {
@@ -35,6 +36,9 @@ export default async function GeneralDashboard() {
         "OBSERVER": "Gözlemci",
         "HEALTH": "Sağlıkçı",
         "STATISTICIAN": "İstatistikçi",
+        "FIELD_COMMISSIONER": "Saha Komiseri",
+        "TABLE_STATISTICIAN": "Masa & İstatistik",
+        "TABLE_HEALTH": "Masa & Sağlık",
         "REFEREE": "Hakem"
     };
 
@@ -42,7 +46,7 @@ export default async function GeneralDashboard() {
 
     // Fetch assignments
     const assignments = await db.matchAssignment.findMany({
-        where: { refereeId: referee.id },
+        where: { officialId: official.id },
         include: {
             match: true
         },
@@ -59,7 +63,7 @@ export default async function GeneralDashboard() {
     return (
         <div className="max-w-5xl mx-auto space-y-8">
             <header>
-                <h1 className="text-3xl font-bold text-zinc-900 dark:text-white">Hoşgeldin, {referee.firstName}</h1>
+                <h1 className="text-3xl font-bold text-zinc-900 dark:text-white">Hoşgeldin, {official.firstName}</h1>
                 <p className="text-zinc-500 mt-2">Güncel durumun ve bildirimlerin</p>
             </header>
 
@@ -90,29 +94,29 @@ export default async function GeneralDashboard() {
                                 </div>
                             </div>
 
-                            <ProfileSettings currentEmail={referee.email} currentPhone={referee.phone} />
+                            <ProfileSettings currentEmail={official.email} currentPhone={official.phone} />
                         </div>
 
                         <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-zinc-100 dark:border-zinc-800">
                             <div>
                                 <label className="text-xs font-medium text-zinc-500 uppercase block mb-1">TC Kimlik No</label>
                                 <span className="font-mono text-zinc-700 dark:text-zinc-300 bg-zinc-50 dark:bg-zinc-800/50 px-3 py-1.5 rounded-lg block w-full">
-                                    {referee.tckn.substring(0, 2)}*******{referee.tckn.substring(9)}
+                                    {official.tckn.substring(0, 2)}*******{official.tckn.substring(9)}
                                 </span>
                             </div>
 
                             <div>
                                 <label className="text-xs font-medium text-zinc-500 uppercase block mb-1">E-posta</label>
                                 <span className="text-zinc-700 dark:text-zinc-300 bg-zinc-50 dark:bg-zinc-800/50 px-3 py-1.5 rounded-lg block w-full truncate">
-                                    {referee.email}
+                                    {official.email}
                                 </span>
                             </div>
 
-                            {referee.phone && (
+                            {official.phone && (
                                 <div>
                                     <label className="text-xs font-medium text-zinc-500 uppercase block mb-1">Telefon</label>
                                     <span className="text-zinc-700 dark:text-zinc-300 bg-zinc-50 dark:bg-zinc-800/50 px-3 py-1.5 rounded-lg block w-full">
-                                        {referee.phone}
+                                        {official.phone}
                                     </span>
                                 </div>
                             )}

@@ -48,14 +48,21 @@ export default async function AvailabilityAdminPage({ searchParams }: PageProps)
     const forms = await db.availabilityForm.findMany({
         where: {
             weekStartDate: startDate,
-            referee: {
-                officialType: activeGroup === "REFEREE"
-                    ? "REFEREE"
-                    : (activeType ? activeType : { not: "REFEREE" })
-            }
-        },
+            ...(activeGroup === "REFEREE"
+                ? { referee: { isNot: null } }
+                : {
+                    official: {
+                        isNot: null,
+                        officialType: activeType ? activeType : { not: "REFEREE" }
+                    }
+                }
+            )
+        } as any,
         include: {
             referee: {
+                include: { regions: true }
+            },
+            official: {
                 include: { regions: true }
             },
             days: true

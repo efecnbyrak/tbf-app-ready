@@ -196,7 +196,7 @@ export function OfficialAvailabilityForm({ referee, days, existingForm, isLocked
                                     dateString={day.toLocaleDateString('tr-TR')}
                                     initialSlot={dayData ? (dayData.slots as unknown as string) : null}
                                     isLocked={isLocked}
-                                    officialType={referee.officialType || (customRoleLabel ? "OFFICIAL" : "REFEREE")}
+                                    officialType={referee.officialType || "REFEREE"}
                                 />
                             );
                         })}

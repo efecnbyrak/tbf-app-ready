@@ -10,20 +10,24 @@ export default async function OfficialAssignmentsPage() {
     // Assuming session has correct user ID.
     // We can fetch referee details again or trust the session user mapping if simple
 
-    // We need refereeID
+    // Fetch the correct profile based on role
+    const official = await db.generalOfficial.findUnique({
+        where: { userId: session.userId }
+    });
+
     const referee = await db.referee.findUnique({
         where: { userId: session.userId }
     });
 
     // Security Redirect: If actually a REFEREE, go to referee dashboard
-    if (referee && referee.officialType === 'REFEREE') { // Added check for referee existence
+    if (referee && !official) {
         redirect("/referee");
     }
 
-    if (!referee) return <div>Profil bulunamadı.</div>;
+    if (!official) return <div>Profil bulunamadı.</div>;
 
     const assignments = await db.matchAssignment.findMany({
-        where: { refereeId: referee.id },
+        where: { officialId: official.id },
         include: {
             match: true
         },

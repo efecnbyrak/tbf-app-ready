@@ -32,7 +32,7 @@ export async function ensureSchemaColumns() {
         // Referees table (mapped as referees)
         await db.$executeRawUnsafe(`ALTER TABLE referees ADD COLUMN IF NOT EXISTS "address" TEXT`);
         await db.$executeRawUnsafe(`ALTER TABLE referees ADD COLUMN IF NOT EXISTS "job" TEXT`);
-        await db.$executeRawUnsafe(`ALTER TABLE referees ADD COLUMN IF NOT EXISTS "officialType" TEXT DEFAULT 'REFEREE'`);
+        // Removed officialType from referees table in schema
         await db.$executeRawUnsafe(`ALTER TABLE referees ADD COLUMN IF NOT EXISTS "points" INTEGER DEFAULT 0`);
         await db.$executeRawUnsafe(`ALTER TABLE referees ADD COLUMN IF NOT EXISTS "rating" INTEGER DEFAULT 0`);
 
@@ -323,7 +323,7 @@ export async function verify2FA(userId: number, code: string): Promise<ActionSta
         let redirectTo = "/";
         if (user.role.name === "ADMIN" || user.role.name === "SUPER_ADMIN" || user.role.name === "ADMIN_IHK") {
             redirectTo = "/admin";
-        } else if (user.referee?.officialType === "REFEREE") {
+        } else if (user.referee) {
             redirectTo = "/referee";
         } else {
             redirectTo = "/general";
@@ -423,24 +423,41 @@ export async function register(prevState: ActionState, formData: FormData): Prom
                 region = await tx.region.create({ data: { name: selectedCity } });
             }
 
-            // Use Raw SQL to bypass stale Prisma Client validation for officialType and new fields
-            await tx.referee.create({
-                data: {
-                    userId: createdUser.id,
-                    tckn: tckn,
-                    firstName: firstName,
-                    lastName: lastName,
-                    email: email,
-                    phone: phone,
-                    classification: 'BELIRLENMEMIS',
-                    officialType: roleType,
-                    job: job || null,
-                    address: address || null,
-                    regions: {
-                        connect: { id: region.id }
+            if (roleType === "REFEREE") {
+                await tx.referee.create({
+                    data: {
+                        userId: createdUser.id,
+                        tckn: tckn,
+                        firstName: firstName,
+                        lastName: lastName,
+                        email: email,
+                        phone: phone,
+                        classification: 'BELIRLENMEMIS',
+                        job: job || null,
+                        address: address || null,
+                        regions: {
+                            connect: { id: region.id }
+                        }
                     }
-                }
-            });
+                });
+            } else {
+                await tx.generalOfficial.create({
+                    data: {
+                        userId: createdUser.id,
+                        tckn: tckn,
+                        firstName: firstName,
+                        lastName: lastName,
+                        email: email,
+                        phone: phone,
+                        officialType: roleType,
+                        job: job || null,
+                        address: address || null,
+                        regions: {
+                            connect: { id: region.id }
+                        }
+                    }
+                });
+            }
         });
 
         // 6. Direct Login (Skip verification for registration? Or require it?)
@@ -587,7 +604,8 @@ export async function promoteToAdmin(userId: number) {
         if (!userToPromote) return { error: "Kullanıcı bulunamadı." };
 
         // Check if it's an Observer (Gözlemci)
-        if (userToPromote.referee?.officialType !== "OBSERVER") {
+        const official = await db.generalOfficial.findUnique({ where: { userId: userId } });
+        if (official?.officialType !== "OBSERVER") {
             return { error: "Sadece Gözlemciler (OBSERVER) yöneticiye dönüştürülebilir." };
         }
 
