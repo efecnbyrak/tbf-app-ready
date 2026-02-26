@@ -7,9 +7,16 @@ const BOOTSTRAP_COOKIE_NAME = "session";
 const secret = process.env.NEXTAUTH_SECRET || process.env.JWT_SECRET;
 const key = new TextEncoder().encode(secret || "dev-only-insecure-key");
 
+export function isSecretConfigured() {
+    if (process.env.NODE_ENV === "production" && !secret) {
+        return false;
+    }
+    return true;
+}
+
 function ensureSecret() {
-    if (!secret && process.env.NODE_ENV === "production") {
-        throw new Error("FATAL: NEXTAUTH_SECRET or JWT_SECRET must be set in production.");
+    if (!isSecretConfigured()) {
+        throw new Error("SEC_CONFIG_MISSING");
     }
 }
 

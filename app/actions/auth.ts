@@ -250,6 +250,9 @@ export async function login(prevState: ActionState, formData: FormData): Promise
 
     } catch (error: any) {
         console.error("Login system error:", error);
+        if (error?.message === "SEC_CONFIG_MISSING") {
+            return { error: "Sistem yapılandırma hatası (Secret Key eksik). Lütfen yöneticiye bildirin.", success: false };
+        }
         return { error: "Sistemde bir hata oluştu. Lütfen daha sonra tekrar deneyiniz.", success: false };
     }
 }
@@ -297,9 +300,12 @@ export async function verify2FA(userId: number, code: string): Promise<ActionSta
         }
 
         return { success: true, redirectTo };
-    } catch (e) {
-        console.error(e);
-        return { error: "Doğrulama hatası.", success: false };
+    } catch (e: any) {
+        console.error("Verify2FA error:", e);
+        if (e?.message === "SEC_CONFIG_MISSING") {
+            return { error: "Sistem yapılandırma hatası (Secret Key eksik).", success: false };
+        }
+        return { error: "Doğrulama hatası. Lütfen tekrar deneyiniz.", success: false };
     }
 }
 
