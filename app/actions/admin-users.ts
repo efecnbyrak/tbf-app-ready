@@ -104,10 +104,11 @@ export async function updateRefereeProfile(userId: number, data: {
             // Try updating referee first
             const referee = await tx.referee.findUnique({ where: { userId: userId } });
             if (referee) {
-                // If it's a referee, classification exists
+                // For referee, only include valid fields (officialType is NOT valid)
+                const { officialType, ...refData } = updateData;
                 await tx.referee.update({
                     where: { userId: userId },
-                    data: updateData
+                    data: refData
                 });
 
                 // Update Regions for referee
@@ -125,8 +126,7 @@ export async function updateRefereeProfile(userId: number, data: {
                 // Try general official
                 const generalOfficial = await tx.generalOfficial.findUnique({ where: { userId: userId } });
                 if (generalOfficial) {
-                    // For general official, classification field might not exist in updateData 
-                    // (we should filter it out if we want to be strict, but Prisma usually ignores extra fields if not in schema)
+                    // For general official, classification is NOT valid
                     const { classification, ...genData } = updateData;
                     await tx.generalOfficial.update({
                         where: { userId: userId },
