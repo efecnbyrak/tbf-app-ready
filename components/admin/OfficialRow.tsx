@@ -56,7 +56,7 @@ export function OfficialRow({ official, onClick, onToggleActive, onPromote, isSu
                         )}
                     </div>
                     <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mt-1">
-                        {(isReferee || official.classification !== "BELIRLENMEMIS") && (
+                        {isReferee && (
                             <>
                                 <span className="text-[10px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">{classLabel}</span>
                                 <span className="w-1 h-1 bg-zinc-300 dark:bg-zinc-700 rounded-full hidden sm:block" />
