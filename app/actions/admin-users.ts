@@ -101,50 +101,119 @@ export async function updateRefereeProfile(userId: number, data: {
         if (data.rating !== undefined) updateData.rating = data.rating;
 
         if (Object.keys(updateData).length > 0) {
-            // Try updating referee first
-            const referee = await tx.referee.findUnique({ where: { userId: userId } });
-            if (referee) {
-                // For referee, only include valid fields (officialType is NOT valid)
+            const referee = await tx.referee.findUnique({ where: { userId: userId }, include: { regions: true } });
+            const generalOfficial = await tx.generalOfficial.findUnique({ where: { userId: userId }, include: { regions: true } });
+
+            const isReferee = !!referee;
+            const isOfficial = !!generalOfficial;
+
+            // Target state
+            const targetIsReferee = data.officialType === "REFEREE" || (isReferee && (data.officialType === undefined));
+
+            if (isReferee && !targetIsReferee) {
+                // MIGRATION: Referee -> GeneralOfficial
+                const officialType = data.officialType || "TABLE"; // Default if somehow missing
+
+                // 1. Create GeneralOfficial
+                const newOfficial = await tx.generalOfficial.create({
+                    data: {
+                        userId: userId,
+                        tckn: referee.tckn,
+                        firstName: referee.firstName,
+                        lastName: referee.lastName,
+                        email: referee.email,
+                        phone: referee.phone,
+                        address: referee.address,
+                        job: referee.job,
+                        imageUrl: referee.imageUrl,
+                        officialType,
+                        points: data.points ?? referee.points,
+                        rating: data.rating ?? referee.rating,
+                        regions: {
+                            connect: (data.regionIds ? data.regionIds.map((id: number) => ({ id })) : referee.regions.map((r: any) => ({ id: r.id })))
+                        }
+                    }
+                });
+
+                // 2. Transfer assignments and forms
+                await tx.matchAssignment.updateMany({
+                    where: { refereeId: referee.id },
+                    data: { refereeId: null, officialId: newOfficial.id }
+                });
+                await tx.availabilityForm.updateMany({
+                    where: { refereeId: referee.id },
+                    data: { refereeId: null, officialId: newOfficial.id }
+                });
+
+                // 3. Delete Referee data (including exams via Cascade)
+                await tx.referee.delete({ where: { id: referee.id } });
+
+            } else if (isOfficial && targetIsReferee) {
+                // MIGRATION: GeneralOfficial -> Referee
+                const classification = data.classification || "BELIRLENMEMIS";
+
+                // 1. Create Referee
+                const newReferee = await tx.referee.create({
+                    data: {
+                        userId: userId,
+                        tckn: generalOfficial.tckn,
+                        firstName: generalOfficial.firstName,
+                        lastName: generalOfficial.lastName,
+                        email: generalOfficial.email,
+                        phone: generalOfficial.phone,
+                        address: generalOfficial.address,
+                        job: generalOfficial.job,
+                        imageUrl: generalOfficial.imageUrl,
+                        classification,
+                        points: data.points ?? generalOfficial.points,
+                        rating: data.rating ?? generalOfficial.rating,
+                        regions: {
+                            connect: (data.regionIds ? data.regionIds.map((id: number) => ({ id })) : generalOfficial.regions.map((r: any) => ({ id: r.id })))
+                        }
+                    }
+                });
+
+                // 2. Transfer assignments and forms
+                await tx.matchAssignment.updateMany({
+                    where: { officialId: generalOfficial.id },
+                    data: { officialId: null, refereeId: newReferee.id }
+                });
+                await tx.availabilityForm.updateMany({
+                    where: { officialId: generalOfficial.id },
+                    data: { officialId: null, refereeId: newReferee.id }
+                });
+
+                // 3. Delete GeneralOfficial
+                await tx.generalOfficial.delete({ where: { id: generalOfficial.id } });
+
+            } else if (isReferee) {
+                // Normal Update for Referee
                 const { officialType, ...refData } = updateData;
                 await tx.referee.update({
                     where: { userId: userId },
-                    data: refData
-                });
-
-                // Update Regions for referee
-                if (data.regionIds !== undefined) {
-                    await tx.referee.update({
-                        where: { id: referee.id },
-                        data: {
+                    data: {
+                        ...refData,
+                        ...(data.regionIds !== undefined ? {
                             regions: {
                                 set: data.regionIds.map((id: number) => ({ id }))
                             }
-                        }
-                    });
-                }
-            } else {
-                // Try general official
-                const generalOfficial = await tx.generalOfficial.findUnique({ where: { userId: userId } });
-                if (generalOfficial) {
-                    // For general official, classification is NOT valid
-                    const { classification, ...genData } = updateData;
-                    await tx.generalOfficial.update({
-                        where: { userId: userId },
-                        data: genData
-                    });
-
-                    // Update Regions for general official
-                    if (data.regionIds !== undefined) {
-                        await tx.generalOfficial.update({
-                            where: { id: generalOfficial.id },
-                            data: {
-                                regions: {
-                                    set: data.regionIds.map((id: number) => ({ id }))
-                                }
-                            }
-                        });
+                        } : {})
                     }
-                }
+                });
+            } else if (isOfficial) {
+                // Normal Update for General Official
+                const { classification, ...genData } = updateData;
+                await tx.generalOfficial.update({
+                    where: { userId: userId },
+                    data: {
+                        ...genData,
+                        ...(data.regionIds !== undefined ? {
+                            regions: {
+                                set: data.regionIds.map((id: number) => ({ id }))
+                            }
+                        } : {})
+                    }
+                });
             }
         }
     });
