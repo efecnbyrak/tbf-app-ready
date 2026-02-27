@@ -36,6 +36,9 @@ export function ProfileDetailModal({ official, onClose, onToggleActive, onPromot
     const [availableRegions, setAvailableRegions] = useState<any[]>([]);
     const [citySearch, setCitySearch] = useState("");
 
+    // Success State
+    const [showSuccess, setShowSuccess] = useState(false);
+
     // Detect if data has changed to show save button
     const hasChanges =
         editData.classification !== (official.classification || "BELIRLENMEMIS") ||
@@ -73,6 +76,8 @@ export function ProfileDetailModal({ official, onClose, onToggleActive, onPromot
             });
 
             if (res.success) {
+                setShowSuccess(true);
+                setTimeout(() => setShowSuccess(false), 3000);
                 setIsEditing(false);
                 setEditingField(null);
                 router.refresh();
@@ -123,6 +128,18 @@ export function ProfileDetailModal({ official, onClose, onToggleActive, onPromot
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-2 sm:p-6 bg-zinc-950/80 backdrop-blur-xl animate-in fade-in duration-300">
             <div className="relative w-full max-w-5xl bg-white dark:bg-zinc-900 rounded-[3rem] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.3)] border border-zinc-200 dark:border-zinc-800 animate-in zoom-in-95 slide-in-from-bottom-8 duration-500">
+
+                {/* Success Message Overlay */}
+                {showSuccess && (
+                    <div className="absolute top-8 left-1/2 -translate-x-1/2 z-[110] animate-in slide-in-from-top-4 duration-500 pointer-events-none">
+                        <div className="bg-emerald-600 text-white px-8 py-4 rounded-2xl shadow-2xl shadow-emerald-600/30 flex items-center gap-3 border-2 border-emerald-400/20">
+                            <div className="bg-white/20 p-1.5 rounded-lg">
+                                <Check className="w-5 h-5 text-white" />
+                            </div>
+                            <span className="font-black uppercase tracking-widest italic text-sm">Başarıyla Kaydedildi</span>
+                        </div>
+                    </div>
+                )}
 
                 {/* Header/Close Button (Mobile Overlay) */}
                 <button
@@ -193,8 +210,8 @@ export function ProfileDetailModal({ official, onClose, onToggleActive, onPromot
                                 )}
                             </div>
 
-                            {/* Classification Badge - Custom Dropdown */}
-                            {(isReferee || official.classification !== "BELIRLENMEMIS") && (
+                            {/* Classification Badge - Custom Dropdown - ONLY for Referees */}
+                            {editData.officialType === "REFEREE" && (
                                 <div className="relative">
                                     <button
                                         onClick={() => setEditingField(editingField === 'class' ? null : 'class')}
