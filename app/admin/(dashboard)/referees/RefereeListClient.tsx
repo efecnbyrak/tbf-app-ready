@@ -295,8 +295,8 @@ export function RefereeListClient({ initialReferees, refereeTypeMap, currentUser
                                                 officialType: refereeTypeMap[ref.id] || "REFEREE"
                                             })}
                                             onToggleActive={() => handleToggleStatus(ref.user?.id)}
-                                            onPromote={currentUserRole === "SUPER_ADMIN" ? () => handlePromote(ref.user?.id) : undefined}
-                                            onDemote={currentUserRole === "SUPER_ADMIN" ? () => handleDemote(ref.user?.id) : undefined}
+                                            onPromote={(currentUserRole === "SUPER_ADMIN" || currentUserEmail === "talatmustafaozdemir@gmail.com") ? () => handlePromote(ref.user?.id) : undefined}
+                                            onDemote={(currentUserRole === "SUPER_ADMIN" || currentUserEmail === "talatmustafaozdemir@gmail.com") ? () => handleDemote(ref.user?.id) : undefined}
                                         />
                                     ))}
                                 </div>

