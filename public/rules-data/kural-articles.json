@@ -1,0 +1,2691 @@
+[
+  {
+    "id": "1",
+    "title": "Tanımlar",
+    "page": 6,
+    "intro": [],
+    "sections": [
+      {
+        "id": "1.1",
+        "title": "Basketbol oyunu",
+        "paragraphs": [
+          "Basketbol, 5 kişiden oluşan 2 takımla oynanır. Her takımın amacı, rakibin sepetine sayı yapmak ve",
+          "diğer takımın sayı yapmasını engellemektir.",
+          "Oyun, hakemler, masa görevlileri ve eğer varsa komiser tarafından yönetilir.",
+          "1.2 Sepet: rakibinin ve kendisinin",
+          "Bir takım tarafından hücum edilen sepet rakibinin sepeti ve bir takım tarafından savunulan sepet",
+          "takımın kendi sepetidir."
+        ]
+      },
+      {
+        "id": "1.3",
+        "title": "Maçın galibi",
+        "paragraphs": [
+          "Oyun süresinin sonunda daha fazla sayı yapmış olan takım, maçın galibi olacaktır.",
+          "KURAL İKİ – SAHA ve DONANIM"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2",
+    "title": "Saha",
+    "page": 7,
+    "intro": [],
+    "sections": [
+      {
+        "id": "2.1",
+        "title": "Saha",
+        "paragraphs": [
+          "Saha (Diyagram 1) düz, engelsiz sert yüzeyli, sınır çizgisinin iç kenarından ölçüldüğünde 28 m",
+          "uzunluğunda, 15 m genişliğinde olacaktır."
+        ]
+      },
+      {
+        "id": "2.2",
+        "title": "Zemin",
+        "paragraphs": [
+          "Zemin, engellerden arındırılmış en az 2 m'lik başka bir ilave sınır çizgisi ile çevrili saha alanını",
+          "içerecektir (Diyagram 2). Bu nedenle zemin en az 32 m uzunluğunda ve 19 m genişliğinde",
+          "olmalıdır."
+        ]
+      },
+      {
+        "id": "2.3",
+        "title": "Geri saha",
+        "paragraphs": [
+          "Bir takımın geri sahası, kendi sepetini, arkalığın iç tarafını ve takımın kendi sepetinin arkasındaki",
+          "dip çizgiyle sınırlı olan sahası ile kenar çizgiler ve orta çizgiyi içerir."
+        ]
+      },
+      {
+        "id": "2.4",
+        "title": "Ön saha",
+        "paragraphs": [
+          "Bir takımın ön sahası rakibinin sepetini, arkalığın iç tarafını ve rakibinin sepetinin arkasındaki dip",
+          "çizgiyle sınırlı olan sahası ile kenar çizgiler ve orta çizginin rakibinin sepetine yakın olan iç",
+          "kenarını içerir."
+        ]
+      },
+      {
+        "id": "2.5",
+        "title": "Çizgiler",
+        "paragraphs": [
+          "Tüm çizgiler aynı renk ve beyaz ya da diğer kontrast renklerde, 5 cm genişliğinde ve açıkça",
+          "görülebilir çizilecektir.",
+          "2.5.1 Sınır çizgisi",
+          "Saha, dip çizgileri ve kenar çizgileri içeren bir sınır çizgisiyle sınırlandırılacaktır. Bu çizgiler",
+          "sahanın parçası değildir.",
+          "Takım sırasında oturan başantrenör, birinci yardımcı antrenör, yedek oyuncular, oyun dışı",
+          "oyuncular ve delegasyon üyeleri dahil herhangi bir engel, sahadan en az 2 m uzaklıkta olacaktır.",
+          "2.5.2 Orta çizgi, orta daire ve serbest atış yarım daireleri",
+          "Orta çizgi, kenar çizgilerin orta noktasından, dip çizgilere paralel çizilecektir. Her kenar çizginin",
+          "0.15 m ötesine uzayacaktır. Orta çizgi geri sahanın parçasıdır. Orta daire, sahanın ortasına",
+          "çizilecek ve yarıçapı, dairenin dış kenarından ölçüldüğünde 1.80 m olacaktır. Serbest atış yarım",
+          "daireleri sahaya, yarıçapı, dış kenarından ve serbest atış çizgilerinin orta noktasındaki",
+          "merkezlerinden ölçüldüğünde 1.80 m çizilecektir (Diyagram 3).",
+          "Diyagram 1 Sahanın tam boyutları",
+          "Diyagram 2 Saha ve Zemin",
+          "2.5.3 Serbest atış çizgileri ve kısıtlamalı alanlar, serbest atış ribaunt yerleri",
+          "Serbest atış çizgisi her dip çizgiye paralel çizilecektir. En uzak kenarı, dip çizginin iç kenarından",
+          "5.80 m uzaklıkta ve 3.60 m uzunluğunda olacaktır. Orta noktası 2 dip çizginin orta noktasını",
+          "birleştiren hayali çizgi üzerinde olacaktır.",
+          "Kısıtlamalı alanlar sahaya çizilmiş dip çizgilerle, uzatılmış serbest atış çizgileri ve dip çizgilerde",
+          "başlayan çizgilerle sınırlı, dış kenarları dip çizgilerin orta noktasından 2.45 m ve uzatılmış serbest",
+          "atış çizgisinin dış kenarlarında sona eren dikdörtgen alanlar olacaktır. Bu çizgiler dip çizgiler",
+          "hariç, kısıtlamalı alanın parçasıdır.",
+          "Serbest atışlar sırasında oyunculara ayrılan kısıtlamalı alanların kenarlarındaki serbest atış",
+          "ribaunt yerleri Diyagram 3’teki gibi çizilecektir.",
+          "2.5.4 3 sayı bölgesi",
+          "Takımın 3 sayı bölgesi (Diyagram 1 ve Diyagram 4), rakibin sepetine yakın olan bölge hariç,",
+          "sınırları aşağıda belirtilen saha alanını içeren bölümü kapsar.",
+          "• Dış kenarı, kenar çizgilerin iç kenarından 0.90 m olan, dip çizgiden ve dip çizgiye dik 2 paralel",
+          "• Rakibin sepetinin tam merkezinin altındaki zemin üzerindeki noktadan yayın dış kenarına",
+          "6.75 m yarıçaplı bir yay. Dip çizginin orta noktasının yakın kenarından sahada alanındaki",
+          "noktaya olan uzaklık 1.575 m dir. Yay, paralel çizgilerle birleştirilir.",
+          "2 sayı çizgisi, 3 sayı bölgesinin parçası değildir.",
+          "2.5.5 Takım sıra bölgeleri",
+          "Takım sıra bölgeleri Diyagram 1’de gösterildiği gibi sahanın dışında, 2 çizgi ile sınırlı olarak",
+          "işaretlenecektir.",
+          "Her takım sıra bölgesinde başantrenör, antrenör yardımcıları, yedek oyuncular, oyun dışı",
+          "oyuncular ve delegasyon üyeleri için16 oturma yeri bulunmalıdır. Diğer kişiler takım sırasının",
+          "en az 2 m arkasında olacaktır.",
+          "2.5.6 Topu oyuna sokma çizgileri",
+          "Hakem masasının karşısındaki kenar çizgiye, çizgilerin dış kenarı en yakın dip çizginin iç kenarına",
+          "8.325 m olan, 0.15 m uzunluğunda 2 çizgi çizilecektir.",
+          "2.5.7 Şarjsız yarım daire alanları",
+          "Şarjsız yarım daire alanları sahaya aşağıdakilerle sınırlı olarak çizilecektir.",
+          "• Sepetin tam merkezinin altındaki zemin üzerindeki noktadan yarım dairenin iç kenarına 1.25",
+          "m yarıçaplı bir yarım daire.",
+          "• İç kenarı sepetin tam merkezinin altındaki zemin üzerindeki noktadan 1.25 m uzaklıkta,",
+          "uzunluğu ve bitmesi dip çizginin dış kenarına 1.20 m uzaklıkta olan, dip çizgiye dik 2 paralel",
+          "çizgi ile birleştirilir.",
+          "Şarjsız yarım daire alanı paralel çizgilerin sonundan, direkt arkalığın ön kenarının altına hayali",
+          "çizgilerle tamamlanır.",
+          "Şarjsız yarım daire çizgileri, şarjsız yarım daire alanlarının parçasıdır.",
+          "Diyagram 3 Kısıtlamalı alan",
+          "Diyagram 4 2 sayılık / 3 sayılık atış bölgesi",
+          "2.6 Hakem masası ve oyuncu değişiklik sandalyelerinin konumları",
+          "1- Şut saati görevlisi 3- Komiser, eğer varsa",
+          "2- Süre görevlisi 4- Sayı görevlisi",
+          "X- Oyuncu değişiklik sandalyeleri 5- Yardımcı sayı görevlisi",
+          "Hakem masası ve sandalyeleri bir platformun üzerine yerleştirilmelidir. Sunucu ve/veya (varsa)",
+          "istatistikçiler masanın yan tarafında ve/veya arkasında oturabilir.",
+          "Diyagram 5 Hakem masası ve oyuncu değişiklik sandalyeleri"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "3",
+    "title": "Donanım",
+    "page": 12,
+    "intro": [
+      "Aşağıda belirtilen donanım gerekli olacaktır.",
+      "• Pota üniteleri",
+      "- Arkalıklar",
+      "- Çemberler (baskıya dayanıklı) ve filelerden oluşan sepetler",
+      "- Yastıklama dahil, arkalık destek yapıları",
+      "• Toplar",
+      "• Oyun saati",
+      "• Skorbord",
+      "• Şut saati",
+      "• Mola süresinin tutulması için kronometre ya da uygun (gözle görünür) bir donanım",
+      "(oyun saati değil)",
+      "• 2 ayrı, belirgin bir şekilde farklı ve yüksek sesli sinyaller, her biri",
+      "- Şut saati görevlisi,",
+      "- Süre görevlisi için",
+      "• Maç kağıdı",
+      "• Oyuncu faul göstergeleri",
+      "• Takım faul göstergeleri",
+      "• Pozisyon sırası oku",
+      "• Yeterli ışıklandırma",
+      "Basketbol Donanımı ile ilgili daha detaylı açıklama için, Basketbol Donanımı Ek’ ine bakınız.",
+      "KURAL ÜÇ – TAKIMLAR"
+    ],
+    "sections": []
+  },
+  {
+    "id": "4",
+    "title": "Takımlar",
+    "page": 13,
+    "intro": [],
+    "sections": [
+      {
+        "id": "4.1",
+        "title": "Tanım",
+        "paragraphs": [
+          "4.1.1 Bir takım üyesi, yaş sınırlamaları dahil, yarışmanın organizasyon biriminin talimatlarına göre bir",
+          "takım için oynama iznini alan kişidir.",
+          "4.1.2 Bir takım üyesinin oyun başlamadan önce ismi maç kağıdında yer aldığında, diskalifiye",
+          "edilmediği ve 5 faul almadığı sürece oynama hakkı vardır.",
+          "4.1.3 Oyun süresince bir takım üyesi:",
+          "• Sahada olan ve oynama hakkı bulunan bir oyuncudur.",
+          "• Sahada olmayan ancak oynama hakkı bulunan, bir yedek oyuncudur.",
+          "• 5 faul alan ve oynama hakkı bulunmayan, bir oyun dışı oyuncudur.",
+          "4.1.4 Herhangi bir oyun arasında oynama hakkı olan tüm oyuncular, oyuncu olarak kabul edilir."
+        ]
+      },
+      {
+        "id": "4.2",
+        "title": "Kural",
+        "paragraphs": [
+          "4.2.1 Her takım aşağıdaki gibi oluşur:",
+          "• Bir kaptan dahil, oynama hakkı bulunan en fazla 12 oyuncu,",
+          "• Bir başantrenör,",
+          "• Takım sırasında oturabilecek yardımcı antrenör de dahil olmak en fazla 8 delegasyon üyesi.",
+          "Bir takımın antrenör yardımcıları olması halinde, birinci yardımcı antrenör sayı cetveline",
+          "yazılacaktır.",
+          "4.2.2 Oyun süresince her takımdan 5 takım üyesi sahada bulunacak ve değiştirilebilecektir.",
+          "4.2.3 Aşağıdaki durumlarda bir yedek oyuncu ”oyuncu” ve bir oyuncu, yedek olur:",
+          "• Hakem, bir yedek oyuncuyu “resmi değişiklik işaretiyle” sahaya girmeye çağırdığında,",
+          "• Bir mola ya da bir oyun arasında yedek oyuncu, süre görevlisinden değişiklik istediğinde"
+        ]
+      },
+      {
+        "id": "4.3",
+        "title": "Formalar",
+        "paragraphs": [
+          "4.3.1 Tüm takım üyelerinin forması şu şekilde oluşacaktır:",
+          "• Şortlar gibi önü ve arkası aynı hakim renkte formalar. Formalar kolluysa, dirseğin üzerinde",
+          "bitmelidir. Uzun kollu formalara izin verilmemektedir.",
+          "Tüm oyuncular formalarını, şortlarının içine sokmalıdırlar. Tek parça formaya izin verilir.",
+          "• Formalar gibi önü ve arkası aynı hakim renkte şortlar. Şortlar dizin üstünde bitmelidir.",
+          "• Tüm takım üyeleri için aynı hakim renkte çoraplar. Çoraplar görünür olmalıdır.",
+          "4.3.2 Her takım üyesi, önünde ve arkasında, formanın rengiyle kontrast düz renk numaralı forma",
+          "giyecektir.",
+          "Numaralar açıkça görülebilecek ve:",
+          "• Arkadaki numaralar en az 16 cm yükseklikte olacaktır.",
+          "• Öndeki numaralar en az 8 cm yükseklikte olacaktır.",
+          "• Bütün numaralar en az 2 cm genişlikte olacaktır.",
+          "• Takımlar sadece 0 ve 00 ile 1 den 99 kadar olan numaraları kullanabilir.",
+          "• Aynı takımın oyuncuları, aynı numaraları giymeyeceklerdir.",
+          "• Herhangi bir reklam ya da logo, numaralardan en az 4 cm uzaklıkta olacaktır.",
+          "4.3.3 Takımların en az 2 set forması olmalıdır ve:",
+          "• Programdaki birinci takım (ev sahibi takım) açık renk (tercihen beyaz) formalar giyecektir.",
+          "• Programdaki ikinci takım (konuk takım) koyu renk formalar giyecektir.",
+          "• Ancak 2 takım anlaşmışsa, formalarının renklerini değiştirebilirler.",
+          "4.4 Diğer ekipmanlar",
+          "4.4.1 Oyuncuların kullandığı tüm ekipmanlar, oyun için uygun olmalıdır. Oyuncunun boyunu ya da",
+          "uzanmasını artıracak ya da haksız avantaj sağlayacak şekilde dizayn edilmiş herhangi bir",
+          "donanıma izin verilmez.",
+          "4.4.2 Oyuncular, diğer oyuncuların yaralanmasına neden olabilecek ekipman (objeler)",
+          "kullanmayacaktır.",
+          "• Aşağıdakilere izin verilmez:",
+          "- Parmak, el, bilek, dirsek ya da önkol koruyucuları, koruyucu başlık, deri, plastik, bükülgen",
+          "(yumuşak) plastik, metal ya da yumuşak kaplamalı olsa bile, diğer sert maddelerden",
+          "yapılmış alçı ya da atel,",
+          "- Kesebilecek ya da deriyi aşındırabilecek objeler (tırnaklar yakından kesilmelidir)",
+          "- Saç aksesuarları ve takı",
+          "• Aşağıdakilere izin verilir:",
+          "- Yeterince kaplanmışsa omuz, üst kol, kalça ya da alt bacak koruyucu donanımı",
+          "- Kompresyon malzemelerinden yapılmış fanilalar/atletler ve iç şortlar da dahil olmak",
+          "üzere kol ve bacak giysileri.",
+          "- Başörtüsü. Yüzün herhangi bir kısmını (gözler, burun, dudaklar, vs.) tamamen ya da",
+          "kısmen kapatamaz ve bunu kullanan oyuncu ve/veya diğer oyuncular için tehlike",
+          "oluşturamaz. Başörtüsünde, yüzün ve/veya boynun etrafında açma/kapama bölümleri",
+          "olamaz ve yüzeyinden çıkan herhangi bir parça olamaz",
+          "- Dizlik",
+          "- Sert maddeden yapılmış olsa bile, sakat burun için koruyucu",
+          "- Renksiz saydam ağızlık",
+          "- Diğer oyuncuları tehlikeye sokmayacaksa, gözlük",
+          "- En fazla 10 cm genişliğinde, tekstil materyalinden oluşan bileklik ve saç bandı",
+          "- Kol, omuz, bacak, vs. bantları",
+          "- Ayak bileklikleri",
+          "- ******Takımın tüm oyuncuları aynı hakim renkte kol ve bacak için giyilebilir kompresyon",
+          "malzemeleri, başörtüsü, bileklik ve saç bandı ya da bantları kullanmalıdır.",
+          "4.4.3 Maç sırasında bir oyuncu herhangi bir renk kombinasyonunda ayakkabı giyebilir. Yanıp sönen",
+          "ışıklara, yansıyıcı materyallere ve diğer süslemelere izin verilmez.",
+          "4.4.4 Maç sırasında bir oyuncu sadece vücudu üzerinde değil, saçında ya da herhangi bir şekilde",
+          "herhangi bir ticari, reklam ya da yardım amaçlı isim, marka, logo ya da diğer tanıtımları",
+          "gösteremez.",
+          "4.4.5 Bu maddelerde belirtilmemiş herhangi bir donanım, FIBA Teknik Komisyonu tarafından",
+          "onaylanmalıdır."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "5",
+    "title": "Oyuncular: Sakatlanma ve yardım",
+    "page": 16,
+    "intro": [],
+    "sections": [
+      {
+        "id": "5.1",
+        "title": "",
+        "paragraphs": [
+          "5.1 Oyuncuların sakatlanması durumunda hakemler, oyunu durdurabilirler.",
+          "5.2 Bir sakatlık olduğunda top canlıysa hakem, hiçbir takımı dezavantajlı duruma düşürmemek",
+          "şartıyla topu kontrolünde bulunduran takım şut atana, topun kontrolünü kaybedene, oyunu",
+          "yavaşlatana ya da top ölene kadar düdüğünü çalmayacaktır. Sakatlanan bir oyuncuyu korumak",
+          "gerekliyse hakemler, oyunu hemen durdurabilirler.",
+          "5.3 Sakatlanan oyuncu hemen oynamaya devam edemezse (yaklaşık 15 saniye içinde) veya bir tedavi",
+          "görürse ya da kendi takımının başantrenörü, yardımcı antrenörleri, yedek veya oyun dışı kalmış",
+          "oyunculardan, takım üyelerinden ve/veya beraberindeki delegasyon üyelerinden herhangi bir",
+          "yardım alırsa, bu takım sahada 5’ten daha az oyuncu ile kalmadıkça değiştirmelidir.",
+          "5.4 Başantrenör, antrenör yardımcıları, yedekler, oyun dışı oyuncular ve beraberindeki delegasyon",
+          "üyeleri ancak bir hakemin izniyle sakatlanan bir oyuncuya, değiştirilmeden önce eşlik etmek için",
+          "sahaya girebilirler.",
+          "5.5 Doktorun değerlendirmesine göre sakatlanan oyuncuya acil tıbbi tedavi gerekirse bir doktor, bir",
+          "hakemden izin almadan sahaya girebilir.",
+          "5.6 Oyun sırasında kanaması ya da açık yarası olan oyuncu değiştirilmelidir. Bu oyuncu ancak",
+          "kanaması durdurulduktan, yaralı bölgesi ya da açık yarası tümüyle ve güvenli şekilde",
+          "kapatıldıktan sonra sahaya dönebilir.",
+          "5.7 Sakatlanan ya da kanaması ya da açık yarası olan oyuncu, herhangi bir takım tarafından alınan",
+          "mola sırasında, sayı görevlisi oyuncu değişikliği işaretini vermeden önce iyileşirse, oynamaya",
+          "devam edebilir.",
+          "5.8 Başantrenör tarafından oyuna başlayacağı belirtilen ya da serbest atışlar arasında tedavi gören",
+          "oyuncular, sakatlanma durumunda değiştirilebilir. Bu durumda rakibi de isterse, aynı sayıda",
+          "oyuncu değiştirebilir."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "6",
+    "title": "Kaptan: Görevleri ve yetkileri",
+    "page": 16,
+    "intro": [],
+    "sections": [
+      {
+        "id": "6.1",
+        "title": "",
+        "paragraphs": [
+          "6.1 Kaptan (CAP), sahada takımını temsil etmek üzere başantrenörü tarafından belirlenen bir",
+          "oyuncudur. Oyun sırasında, sadece top ölü olduğunda ve oyun saati durduğunda, saygılı bir",
+          "tavırla, bilgi almak için hakemlerle iletişim kurabilir.",
+          "6.2 Takımı maçın sonucuna itiraz ederse, kaptan maçın bitiminden sonra 15 dakika içinde başhakemi",
+          "bilgilendirecek ve maç kağıdındaki “İtiraz durumunda kaptanın imzası” bölümünü imzalayacaktır."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "7",
+    "title": "Başantrenör ve birinci yardımcı antrenör: Görevleri ve yetkileri",
+    "page": 17,
+    "intro": [],
+    "sections": [
+      {
+        "id": "7.1",
+        "title": "",
+        "paragraphs": [
+          "7.1 Oyunun belirlenmiş başlama saatinden en az 40 dakika önce, her başantrenör ya da temsilcisi sayı",
+          "görevlisine, maçta oynama hakkı olan takım üyelerinin isim ve numaraları ile takımın kaptanının,",
+          "başantrenör ve birinci yardımcı antrenörün isimlerini içeren bir liste verecektir. Maç kağıdında",
+          "ismi bulunan tüm takım üyeleri oyunun başlamasından sonra gelseler bile oynama hakları vardır.",
+          "7.2 Oyunun belirlenmiş başlama saatinden en az 10 dakika önce, her başantrenör, takım üyelerinin",
+          "isim ve numaraları ile başantrenör ve birinci yardımcı antrenörün isimlerinin doğruluğunu, maç",
+          "kağıdını imzalayarak teyit edecektir. Başantrenör aynı zamanda oyuna başlayacak 5 oyuncuyu da",
+          "işaretleyecektir. İlk olarak bu bilgiyi A takımı başantrenörü verecektir.",
+          "7.3 Başantrenörler, antrenör yardımcıları, yedek oyuncular, oyun dışı oyuncular ve delegasyon",
+          "üyeleri, takım sırasında oturmasına ve kendi takım sırası alanı içerisinde kalmasına izin verilen",
+          "kişilerdir. Oyun süresinde tüm yedek oyuncular, oyun dışı oyuncular ve delegasyon üyeleri",
+          "oturacaklardır.",
+          "7.4 Oyun sırasında başantrenör ya da birinci yardımcı antrenör sadece top öldüğünde ve oyun saati",
+          "durduğunda istatistiksel bilgi almak için hakem masasına gidebilirler.",
+          "7.5 Başantrenör oyun sırasında, sadece top öldüğünde ve oyun saati durduğunda bilgi almak için",
+          "saygılı bir biçimde hakemlerle iletişim kurabilir.",
+          "7.6 Herhangi bir zamanda sadece birisi olmak üzere, oyun sırasında başantrenörün ya da birinci",
+          "yardımcı antrenörün ayakta durmasına izin verilir. Oyun sırasında kendi takım sırası bölgesi içinde",
+          "kalarak oyuncularına sözlü direktif verebilirler. Birinci yardımcı antrenör hakemlerle iletişim",
+          "kuramayacaktır.",
+          "7.7 Eğer birinci yardımcı antrenör varsa ismi oyun başlamadan önce maç kağıdına yazılmalıdır (imza",
+          "atması gerekli değildir). Başantrenör herhangi bir nedenle devam edemezse, birinci yardımcı",
+          "antrenör başantrenörün tüm görevlerini ve yetkilerini üstlenecektir.",
+          "7.8 Kaptan sahayı terk ettiğinde başantrenör sahada kaptan olarak görev yapacak oyuncunun",
+          "numarasını bir hakeme bildirecektir.",
+          "7.9 Başantrenör bulunmuyorsa ya da oyuna devam edemezse ve maç kağıdına yazılmış birinci",
+          "yardımcı antrenör yoksa (ya da o da devam edemezse) kaptan, oyuncu başantrenör olarak görev",
+          "yapacaktır. Eğer kaptan sahayı terk etmek durumundaysa, oyuncu başantrenör olarak görev",
+          "yapmaya devam edebilir. Eğer kendisi diskalifiye edici faul ya da sakatlıktan dolayı oyuncu",
+          "başantrenör olarak görev yapamayacaksa, kaptanla değişen yedek oyuncu, oyuncu başantrenör",
+          "olarak görevini sürdürebilir.",
+          "7.10 Serbest atışı atacak oyuncunun kurallarla belirlenmediği durumlarda takımının serbest atışı",
+          "atacak oyuncusunu başantrenör belirleyecektir.",
+          "KURAL DÖRT – OYUN DÜZENLEMELERİ"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "8",
+    "title": "Oyun süresi, eşitlik ve uzatma",
+    "page": 18,
+    "intro": [],
+    "sections": [
+      {
+        "id": "8.1",
+        "title": "",
+        "paragraphs": [
+          "8.1 Oyun, her biri 10 dakikalık 4 çeyrekten oluşacaktır.",
+          "8.2 Oyunun belirlenmiş başlama saatinden 20 dakika önce bir oyun arası olacaktır.",
+          "8.3 Birinci ile ikinci çeyrek arasında (birinci devre), üçüncü ile dördüncü çeyrek arasında (ikinci devre)",
+          "ve her uzatmadan önce 2 dakikalık oyun arası olacaktır."
+        ]
+      },
+      {
+        "id": "8.4",
+        "title": "15 dakikalık bir devre arası olacaktır.",
+        "paragraphs": [
+          "8.5 Oyun arası şu durumlarda başlar:",
+          "• Oyunun belirlenmiş başlama saatinden 20 dakika önce",
+          "• Oyun saati çeyreğin ya da uzatmanın sonu için sesli işaret verdiğinde",
+          "8.6 Oyun arası şu durumlarda sona erer:",
+          "• Birinci çeyreğin başındaki hava atışında top, başhakemin el ya da ellerini terk ettiğinde",
+          "• Diğer tüm çeyreklerin ve uzatmanın başında top, oyuna sokacak oyuncunun kullanımında",
+          "olduğunda",
+          "8.7 Dördüncü çeyrek sonunda skor eşitse oyun, eşitlik bozulana kadar her biri 5 dakika süren",
+          "uzatmalarla devam edecektir.",
+          "İçerde ve dışarıda 2 maçlı toplam sayı serili yarışma sisteminde, iki maçın toplam skoru 2. maçın",
+          "sonunda eşitse bu maç, eşitlik bozuluncaya kadar her biri 5 dakika süren uzatmalarla devam",
+          "edecektir.",
+          "8.8 Bir çeyreğin ve uzatmanın sonuna doğru bir faul yapılırsa, kalan oyun süresini hakem",
+          "belirleyecektir. Oyun saatinde en az 0.1 saniye gösterilecektir.",
+          "8.9 Eğer oyun arasında teknik, sportmenlik dışı veya diskalifiye edici bir faul yapılırsa olası serbest",
+          "atış ya da atışlar, takip eden çeyreğin veya uzatmanın başlamasından önce yönetilecektir."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "9",
+    "title": "Bir çeyreğin, uzatmanın ya da oyunun başlaması ve sona ermesi",
+    "page": 18,
+    "intro": [],
+    "sections": [
+      {
+        "id": "9.1",
+        "title": "",
+        "paragraphs": [
+          "9.1 Birinci çeyrek, başhakemin orta dairede hava atışı atmak için top el ya da ellerini terk ettiğinde",
+          "9.2 Diğer tüm çeyrekler ya da uzatmalarda top, topu oyuna sokacak oyuncunun kullanımında",
+          "olduğunda başlar.",
+          "9.3 Takımlardan birisi ya da her ikisi oynamaya hazır 5 oyuncu ile sahada bulunmuyorsa oyun",
+          "başlayamaz.",
+          "9.4 Tüm maçlarda programda adı yazılı olan ilk takım (ev sahibi takım) hakem masasından sahaya",
+          "doğru yüzü dönük olarak bakılırken;",
+          "• Takım sıra bölgesi, hakem masasının sol tarafındadır,",
+          "• Oyun öncesi ısınma alanı kendi takım sırası önündeki yarı sahadır.",
+          "Ancak, her iki takım anlaşırsa ilk devre için takım sıralarını ve/veya ısınmak için kullandıkları yarı",
+          "sahalarını değiştirebilirler.",
+          "9.5 Takımlar ikinci devrede, ısınmak için kullandıkları yarı sahalarını ve sepetlerini değiştireceklerdir.",
+          "9.6 Tüm uzatmalarda takımlar, dördüncü çeyrekteki aynı sepetlere doğru oynamaya devam",
+          "edeceklerdir.",
+          "9.7 Bir çeyrek, uzatma ya da oyun, oyun saati çeyreğin ya da uzatmanın sonu için sesli işaret",
+          "verdiğinde sona erecektir. Arkalığın çevresi kırmızı ışıkla donatıldığında ışık, oyun saatinin sesli",
+          "işaretinden öncelikli olacaktır."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "10",
+    "title": "Topun statüsü",
+    "page": 19,
+    "intro": [],
+    "sections": [
+      {
+        "id": "10.1",
+        "title": "Top canlı veya ölü olabilir.",
+        "paragraphs": [
+          "10.2 Aşağıdaki durumlarda top canlanır:",
+          "• Hava atışı sırasında top, başhakemin el ya da ellerini terk ettiğinde",
+          "• Bir serbest atış sırasında top, serbest atışı kullanacak oyuncunun kullanımında olduğunda",
+          "• Topun oyuna sokulması sırasında top, topu oyuna sokacak oyuncunun kullanımında",
+          "olduğunda",
+          "10.3 Şu durumlarda top ölür:",
+          "• Herhangi bir şut ya da serbest atış sayı olursa",
+          "• Top canlıyken bir hakem düdük çaldığında",
+          "• Serbest atışta topun sepete girmeyeceği belli olduğunda ve atıştan sonra:",
+          "- Başka serbest atış ya da atışlar olduğunda.",
+          "- Başka bir ceza olduğunda (serbest atış ya da atışlar ve/veya topu oyuna sokma hakkı).",
+          "• Oyun saati, çeyreğin ya da uzatmanın sonu için sesli işaret verdiğinde",
+          "• Bir takım topu kontrol ederken, şut saati sesli işaret verdiğinde",
+          "• Sayı amacıyla yapılan bir atışta top havadayken, herhangi bir takımın oyuncusu aşağıdaki",
+          "durumlardan sonra topa temas ettiğinde:",
+          "- Bir hakem düdüğünü çaldığında.",
+          "- Oyun saati çeyreğin ya da uzatmanın sonu için sesli işaret verdiğinde.",
+          "- Şut saati sesli işaret verdiğinde.",
+          "10.4 Aşağıdaki durumlarda top ölmez ve sayı olduysa geçerli sayılır:",
+          "• Sayı amacıyla yapılan bir atışta top havada olduğunda ve:",
+          "- Bir hakem düdüğünü çaldığında.",
+          "- Oyun saati çeyreğin ya da uzatmanın sonu için sesli işaret verdiğinde.",
+          "- Şut saati sesli işaret verdiğinde.",
+          "• Serbest atış sırasında top havadayken ve bir hakem, serbest atışı atan oyuncu haricinde bir",
+          "kural ihlali için düdüğünü çaldığında.",
+          "• Herhangi bir rakip oyuncuya ya da rakibin takım sırasında oturmasına izin verilen herhangi bir",
+          "kişinin yaptığı faulden önce top, sahadan sayı amacıyla atış yapan oyuncunun",
+          "kontrolündedir.",
+          "Bir hakem düdüğü çaldıktan sonra tamamiyle yeni bir atış hali meydana gelirse bu hüküm",
+          "uygulanmaz ve sayı geçerli sayılmaz."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "11",
+    "title": "Bir oyuncunun ve bir hakemin yeri",
+    "page": 19,
+    "intro": [],
+    "sections": [
+      {
+        "id": "11.1",
+        "title": "",
+        "paragraphs": [
+          "11.1 Bir oyuncunun yeri, zemine temas ettiği yere göre belirlenir.",
+          "Oyuncu havadayken, zemine en son temas ettiği andaki statüsünü korur. Bu, sınır çizgilerini, orta",
+          "çizgiyi, 3 sayı çizgisini, serbest atış çizgisini ve kısıtlamalı alanı belirleyen çizgileri ve şarjsız",
+          "yarım daireyi belirleyen çizgileri içerir.",
+          "11.2 Bir hakemin yeri, bir oyuncu gibi aynı şekilde belirlenir. Top bir hakeme temas ettiğinde, hakemin",
+          "bulunduğu yerdeki zemine temas etmesiyle aynıdır."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "12",
+    "title": "Hava atışı ve pozisyon sırası",
+    "page": 20,
+    "intro": [],
+    "sections": [
+      {
+        "id": "12.1",
+        "title": "Hava atışının tanımı",
+        "paragraphs": [
+          "12.1.1 Bir hava atışı, hakemin herhangi 2 rakip arasında topu havaya atmasıyla olur.",
+          "12.1.2 Tutulmuş top, rakip takımlardan bir veya daha fazla oyuncunun bir ya da iki eli sıkıca topun",
+          "üzerinde olduğunda, hiçbir oyuncunun aşırı güç harcamadan kontrolü ele geçirememesi",
+          "durumunda oluşur."
+        ]
+      },
+      {
+        "id": "12.2",
+        "title": "Hava atışı prosedürü",
+        "paragraphs": [
+          "12.2.1 Hava atışına katılacak her oyuncu, ayakları orta dairenin kendi sepetine yakın olan yarısının içinde",
+          "olmak üzere bir ayağı orta çizgiye yakın olarak duracaktır.",
+          "12.2.2 Bir rakip oyuncu aralarına girmek isterse takım arkadaşları dairenin çevresinde yan yana",
+          "pozisyonda duramazlar.",
+          "12.2.3 Daha sonra hakem topu 2 rakip arasında yukarı doğru dik olarak, herhangi birisinin sıçrayarak",
+          "yetişemeyeceği bir yüksekliğe atacaktır.",
+          "12.2.4 Top aşağıya doğru inişe geçtikten sonra sıçrayan oyunculardan en az birisi tarafından el ya da",
+          "elleriyle tiplenmelidir.",
+          "12.2.5 Top kurallara uygun olarak tiplenene kadar hava atışına sıçrayacak oyunculardan hiçbirisi",
+          "pozisyonunu terk etmeyecektir.",
+          "12.2.6 Hava atışına katılacak oyunculardan hiçbirisi, top, diğer oyunculara veya sahaya temas edene",
+          "kadar topu tutamaz ya da ikiden fazla tipleyemez.",
+          "12.2.7 Top, hava atışına katılan en az bir oyuncu tarafından tiplenmezse hava atışı tekrar edilecektir.",
+          "12.2.8 Hava atışına katılmayan diğer oyuncuların vücutlarının herhangi bir kısmı, top tiplenmeden önce",
+          "daire çizgisinin (silindir) üzerinde ya da diğer tarafında olamaz.",
+          "Madde 12.2.1, 12.2.4, 12.2.5, 12.2.6 ve 12.2.8’e uyulmaması ihlaldir."
+        ]
+      },
+      {
+        "id": "12.3",
+        "title": "Cezası",
+        "paragraphs": [
+          "Top, doğrudan arkalığın tam arkası hariç, ihlale en yakın yerden oyuna sokulması için rakiplere",
+          "verilecektir."
+        ]
+      },
+      {
+        "id": "12.4",
+        "title": "Hava atışı durumları",
+        "paragraphs": [
+          "Bir hava atışı şu durumlarda oluşur:",
+          "• Tutulmuş top kararı verildiğinde",
+          "• Top saha dışına çıktığında ve hakemler hangi rakibin topa son temas ettiği konusunda",
+          "kararsız olduklarında ya da anlaşamadıklarında",
+          "• Başarısız bir son serbest atış sırasında çift serbest atış ihlali olduğunda",
+          "• Aşağıdaki durumlar haricinde canlı bir top çemberle arkalık arasına sıkıştığında:",
+          "- Serbest atışlar arasında",
+          "- Son serbest atışı sonrası takımın ön sahasında oyuna sokma çizgisinden topun oyuna",
+          "sokulması durumunda",
+          "• Top hiçbir takımın kontrolünde değilken ya da hiçbir takımın topu kontrol hakkı yokken top",
+          "öldüğünde",
+          "• İki takıma verilen eşit cezaların birbirini götürmesi sonucu yönetecek faul cezası",
+          "kalmadığında ve ilk faul veya ihlal kararından önce top hiçbir takımın kontrolünde",
+          "olmadığında ya da kontrol hakkı olmadığında",
+          "• Birinci çeyrek hariç, diğer tüm çeyreklerin ve tüm uzatmaların başlangıcında"
+        ]
+      },
+      {
+        "id": "12.5",
+        "title": "Pozisyon sırası tanımı",
+        "paragraphs": [
+          "Pozisyon sırası, bir hava atışı yerine topun sınır çizgileri dışından oyuna sokulmak suretiyle",
+          "canlanması yöntemidir."
+        ]
+      },
+      {
+        "id": "12.6",
+        "title": "Pozisyon sırası prosedürü",
+        "paragraphs": [
+          "12.6.1 Tüm hava atışı durumlarında takımlar, doğrudan arkalığın arkası hariç hava atışı durumunun",
+          "meydana geldiği en yakın yerden pozisyon sırası hakkına göre topu oyuna sokma hakkına sahip",
+          "olacaklardır.",
+          "12.6.2 Hava atışından sonra canlı bir topun ilk takım kontrolünü kazanmamış olan takım, ilk pozisyon",
+          "sırasına göre topu oyuna sokma hakkına sahip olacaktır.",
+          "12.6.3 Herhangi bir çeyreğin ya da uzatmanın sonunda bir sonraki pozisyon sırası hakkına sahip olan",
+          "takım, yönetilmesi gereken başka serbest atışlar ya da topu oyuna sokma cezası yoksa, hakem",
+          "masasının karşısındaki orta çizginin uzantısından topu oyuna sokarak bir sonraki çeyreğe ya da",
+          "uzatmaya başlayacaktır.",
+          "12.6.4 Pozisyon sırası hakkına sahip olan takım, pozisyon sırası okunun rakibin sepetinin yönünde",
+          "olmasıyla belirlenecektir. Pozisyon sırasına göre topun oyuna sokulmasının sona ermesiyle,",
+          "pozisyon sırası okunun yönü hemen değiştirilecektir.",
+          "12.6.5 Pozisyon sırasına göre topun oyuna sokulması sırasında yapılan bir ihlal, o takımın pozisyon",
+          "sırasını kaybetmesine neden olur. İhlal yapan takımın rakibinin bir sonraki hava atışı durumunda,",
+          "topu oyuna sokma hakkı olduğunu gösteren pozisyon okunun yönü hemen değiştirilecektir.",
+          "Sonrasında oyun, ihlali yapan takımın rakibi tarafından, orijinal topu oyuna sokma noktasından",
+          "topu oyuna sokmasıyla devam edecektir.",
+          "12.6.6 Herhangi bir takımın yaptığı faul,",
+          "• Birinci çeyrek ya da uzatmalar dışındaki bir çeyreğin başlamasından önce, ya da",
+          "• Pozisyon sırasına göre topun oyuna sokulması sırasında,",
+          "topu oyuna sokma hakkına sahip olan takımın pozisyon sırasını kaybetmesine neden olmaz."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "13",
+    "title": "Topla nasıl oynanır",
+    "page": 21,
+    "intro": [],
+    "sections": [
+      {
+        "id": "13.1",
+        "title": "Tanım",
+        "paragraphs": [
+          "13.1.1 Oyun sırasında top sadece el ya da ellerle oynanabilir ve bu kurallar çerçevesinde herhangi bir",
+          "yöne pas verilebilir, atılabilir, tiplenebilir, yuvarlanabilir veya dripling yapılabilir."
+        ]
+      },
+      {
+        "id": "13.2",
+        "title": "Kural",
+        "paragraphs": [
+          "Bir oyuncu topla koşmayacak, kasıtlı olarak topa dokunmayacak, bacağının herhangi bir kısmıyla",
+          "topa vurmayacak veya topu bloke etmeyecek ya da yumrukla vurmayacaktır.",
+          "Ancak kazara / istem dışı topun bacağa temas etmesi ya da bacağın herhangi bir kısmıyla topa",
+          "temas edilmesi ihlal değildir.",
+          "Madde 13.2’e uyulmaması ihlaldir."
+        ]
+      },
+      {
+        "id": "13.3",
+        "title": "Cezası",
+        "paragraphs": [
+          "Top, doğrudan arkalığın tam arkası hariç, ihlale en yakın yerden oyuna sokulması için rakiplere",
+          "verilecektir."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "14",
+    "title": "Topun kontrolü",
+    "page": 22,
+    "intro": [],
+    "sections": [
+      {
+        "id": "14.1",
+        "title": "Tanım",
+        "paragraphs": [
+          "14.1.1 Takım kontrolü, o takımın bir oyuncusunun canlı bir topu tutarak veya dripling yaparak kontrolüne",
+          "aldığında ya da canlı bir top kendi kullanımında olduğunda başlar.",
+          "14.1.2 Aşağıdaki durumlarda topun kontrolü devam eder:",
+          "• Canlı bir top o takımdan bir oyuncunun kontrolünde olduğunda.",
+          "• Top takım arkadaşları arasında pas verildiğinde.",
+          "14.1.3 Aşağıdaki durumlarda topun kontrolü sona erer:",
+          "• Bir rakip kontrolü kazandığında.",
+          "• Top öldüğünde.",
+          "• Top oyuncunun el ya da ellerini, şut veya serbest atış için terk ettiğinde."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "15",
+    "title": "Atış halindeki oyuncu",
+    "page": 22,
+    "intro": [],
+    "sections": [
+      {
+        "id": "15.1",
+        "title": "Tanım",
+        "paragraphs": [
+          "15.1.1 Şut, sayı amacıyla veya serbest atıştan oyuncunun topu el ya da elleriyle tutması ve daha sonra",
+          "rakibinin sepetine doğru havaya atmasıdır.",
+          "Tipleme, sayı amacıyla topun el ya da ellerle rakibinin sepetine doğru yönlendirilmesidir.",
+          "Smaç, sayı amacıyla topun bir ya da iki elle rakibin sepetinin içine, aşağıya doğru zorlanmasıdır.",
+          "Sepete yönlenirken devam eden hareket ya da diğer hareketli şutlar, ilerlerken ya da driplingini",
+          "tamamladığında topu tutan ve sonrasında genelde yukarıya doğru, atış hareketine devam eden",
+          "oyuncunun bir aksiyonudur.",
+          "15.1.2 Atış hali:",
+          "• Bir hakemin değerlendirmesine göre oyuncunun, topu rakibinin sepetine doğru yukarıya",
+          "hareket ettirmesiyle başlar.",
+          "• Top oyuncunun el ya da ellerini terk ettiğinde veya eğer tamamen yeni bir atış hali durumuna",
+          "başladıysa ve şut atan oyuncunun havada olması durumunda, iki ayağı zemine temas",
+          "ettiğinde biter.",
+          "15.1.3 Sepete doğru yönelen devam eden hareketlerdeki atış hali ve diğer hareketli şut durumları:",
+          "• Dripling tamamlanarak, top oyuncunun el ya da ellerinde durduğunda veya havada",
+          "tutulduğunda ve hakemin değerlendirmesine göre oyuncunun sahadan atış için topun",
+          "el veya ellerini terk etmesinden önce şut hareketine başladığında başlar.",
+          "• Top oyuncunun el ya da ellerini terk ettiğinde veya tamamen yeni bir atış haline başlarsa",
+          "ve şut atan oyuncunun havada olması durumunda, her iki ayağı zemine temas ettiğinde biter.",
+          "15.1.4 Kurallara uygun olarak atılan adım sayısı ile atış durumu arasında bir ilişki yoktur.",
+          "15.1.5 Atış hali sırasında oyuncunun kol ya da kolları, sayı yapmasının engellenmesi amacıyla rakibi",
+          "tarafından tutulabilir. Bu durumda topun, oyuncunun el ya da ellerini terk etmesi önemli değildir.",
+          "15.1.6 Bir oyuncu atış halindeyken ve kendisine faul yapıldıktan sonra topu pas olarak atarsa, artık atış",
+          "halinde değildir."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "16",
+    "title": "Sayı: Zamanı ve Değeri",
+    "page": 23,
+    "intro": [],
+    "sections": [
+      {
+        "id": "16.1",
+        "title": "Tanım",
+        "paragraphs": [
+          "16.1.1 Canlı bir top sepete üstten girdiğinde ve sepetin içinde kaldığında ya da tümüyle sepetten",
+          "geçtiğinde sayı olur.",
+          "16.1.2 Topun küçük bir kısmı sepetin içinde ve çember seviyesinin altında olduğunda, top sepetin içinde",
+          "kabul edilir."
+        ]
+      },
+      {
+        "id": "16.2",
+        "title": "Kural",
+        "paragraphs": [
+          "16.2.1 Top, hücum edilen rakibin sepetine girdiğinde aşağıdaki gibi sayı kaydedilir:",
+          "• Serbest atıştan yapıldığında 1 sayı",
+          "• 2 sayılık bölgeden yapıldığında 2 sayı",
+          "• 3 sayılık bölgeden yapıldığında 3 sayı",
+          "• Son serbest atışta top çembere temas ettikten sonra ve sepete girmeden önce, bir hücum ya",
+          "da savunma oyuncusu tarafından kurallara uygun olarak topa temas edildiğinde 2 sayı sayılır.",
+          "16.2.2 Bir oyuncu kazara/istem dışı olarak kendi sepetine sayı yaparsa 2 sayı verilir ve rakip takımın",
+          "sahadaki kaptanı yapmış gibi kaydedilir.",
+          "16.2.3 Bir oyuncu bilerek kendi sepetine sayı yaparsa bu bir ihlaldir ve sayı geçerli sayılmaz.",
+          "16.2.4 Bir oyuncu topun tamamının sepete alttan girmesine neden olursa, bu bir ihlaldir.",
+          "16.2.5 Bir oyuncunun topun oyuna sokulmasında ya da son serbest atış sonrasındaki ribauntta topun",
+          "kontrolünü sağlaması ve bir atış girişiminde bulunabilmesi için oyun saati 0.3 (saniyenin onda",
+          "3’ü) ya da daha fazla göstermelidir. Eğer oyun saati 0.2 ya da 0.1 gösterirse geçerli atış tipi ancak",
+          "tipleyerek ya da doğrudan topu smaç yaparak, oyuncunun el ya da ellerinin oyun saati veya şut",
+          "saati 0.0'ı gösterdiğinde artık topa dokunmaması şartıyla olur."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "17",
+    "title": "Topun oyuna sokulması",
+    "page": 24,
+    "intro": [],
+    "sections": [
+      {
+        "id": "17.1",
+        "title": "Tanım",
+        "paragraphs": [
+          "17.1.1 Top, saha dışında bulunan topu oyuna sokacak oyuncu tarafından sahaya doğru pas olarak",
+          "atıldığında, topun oyuna sokulması oluşur.",
+          "17.1.2 Topun oyuna sokulması durumu ;",
+          "• Topu oyuna sokacak olan oyuncunun kullanımındayken başlar.",
+          "• Şu durumlarda sona erer:",
+          "- Top, bir oyuncuya temas eder ya da bir oyuncu tarafından kurallara uygun olarak",
+          "dokunulursa.",
+          "- Topu oyuna sokan takım bir ihlal yaparsa.",
+          "- Topun oyuna sokulması sırasında top çemberle arkalık arasına sıkışırsa."
+        ]
+      },
+      {
+        "id": "17.2",
+        "title": "Prosedür",
+        "paragraphs": [
+          "17.2.1 Bir hakem topu, oyuna sokacak oyuncuya elden vermeli ya da yere koymalıdır.",
+          "Aşağıdakileri sağlamak koşuluyla topu oyuncuya atabilir veya sektirme pas verebilir:",
+          "• Hakem, topu oyuna sokacak olan oyuncudan 4 metreden fazla uzak olmamalıdır.",
+          "• Topu oyuna sokacak oyuncu, hakem tarafından belirlenen doğru yerde olmalıdır.",
+          "17.2.2 Oyuncu, doğrudan arkalığın arkası hariç ihlalin olduğu ya da oyunun durdurulduğu en yakın",
+          "yerden topu oyuna sokacaktır.",
+          "17.2.3 Birinci çeyrek hariç, tüm çeyreklerin ve tüm uzatmaların başlangıcında topun oyuna sokulması,",
+          "hakem masasının karşısındaki orta çizgi uzantısından yönetilecektir.",
+          "Topu oyuna sokacak oyuncunun birer ayağı hakem masasının karşısındaki orta çizgi uzantısının iki",
+          "tarafında olacak ve sahanın herhangi bir yerinde bulunan takım arkadaşına pas verme hakkına",
+          "sahip olacaktır.",
+          "17.2.4 Oyun saati dördüncü çeyrekte ve her uzatmada 2:00 dakika veya daha az gösterdiğinde topu geri",
+          "sahasından oyuna sokma hakkı olan takım tarafından alınan bir mola sonrasında takımın",
+          "başantrenörü oyunun, takımın ön sahasındaki oyuna sokma çizgisinden ya da takımın geri",
+          "sahasındaki oyun durdurulduğunda topun olduğu en yakın yerden topun oyuna sokulmasıyla",
+          "devam etmesine karar verme hakkına sahiptir.",
+          "17.2.5 Canlı bir topu kontrol eden ya da kontrol etme hakkı olan takımın bir oyuncusunun yaptığı bir",
+          "kişisel faul sonrasında oyun, ihlalin olduğu en yakın yerden topun oyuna sokulmasıyla devam",
+          "edecektir.",
+          "17.2.6 Bir teknik faul sonrasında oyun, bu kurallarda aksi belirtilmedikçe teknik faul çalındığında topun",
+          "olduğu en yakın yerden topun oyuna sokulmasıyla devam edecektir.",
+          "17.2.7 Bir sportmenlik dışı ya da diskalifiye edici faul sonrasında oyun, bu kurallarda aksi belirtilmedikçe",
+          "takımın ön sahasındaki topu oyuna sokma çizgisinden topun oyuna sokulmasıyla devam",
+          "edecektir.",
+          "17.2.8 Bir kavga sonrasında oyun, Md. 39’da belirtildiği gibi devam edecektir.",
+          "17.2.9 Top sepete girdiğinde, ancak sahadan yapılan atış ya da son serbest atış geçerli olmadığında",
+          "oyun, serbest atış çizgisinin uzantısından topun oyuna sokulmasıyla devam edecektir.",
+          "17.2.10 Sahadan yapılan başarılı bir atış ya da başarılı son serbest atış sonrasında:",
+          "• Sayı yiyen takımdan herhangi bir oyuncu, takımının dip çizgisinin arkasındaki herhangi bir",
+          "yerinden topu oyuna sokacaktır. Bu aynı zamanda, sahadan yapılan başarılı bir atış ya da",
+          "başarılı son serbest atışı takiben, bir mola ya da oyunun başka bir nedenle kesintiye",
+          "uğramasından sonra hakemin topu oyuna sokacak oyuncunun kullanımına vermesi ya da yere",
+          "koyması durumunda da geçerlidir.",
+          "• Dip çizginin gerisinden topu oyuna sokacak olan oyuncu, yana ve/veya geriye doğru hareket",
+          "edebilir ve takım arkadaşları arasında topu pas olarak verebilir ancak 5 saniye sayımı, top",
+          "saha dışındaki ilk oyuncunun kullanımında olduğunda başlar."
+        ]
+      },
+      {
+        "id": "17.3",
+        "title": "Kural",
+        "paragraphs": [
+          "17.3.1 Topu oyuna sokan oyuncu aşağıdakileri yapmayacaktır:",
+          "• Topu elinden çıkarmak için 5 saniyeden fazla beklemeyecektir.",
+          "• Top el ya da ellerindeyken sahaya adım atmayacaktır.",
+          "• Topu oyuna sokarken, topun saha dışına temas etmesine neden olmayacaktır.",
+          "• Başka bir oyuncu temas etmeden önce sahadaki topa dokunmayacaktır.",
+          "• Topun doğrudan sepete girmesine neden olmayacaktır.",
+          "• Topu elinden çıkarmadan önce sınır çizgisinin arkasında topu oyuna sokma yerinde, topu",
+          "elinden çıkartmadan önce, bir ya da iki yönde yanlara, 1 metrelik toplam mesafeyi aşarak",
+          "hareket etmeyecektir. Bununla birlikte koşullar elverdiği ölçüde sınır çizgisinden geriye",
+          "doğru hareket etmesine izin verilir.",
+          "17.3.2 Topun oyuna sokulması sırasında diğer oyuncular aşağıdakileri yapmayacaktır:",
+          "• Top sınır çizgisinin diğer tarafına atılmadan önce vücutlarının herhangi bir kısmıyla sınır",
+          "çizgisinin üzerinde olmayacaklardır.",
+          "• Topun oyuna sokulması yeri, sınır çizgisi ile herhangi bir saha dışı engel arasında 2 metreden",
+          "az mesafeye sahipse, topu oyuna sokacak oyuncuya 1 metreden daha yakın olmayacaklardır.",
+          "17.3.3 Oyun saati dördüncü çeyrekte ya da her uzatmada 2:00 dakika ya da daha az gösterdiğinde ve",
+          "topun oyuna sokulması durumu olduğunda hakem topun oyuna sokulmasını yönetirken, bir uyarı",
+          "olarak, sınır çizgisini kural dışı geçme işaretini gösterecektir.",
+          "Eğer bir savunma oyuncusu:",
+          "• Topun oyuna sokulmasını engellemek için vücudunun herhangi bir bölümünü sınır çizgisi",
+          "üzerine hareket ettirir, ya da",
+          "• Topu oyuna sokma yeri 2 m uzaklıktan daha az olduğunda, topu oyuna sokacak olan",
+          "oyuncuya 1 m den daha yakınsa,",
+          "bu bir ihlaldir ve bir teknik faulle sonuçlanacaktır.",
+          "Madde 17.3’e uyulmaması ihlaldir."
+        ]
+      },
+      {
+        "id": "17.4",
+        "title": "Cezası",
+        "paragraphs": [
+          "Top, orijinal oyuna sokma yerinden oyuna sokulması için rakibe verilir."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "18",
+    "title": "Mola",
+    "page": 26,
+    "intro": [],
+    "sections": [
+      {
+        "id": "18.1",
+        "title": "Tanım",
+        "paragraphs": [
+          "Mola, başantrenörün ya da birinci yardımcı antrenörün isteği üzerine oyuna ara verilmesidir."
+        ]
+      },
+      {
+        "id": "18.2",
+        "title": "Kural",
+        "paragraphs": [
+          "18.2.1 Her mola 1 dakika sürecektir.",
+          "18.2.2 Bir mola, mola fırsatı sırasında verilebilir.",
+          "18.2.3 Bir mola fırsatı şu durumlarda başlar:",
+          "• Her iki takım için top öldüğünde, oyun saati durduğunda ve hakemin, hakem masasıyla",
+          "iletişimi bittiğinde",
+          "• Her iki takım için başarılı son serbest atış sonrasında top öldüğünde",
+          "• Sayı yiyen takım için, sahadan yapılan bir atış sayı olduğunda",
+          "18.2.4 Bir mola fırsatı, topun oyuna sokulması ya da birinci serbest atış için top oyuncunun kullanımında",
+          "olduğunda sona erer.",
+          "18.2.5 Aşağıdaki durumlarda her bir takıma mola verilebilir:",
+          "• Birinci devrede, 2 mola",
+          "• İkinci devrede, dördüncü çeyrekte oyun saati 2:00 dakika ya da daha az gösterdiğinde",
+          "bu molalardan en fazla 2 tanesi olmak üzere 3 mola",
+          "• Her uzatmada 1 mola",
+          "18.2.6 Kullanılmayan molalar bir sonraki devreye ya da uzatmaya taşınamaz.",
+          "18.2.7 Herhangi bir ihlal yapılmadığı durumlarda başantrenörü ya da birinci yardımcı antrenörü",
+          "tarafından ilk istekte bulunan takıma, rakibi tarafından sahadan yapılan başarılı bir atış",
+          "sonrasında mola verilir.",
+          "18.2.8 Oyun saati dördüncü çeyrekte ya da her uzatmada 2:00 dakika veya daha az gösterdiğinde ve",
+          "sahadan yapılan başarılı bir atıştan sonra hakem oyunu durdurmadıkça sayı atan takıma mola",
+          "verilmeyecektir."
+        ]
+      },
+      {
+        "id": "18.3",
+        "title": "Prosedür",
+        "paragraphs": [
+          "18.3.1 Sadece başantrenör ya da birinci yardımcı antrenör mola isteme hakkına sahiptir. Mola için, sayı",
+          "görevlisiyle göz teması kuracak ya da hakem masasına gidecek ve elleriyle anlaşılır bilinen işareti",
+          "yaparak mola isteyecektir.",
+          "18.3.2 Bir mola isteği sadece, sayı görevlisinin bir mola isteği için sesli işareti vermesinden önce iptal",
+          "edilebilir.",
+          "18.3.3 Mola periyodu:",
+          "• Hakem düdüğünü çaldığında ve mola işaretini verdiğinde başlar.",
+          "• Hakem düdüğünü çaldığında ve takımları sahaya geri çağırdığında sona erer.",
+          "18.3.4 Bir mola fırsatı başladığında süre görevlisi, bir takımın mola istemiş olduğunu hakemlere",
+          "bildirmek için sesli işaret verecektir.",
+          "Mola isteyen bir takıma karşı sahadan yapılan atış başarılı olursa, süre görevlisi hemen oyun",
+          "saatini durduracak ve sesli işaretini verecektir.",
+          "18.3.5 Mola sırasında ya da ikinci ve dördüncü çeyreğin başlangıcından önceki oyun arasında veya her",
+          "uzatmada oyuncular sahayı terk edebilir, takım sırasına oturabilir ve takım sırasında oturma izni",
+          "olan kişiler takım sıra bölgesi alanı yakınında kalmak koşuluyla sahaya girebilirler.",
+          "18.3.6 Eğer mola isteği top, ilk serbest atış için serbest atışı atacak oyuncunun kullanımında olduktan",
+          "sonra iki takımdan biri tarafından yapılırsa, aşağıdaki durumlarda mola verilecektir:",
+          "• Son serbest atış başarılı olursa",
+          "• Başarısız son serbest atışı, topun oyuna sokulması takip ediyorsa",
+          "• Serbest atışlar arasında bir faul meydana gelirse. Bu durumda, serbest atış ya da atışlar",
+          "tamamlanacak ve bu kurallarda aksi belirtilmedikçe, yeni faulün cezası yönetilmeden önce",
+          "molaya izin verilecektir.",
+          "• Son serbest atıştan sonra top canlanmadan önce bir faul meydana gelirse. Bu durumda, yeni",
+          "faulün cezası yönetilmeden önce molaya izin verilecektir.",
+          "• Son serbest atıştan sonra top canlanmadan önce bir ihlal meydana gelirse. Bu durumda,",
+          "topun oyuna sokulması yönetilmeden önce molaya izin verilecektir.",
+          "Arka arkaya setler halinde serbest atışlar ve/veya 1’den fazla faulün cezası sonucu topa sahip",
+          "olma hakkı durumunda, her set ayrı ayrı değerlendirilecektir."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "19",
+    "title": "Oyuncu değişikliği",
+    "page": 28,
+    "intro": [],
+    "sections": [
+      {
+        "id": "19.1",
+        "title": "Tanım",
+        "paragraphs": [
+          "Oyuncu değişikliği, yedek oyuncu tarafından, oyuncu olmak için istekte bulunduğu oyunun",
+          "durmasıdır."
+        ]
+      },
+      {
+        "id": "19.2",
+        "title": "Kural",
+        "paragraphs": [
+          "19.2.1 Bir takım, oyuncu değişikliği fırsatı sırasında oyuncu ya da oyuncular değiştirebilir.",
+          "19.2.2 Oyuncu değişikliği fırsatı şu durumlarda başlar:",
+          "• Her iki takım için de top öldüğünde, oyun saati durduğunda ve hakemin hakem masasıyla",
+          "olan iletişimi bittikten sonra.",
+          "• Her iki takım için de başarılı son serbest atıştan sonra top öldüğünde.",
+          "• Sayı yiyen takım için, dördüncü çeyrekte ve her uzatmada oyun saati 2:00 dakika ya da daha",
+          "az gösterdiğinde sahadan yapılan bir atış sayı olduğunda.",
+          "19.2.3 Bir oyuncu değişikliği fırsatı, topun oyuna sokulması için ya da birinci serbest atış sırasında",
+          "oyuncunun kullanımında olduğunda sona erer.",
+          "19.2.4 Yedek olmuş bir oyuncu ve oyuncu olmuş bir yedek oyuncu, oyun saatinin çalışma periyodundan",
+          "sonra (aynı duran saat periyodunda), top tekrar ölene kadar yeniden oyuna giremez ya da oyundan",
+          "çıkamaz. Aşağıdaki durumlar hariçtir:",
+          "• Takım, sahada 5’ten daha az oyuncuyla kalmışsa.",
+          "• Kurallara uygun olarak değişiklik sonrasında takım sırasında olan bir oyuncu, bir hatanın",
+          "düzeltilmesi sonucunda serbest atışları atması gerekirse.",
+          "19.2.5 Oyun saati dördüncü çeyrekte ve her uzatmada 2:00 dakika veya daha az gösterdiğinde, sahadan",
+          "yapılan başarılı bir atıştan sonra oyun saati durdurulduğunda, bir hakem oyunu durdurmadıkça",
+          "sayı yapan takımın oyuncu değişikliğine izin verilmez.",
+          "19.2.6 Oyuncu herhangi bir tedavi görürse ya da yardım alırsa, takımı sahada 5 oyuncudan daha az",
+          "kalmadığı sürece değiştirilmelidir."
+        ]
+      },
+      {
+        "id": "19.3",
+        "title": "Prosedür",
+        "paragraphs": [
+          "19.3.1 Sadece bir yedek oyuncu değişiklik isteğinde bulunma hakkına sahiptir. Kendisi (başantrenör ya",
+          "da birinci yardımcı antrenör değil) hakem masasına gidecek ve açık bir biçimde oyuncu",
+          "değişikliği isteyecek, elleriyle uygun bilinen işareti yapacak veya değişiklik sandalyesine",
+          "oturacaktır. Yedek oyuncu hemen oynamaya hazır olmalıdır.",
+          "19.3.2 Oyuncu değişikliği isteği sadece, süre görevlisinin bir değişiklik isteği için sesli işareti",
+          "vermesinden önce iptal edilebilir.",
+          "19.3.3 Oyuncu değişikliği fırsatı başladığında süre görevlisi, bir değişiklik isteği olduğunu hakemlere",
+          "bildirmek için sesli işaret verecektir.",
+          "19.3.4 Yedek oyuncu, hakem düdüğünü çalıp oyuncu değişikliği işaretini verene ve kendisini oyun",
+          "sahasına girmeye çağırana kadar sınır çizgisinin dışında kalacaktır.",
+          "19.3.5 Değiştirilen oyuncunun, süre görevlisine ya da hakeme bildirmeden doğrudan takım sırasına",
+          "gitmesine izin verilir.",
+          "19.3.6 Değişiklikler mümkün olduğu kadar çabuk tamamlanacaktır. 5. faulünü yapan ya da diskalifiye",
+          "edilen bir oyuncu derhal değiştirilmelidir (30 saniyeden daha fazla olmamak kaydıyla).",
+          "Bir hakemin değerlendirmesine göre oyunda bir gecikmesi olursa bunu yapan takıma bir mola",
+          "verilecektir. Takımın molası kalmamışsa, oyunu geciktirdiği için başantrenöre ‘B’ kaydedilen bir",
+          "teknik faul verilebilir.",
+          "19.3.7 Bir mola sırasında ya da devre arası hariç bir oyun arasında oyuncu değişikliği isteğinde",
+          "bulunulursa, yedek oyuncu oyuna girmeden önce bunu süre görevlisine bildirmelidir.",
+          "19.3.8 Serbest atışı atacak oyuncu aşağıdakilerden dolayı değiştirilmek zorundaysa:",
+          "• Sakatlandıysa, veya",
+          "• 5 faul yaptıysa, veya",
+          "• Diskalifiye edildiyse,",
+          "serbest atış ya da atışlar oyunun bir sonraki oyun saatinin çalışma periyoduna kadar tekrar",
+          "değiştirilemeyecek olan yedeği tarafından atılmalıdır.",
+          "19.3.9 Oyuncu değişikliği isteği ilk serbest atış için top, serbest atışı atacak oyuncunun kullanımında",
+          "olduktan sonra herhangi bir takım tarafından yapılırsa, oyuncu değişikliği aşağıdaki durumlarda",
+          "verilecektir:",
+          "• Son serbest atış başarılı olursa",
+          "• Başarısız son serbest atışı, topun oyuna sokulması takip ediyorsa",
+          "• Serbest atışlar arasında bir faul meydana gelirse. Bu durumda serbest atış ya da atışlar",
+          "tamamlanacak ve bu kurallarda aksi belirtilmedikçe, yeni faulün cezası yönetilmeden önce",
+          "oyuncu değişikliğine izin verilecektir.",
+          "• Son serbest atıştan sonra top canlanmadan önce bir faul meydana gelirse. Bu durumda, yeni",
+          "faulün cezası yönetilmeden önce oyuncu değişikliğine izin verilecektir.",
+          "• Son serbest atıştan sonra top canlanmadan önce bir ihlal meydana gelirse. Bu durumda,",
+          "topun oyuna sokulması yönetilmeden önce oyuncu değişikliğine izin verilecektir.",
+          "Arka arkaya setler halinde serbest atışlar ve/veya 1’den fazla faulün cezası sonucu topa sahip",
+          "olma hakkı durumunda, her set ayrı ayrı değerlendirilecektir."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "20",
+    "title": "Hükmen yenilgi",
+    "page": 29,
+    "intro": [],
+    "sections": [
+      {
+        "id": "20.1",
+        "title": "Kural",
+        "paragraphs": [
+          "Bir takım, aşağıdaki durumlarda oyunu hükmen kaybeder:",
+          "• Takım sahada değilse ya da oyunun belirlenmiş başlama saatinden 15 dakika sonra oynamaya",
+          "hazır 5 oyuncuyla sahada hazır değilse.",
+          "• Eylemleri oyunun oynanmasını engelliyorsa",
+          "• Başhakem tarafından bilgilendirilmesinden sonra oynamayı reddediyorsa"
+        ]
+      },
+      {
+        "id": "20.2",
+        "title": "Cezası",
+        "paragraphs": [
+          "20.2.1 Oyun rakip tarafından kazanılır ve skor 20-0 olarak işlenir. Ayrıca, hükmen yenilen takım 0 (sıfır)",
+          "sıralama puanı alır.",
+          "20.2.2 2 maçlık (ev sahibi ve deplasman) toplam puan serisi (toplam skor) ve Play- Off’ lar için (3 maçlı",
+          "serilerde) birinci, ikinci ya da üçüncü maçı hükmen kaybeden takım seriyi ya da Play-Off’ ları",
+          "‘hükmen’ kaybedecektir. Bu, 5 maçlı ve 7 maçlı Play- Off serileri için geçerli değildir.",
+          "20.2.3 Bir turnuvada takım ikinci kez hükmen kaybederse, takım turnuvadan diskalifiye edilecek ve",
+          "bu takımın oynadığı tüm maçların sonuçları geçersiz sayılacaktır."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "21",
+    "title": "Kendiliğinden yenilgi",
+    "page": 30,
+    "intro": [],
+    "sections": [
+      {
+        "id": "21.1",
+        "title": "Kural",
+        "paragraphs": [
+          "Oyun sırasında takımın, sahada oynamaya hazır 2'den az oyuncusu varsa bir takım maçı",
+          "kendiliğinden yenilgi ile kaybedecektir."
+        ]
+      },
+      {
+        "id": "21.2",
+        "title": "Cezası",
+        "paragraphs": [
+          "21.2.1 Oyunu kazanacak takım öndeyse skor, oyunun durdurulduğu andaki gibi kalacaktır. Oyunu",
+          "kazanacak takım önde değilse skor, o takımın lehine 2-0 olarak işlenecektir. Oyunu kendiliğinden",
+          "yenilgiyle kaybeden takım 1 sıralama puanı alacaktır.",
+          "21.2.2 2 maçlık (ev sahibi ve deplasman) toplam puan serisi için (toplam skor), birinci ya da ikinci maçı",
+          "kendiliğinden yenilgiyle kaybeden takım, seriyi ‘kendiliğinden yenilgi’ ile kaybedecektir.",
+          "KURAL BEŞ – İHLALLER"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "22",
+    "title": "İhlaller",
+    "page": 31,
+    "intro": [],
+    "sections": [
+      {
+        "id": "22.1",
+        "title": "Tanım",
+        "paragraphs": [
+          "İhlal, kuralların bozulmasıdır."
+        ]
+      },
+      {
+        "id": "22.2",
+        "title": "Cezası",
+        "paragraphs": [
+          "Top, bu kurallarda aksi belirtilmedikçe, doğrudan arkalığın tam arkası hariç ihlale en yakın yerden",
+          "oyuna sokulması için rakiplere verilecektir."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "23",
+    "title": "Saha dışı oyuncu ve saha dışı top",
+    "page": 31,
+    "intro": [],
+    "sections": [
+      {
+        "id": "23.1",
+        "title": "Tanım",
+        "paragraphs": [
+          "23.1.1 Bir oyuncu, vücudunun herhangi bir kısmı sınır çizgisinin yukarısında, üstünde ya da dışındaki",
+          "zemine veya bir oyuncu haricinde herhangi bir nesneye temas ettiğinde saha dışıdır.",
+          "23.1.2 Top aşağıdakilere temas ettiğinde saha dışıdır:",
+          "• Saha dışındaki bir oyuncuya ya da herhangi başka bir kişiye",
+          "• Sınır çizgisinin yukarısında, üstünde ya da dışındaki zemine veya herhangi bir nesneye",
+          "• Arkalık desteklerine, arkalığın arkasına ya da sahanın üzerindeki herhangi bir nesneye"
+        ]
+      },
+      {
+        "id": "23.2",
+        "title": "Kural",
+        "paragraphs": [
+          "23.2.1 Top bir oyuncudan başka bir objeye temas ederek saha dışına çıksa bile, top saha dışına çıkmadan",
+          "önce, topa en son temas eden oyuncu ya da topun en son temas ettiği oyuncu nedeniyle saha",
+          "dışına çıkmıştır.",
+          "23.2.2 Top, sınır çizgisi üstünde ya da dışındaki bir oyuncuya temas ederek ya da oyuncunun topa teması",
+          "sonucu saha dışına çıkarsa bu oyuncu, topun saha dışına çıkmasına neden olur.",
+          "23.2.3 Eğer bir oyuncu tutulmuş top sırasında saha dışına çıkar veya kendi geri sahasına dönerse bu bir",
+          "hava atışı durumudur."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "24",
+    "title": "Dripling",
+    "page": 31,
+    "intro": [],
+    "sections": [
+      {
+        "id": "24.1",
+        "title": "Tanım",
+        "paragraphs": [
+          "24.1.1 Bir dripling topu atarak, tipleyerek, sahada yuvarlayarak ya da sektirerek kontrol eden oyuncunun",
+          "neden olduğu canlı bir topun hareketidir.",
+          "24.1.2 Bir oyuncunun sahada canlı bir topun kontrolünü kazanarak topu atması, tiplemesi, yuvarlaması",
+          "ya da zeminde sektirmesi ve başka bir oyuncuya dokunmadan önce topa tekrar temas etmesiyle",
+          "bir dripling başlar.",
+          "Dripling sırasında oyuncu, elinin herhangi bir kısmını topun altına koyamaz ve topu bir noktadan",
+          "diğerine taşıyamaz veya topu duraklatıp daha sonra driplingine devam edemez.",
+          "Dripling sırasında, topu havaya atan oyuncu topa tekrar eliyle temas etmeden önce, topun sahaya",
+          "ya da başka bir oyuncuya temas etmesi koşuluyla, topu havaya atabilir.",
+          "Top eline temas etmedikçe, oyuncunun atabileceği adım sayısında bir sınır yoktur.",
+          "Dripling, bir oyuncunun aynı anda iki eliyle topa temas etmesi veya topun bir veya iki elinde",
+          "durmasına izin verdiğinde sona erer.",
+          "24.1.3 Sahada canlı bir topu istem dışı kaybedip, tekrar kontrol eden bir oyuncu topu düşürmüş kabul",
+          "24.1.4 Aşağıdakiler dripling değildir:",
+          "• Peşpeşe yapılan atışlar",
+          "• Bir driplingin başında ya da sonunda topu istem dışı olarak düşürmek",
+          "• Diğer oyuncuların yakınındaki topu tipleyerek, topun kontrolünü kazanma girişimi",
+          "• Başka bir oyuncunun kontrolündeki topu tiplemek",
+          "• Bir pası engellemek ve topun kontrolünü kazanmak",
+          "• Yürüme ihlali yapmamak koşuluyla sahayla temas etmeden önce topu elden ele atmak ve",
+          "topun bir ya da iki elde dinlenmesine izin vermek",
+          "• Topu arkalığa atmak ve topun kontrolünü yeniden kazanmak"
+        ]
+      },
+      {
+        "id": "24.2",
+        "title": "Kural",
+        "paragraphs": [
+          "Bir oyuncu 2 dripling arasında aşağıda belirtilen durumlarda sahadaki canlı bir topun",
+          "kontrolünü kaybetmediği sürece, ilk driplingi bittikten sonra ikinci kez dripling yapmayacaktır:",
+          "• Sahadan yapılan bir atış",
+          "• Rakibi tarafından topa temas edilmesi",
+          "• Topun başka bir oyuncuya temas etmesiyle ya da başka bir oyuncunun topa temas etmesiyle",
+          "bir pas ya da topun istem dışı düşürülmesi."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "25",
+    "title": "Yürüme",
+    "page": 32,
+    "intro": [],
+    "sections": [
+      {
+        "id": "25.1",
+        "title": "Tanım",
+        "paragraphs": [
+          "25.1.1 Yürüme, sahada canlı bir top tutulurken, bir ya da iki ayağın herhangi bir yönde, bu",
+          "maddede belirtilen sınırlar dışındaki kural dışı hareketidir.",
+          "25.1.2 Pivot hareketi, sahada canlı bir topu tutan oyuncunun, pivot ayağı olarak adlandırılan diğer",
+          "ayağını sahanın temas etme noktasında tutarak, herhangi bir yöne bir ya da birden fazla",
+          "adım atarak yaptığı kurallara uygun bir harekettir."
+        ]
+      },
+      {
+        "id": "25.2",
+        "title": "Kural",
+        "paragraphs": [
+          "25.2.1 Sahada canlı topu tutan bir oyuncunun pivot ayağının belirlemesi:",
+          "• Her iki ayağı sahadayken topu tutan bir oyuncu:",
+          "- Bir ayağını kaldırdığında, diğer ayak pivot ayağı olur.",
+          "- Bir driplinge başlamak için top el ya da ellerinden çıkarılmadan pivot ayağı kaldırılamaz.",
+          "- Pas vermek ya da şut atmak için oyuncu pivot ayağının üzerinde sıçrayabilir, ancak top el",
+          "ya da ellerini terk etmeden hiçbir ayak sahaya basamaz.",
+          "• Hareket halindeyken ya da driplingini tamamladıktan sonra topu tutan bir oyuncu durmak,",
+          "topu pas ya da şut atmak için iki adım atabilir:",
+          "- Bir oyuncu topu aldıktan sonra, driplinge başlamak için ikinci adımından önce topu",
+          "bırakacaktır.",
+          "- Birinci adım, topun kontrolünü kazandıktan sonra bir ya da iki ayak sahaya temas",
+          "ettiğinde oluşur.",
+          "- İkinci adım, birinci adımdan sonra diğer ayak yere değdiğinde ya da her iki ayak aynı",
+          "anda sahaya temas ettiğinde oluşur.",
+          "- Birinci adımında duran oyuncunun her iki ayağı da sahadaysa ya da sahaya aynı anda",
+          "temas ederse herhangi bir ayağını pivot ayağı olarak kullanıp pivot hareketi yapabilir.",
+          "Eğer sonrasında iki ayağıyla havaya sıçrarsa, topu el ya ellerinden bırakmadan hiçbir",
+          "ayağı sahaya dönemez.",
+          "- Eğer bir oyuncu tek ayağıyla yere inerse, sadece bu ayağını kullanarak pivot hareketi",
+          "yapabilir.",
+          "- Eğer bir oyuncu birinci adımında tek ayağıyla sıçrarsa, ikinci adım için her iki ayağıyla",
+          "aynı anda yere inebilir. Bu durumda oyuncu, iki ayağıyla pivot hareketi yapamaz. Sonra",
+          "bir adım ya da iki adımı yerden kalkarsa, topu el ya da ellerinden bırakmadan hiçbir ayağı",
+          "sahaya dönemez.",
+          "- Her iki ayağı da yerden kalkarsa ve oyuncu aynı anda iki ayağının üzerine inerse, bir",
+          "ayağını kaldırdığında diğer ayağı pivot ayağı olur.",
+          "- Bir oyuncu driplingini bitirdikten ya da topun kontrolünü kazandıktan sonra aynı ayağı",
+          "veya her iki ayağıyla arka arkaya sahaya temas edemez.",
+          "25.2.2 Yere düşen, sahada uzanan ya da oturan bir oyuncu:",
+          "• Bir oyuncunun topu tutarken yere düşüp kayması ya da yerde yatarken veya otururken topun",
+          "kontrolünü ele geçirmesi kurallar uygundur.",
+          "• Oyuncu topu tutarken yerde yuvarlanır ya da ayağa kalkmaya çalışırsa bu bir ihlaldir."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "26",
+    "title": "3 saniye",
+    "page": 33,
+    "intro": [],
+    "sections": [
+      {
+        "id": "26.1",
+        "title": "Kural",
+        "paragraphs": [
+          "26.1.1 Bir oyuncu, takımı ön sahadaki canlı bir topu kontrol ederken ve oyun saati çalışırken, rakibinin",
+          "kısıtlamalı alanında arka arkaya 3 saniyeden fazla kalamaz.",
+          "26.1.2 Aşağıdaki durumlarda olan oyuncuya izin verilmelidir.",
+          "• Kısıtlamalı alanı terk etmeye çalışırsa",
+          "• Kendisi ya da takım arkadaşı atış halindeyken ve sahadan yapılan bir atışta top oyuncunun el",
+          "ya da ellerini terk ediyorken ya da yeni terk etmişken kısıtlamalı alandaysa.",
+          "• Arka arkaya 3 saniyeden daha az kaldıktan sonra şut atmak için kısıtlamalı alanda dripling",
+          "yaparsa.",
+          "26.1.3 Kendisinin kısıtlamalı alan dışında olduğunun belirlenmesi için, oyuncu her iki ayağını da",
+          "kısıtlamalı alan dışındaki sahaya koymalıdır."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "27",
+    "title": "Yakından savunulan oyuncu",
+    "page": 33,
+    "intro": [],
+    "sections": [
+      {
+        "id": "27.1",
+        "title": "Tanım",
+        "paragraphs": [
+          "Sahada canlı bir topu tutan oyuncu, kurallara uygun savunma pozisyonundaki rakibi tarafından",
+          "1 metreden daha fazla olmayan bir uzaklıkta aktif/hareketli şekilde yakından savunulur."
+        ]
+      },
+      {
+        "id": "27.2",
+        "title": "Kural",
+        "paragraphs": [
+          "Yakından savunulan bir oyuncu 5 saniye içinde pas vermeli, şut atmalı ya da dripling yapmalıdır."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "28",
+    "title": "8 saniye",
+    "page": 33,
+    "intro": [],
+    "sections": [
+      {
+        "id": "28.1",
+        "title": "Kural",
+        "paragraphs": [
+          "Her ne zaman:",
+          "• Geri sahadaki bir oyuncu canlı bir topun kontrolünü kazanırsa, veya",
+          "• Top oyuna sokulurken top geri sahadaki bir oyuncuya temas ettiğinde ya da kurallara uygun",
+          "olarak geri sahadaki bir oyuncu topa temas ettiğinde ve topu oyuna sokan oyuncunun takımı",
+          "geri sahasında topu kontrol etmeye devam ederken,",
+          "bu takım 8 saniye içinde topun ön sahasına gitmesine neden olmalıdır.",
+          "28.1.2 Aşağıdaki durumlarda takım, topun ön sahasına gitmesine neden olmuştur:",
+          "Top, herhangi bir oyuncunun kontrolünde değilken ön sahaya temas ettiğinde.",
+          "Top, her iki ayağı tamamen ön sahasıyla temas halinde olan hücum oyuncusuna temas ettiğinde",
+          "ya da kurallara uygun olarak bu oyuncu topa temas ettiğinde.",
+          "Top, vücudunun bir kısmı geri sahasıyla temas halinde olan savunma oyuncusuna temas",
+          "ettiğinde ya da kurallara uygun olarak bu oyuncu topa temas ettiğinde.",
+          "Top, vücudunun bir kısmı topu kontrol eden takımın ön sahasıyla temas halinde olan bir hakeme",
+          "temas ettiğinde.",
+          "Geri sahadan ön sahaya doğru yapılan bir dripling sırasında, top ve dripling yapan oyuncunun her",
+          "iki ayağı tamamen ön sahaya temas ettiğinde.",
+          "28.1.3 8 saniye süresi, daha önce topu kontrol eden aynı takımın, aşağıdakilerin sonucunda topu geri",
+          "sahasından oyuna sokma hakkı olması durumunda kaldığı yerden devam edecektir.",
+          "• Top saha dışına çıktığında.",
+          "• Aynı takımdan bir oyuncu sakatlandığında.",
+          "• O takım tarafından bir teknik faul alındığında.",
+          "• Bir hava atışı durumu oluştuğunda.",
+          "• Çift faul.",
+          "• Her iki takımın eşit cezalarının birbirini götürmesi durumunda."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "29",
+    "title": "Şut Saati",
+    "page": 34,
+    "intro": [],
+    "sections": [
+      {
+        "id": "29.1",
+        "title": "Kural",
+        "paragraphs": [
+          "29.1.1 Her ne zaman:",
+          "• Bir oyuncu, sahada canlı bir topun kontrolünü kazandırsa,",
+          "• Topun oyuna sokulması sırasında top, sahadaki bir oyuncuya temas ettiğinde ya da sahadaki",
+          "bir oyuncu kurallara uygun olarak topa temas ettiğinde ve bu oyuncunun takımı topu kontrol",
+          "etmeyi sürdürdüğünde,",
+          "bu takım 24 saniye içinde bir şut girişiminde bulunmalıdır.",
+          "24 saniye içinde bir şut durumu oluşması için:",
+          " Şut saati sesli işaret vermeden önce top, oyuncunun el ya da ellerini terk etmeli,ve",
+          " Top oyuncunun el ya da ellerini terk ettikten sonra çembere temas etmeli veya sepette içeri",
+          "girmelidir.",
+          "29.1.2 Şut saati süresinin bitimine doğru sahadan bir şut atma girişimi olduğunda ve top havadayken",
+          "şut saati sesli işaret verdiğinde:",
+          "• Top sepete girerse, ihlal olmamıştır, sesli işaret dikkate alınmayacak ve sayı geçerli olacaktır.",
+          "• Top çembere temas eder ancak sepete girmezse ihlal olmamıştır, sesli işaret dikkate",
+          "alınmayacak ve oyun devam edecektir.",
+          "• Top çembere temas etmezse, bir ihlal olmuştur. Bununla birlikte, rakipler hemen ve açık bir",
+          "şekilde topun kontrolünü kazanırsa, sesli işaret dikkate alınmayacak ve oyun devam",
+          "edecektir.",
+          "Arkalık çevresinin üst kenarı sarı ışıkla donatıldığında ışık, şut saatinin sesli işaretinden öncelikli",
+          "olacaktır.",
+          "Sayıya yönelen top ve müdahale ile ilgili tüm kısıtlamalar geçerli olacaktır."
+        ]
+      },
+      {
+        "id": "29.2",
+        "title": "Prosedür",
+        "paragraphs": [
+          "29.2.1 İlk çeyreğin veya uzatmanın dışındaki bir çeyreğin başlangıcında, bir hava atışından sonra veya",
+          "orta çizgiden top oyuna sokulduktan sonra bir oyuncu ister geri sahada ister ön sahada olsun,",
+          "sahadaki canlı bir topun kontrolünü ele geçirirse, şut saati 24 saniye ile başlatılacaktır.",
+          "29.2.2 Aşağıdaki durumlarda oyun bir hakem tarafından durdurulduğunda şut saati başa alınacaktır:",
+          "• Topu kontrol etmeyen takımın yaptığı bir faul ya da ihlal için (saha dışına çıkan top için değil)",
+          "• Topu kontrol etmeyen takımla ilgili geçerli herhangi bir nedenle.",
+          "• İki takımla ilgili olmayan herhangi bir geçerli nedenden dolayı.",
+          "Bu durumlarda top, daha önce topu kontrol eden aynı takıma verilecektir. Eğer topun oyuna",
+          "sokulması bu takım tarafından gerçekleştirilecekse:",
+          "• Geri sahasındaysa, şut saati 24 saniyeye ayarlanacaktır.",
+          "• Ön sahasındaysa, şut saati aşağıdaki gibi ayarlanacaktır:",
+          "- Oyun durdurulduğunda şut saati 14 saniye veya daha fazla gösteriyorsa, şut saati başa",
+          "alınmayacak, ancak durdurulduğu zamandan devam edecektir.",
+          "- Oyun durdurulduğunda şut saati 13 saniye veya daha az gösteriyorsa şut saati 14",
+          "saniyeye ayarlanacaktır.",
+          "Ancak oyun, iki takımla ilgili olmayan herhangi bir geçerli nedenden dolayı bir hakem",
+          "tarafından durdurulursa ve bir hakemin değerlendirmesine göre şut saatinin başa alınması",
+          "rakipleri dezavantajlı duruma düşürecekse, şut saati durdurulduğu süreden devam edecektir.",
+          "29.2.3 Oyun, bir hakem tarafından topu kontrol eden takımla ilgili bir faul ya da ihlal nedeniyle (topun",
+          "saha dışına çıkması dahil) durdurulduktan sonra rakip takıma topu oyuna sokma hakkı",
+          "verildiğinde, şut saati başa alınacaktır.",
+          "Yeni hücum takımına pozisyon sırasına göre topu oyuna sokma hakkı verilirse, şut saati de başa",
+          "alınacaktır.",
+          "Topun oyuna sokulması o takım tarafından gerçekleştirilecekse:",
+          " Geri sahasındaysa, şut saati 24 saniyeye ayarlanacaktır.",
+          "• Ön sahasındaysa, şut saati 14 saniyeye ayarlanacaktır.",
+          "29.2.4 Oyun, topu kontrol eden takımın yaptığı teknik faul nedeniyle bir hakem tarafından",
+          "durdurulduğunda, oyunun durdurulduğu en yakın yerden topun oyuna sokulmasıyla devam",
+          "edecektir. Şut saati başa alınmayacak ancak durdurulduğu süreden itibaren devam edecektir.",
+          "29.2.5 Oyun saati dördüncü çeyrekte ya da uzatmada 2:00 dakika veya daha az gösterdiğinde, topu geri",
+          "sahasından oyuna sokma hakkı olan takım tarafından alınan bir mola sonrasında o takımın",
+          "başantrenörü oyunun, takımın ön sahasındaki oyuna sokma çizgisinden ya da takımın geri",
+          "sahasındaki oyunun durdurulduğu en yakın yerden topun oyuna sokularak devam edeceğine karar",
+          "verme hakkına sahiptir.",
+          "Moladan sonra topun oyuna sokulması aşağıdaki gibi yönetilecektir:",
+          "• Eğer topun saha dışına çıkması sonucuysa ve o takımın;",
+          "- Geri sahasındaysa, şut saati durduğu süreden devam edecektir.",
+          "- Ön sahasındaysa, şut saati 13 saniye ya da daha az gösteriyorsa durduğu süreden devam",
+          "edecektir. Şut saati 14 saniye ya da daha fazla gösteriyorsa, 14 saniyeye ayarlanacaktır.",
+          "• Eğer bir faul ya da ihlal sonucundaysa (saha dışına çıkan top için değil) ve o takımın;",
+          "- Geri sahasındaysa, şut saati 24 saniyeye ayarlanacaktır.",
+          "- Ön sahasındaysa, şut saati 14 saniyeye ayarlanacaktır.",
+          "• Eğer mola, topun yeni kontrolüne sahip olan takım tarafından alınırsa ve o takımın:",
+          "- Geri sahasındaysa, şut saati 24 saniyeye ayarlanacaktır.",
+          "- Ön sahasındaysa, şut saati 14 saniyeye ayarlanacaktır.",
+          "29.2.6 Sportmenlik dışı ya da diskalifiye edici bir faulün cezasının bir parçası olarak, takımın ön",
+          "sahasındaki topu oyuna sokma çizgisinden topu oyuna sokma hakkı verildiğinde, şut saati 14",
+          "saniyeye ayarlanacaktır.",
+          "29.2.7 Top rakibin sepetinin çemberine değdikten sonra şut saati şu şekilde ayarlanacaktır:",
+          "• Rakip takım topun kontrolünü kazanırsa, 24 saniyeye,",
+          "• Topun kontrolünü yeniden kazanan takım, top çembere temas etmeden önce topu kontrol",
+          "eden aynı takımsa, 14 saniyeye ayarlanacaktır.",
+          "29.2.8 Bir takım topu kontrol ederken ya da hiçbir takımın topu kontrol etmemesi durumunda, şut saati",
+          "yanlışlıkla sesli işaret verirse, sesli işaret dikkate alınmayacak ve oyun devam edecektir.",
+          "Ancak bir hakemin değerlendirmesine göre, topu kontrol eden takım dezavantajlı duruma",
+          "düşmüşse oyun durdurulacak, şut saati düzeltilecek ve topa sahip olma hakkı aynı takıma",
+          "verilecektir."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "30",
+    "title": "Geri sahaya dönen top",
+    "page": 36,
+    "intro": [],
+    "sections": [
+      {
+        "id": "30.1",
+        "title": "Tanım",
+        "paragraphs": [
+          "30.1.1 Bir takım aşağıdaki durumlarda ön sahasında canlı bir topu kontrol etmektedir:",
+          "• Bu takımın bir oyuncusu kendi ön sahasında topu tutarken, yakalarken ya da topla dripling",
+          "yaparken her iki ayağı ile kendi ön sahasına temas ettiğinde, veya",
+          "• Top, kendi ön sahasında o takımın oyuncuları arasında paslaşıldığında.",
+          "30.1.2 Ön sahada canlı bir topu kontrol eden takım, o takımdan bir oyuncu kendi ön sahasında topa son",
+          "temas ederse ve o takımın bir oyuncusu aşağıdaki durumlarda topa ilk temas eden oyuncu olursa",
+          "topun kural dışı olarak kendi geri sahasına dönmesine neden olmuştur:",
+          " Vücudunun bir kısmı geri sahayla temas ediyorsa, veya",
+          " Top o takımının geri sahasına temas ettikten sonra",
+          "Bu kısıtlama, topun oyuna sokulması dahil bir takımın ön sahasındaki tüm durumlarda uygulanır.",
+          "Ancak, ön sahasından sıçrayan, havadayken yeni bir takım kontrolü oluşturan ve ardında topla",
+          "takımının geri sahasına inen bir oyuncu için geçerli değildir."
+        ]
+      },
+      {
+        "id": "30.2",
+        "title": "Kural",
+        "paragraphs": [
+          "Ön sahasında canlı bir topu kontrol eden bir takım, topun kurallara aykırı olarak kendi geri",
+          "sahasına dönmesine neden olamaz."
+        ]
+      },
+      {
+        "id": "30.3",
+        "title": "Cezası",
+        "paragraphs": [
+          "Top, arkalığın doğrudan arkası hariç, kendi ön sahasından ihlale en yakın yerden oyuna sokulması",
+          "için rakiplere verilecektir."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "31",
+    "title": "Sayıya yönelen top ve müdahale",
+    "page": 37,
+    "intro": [],
+    "sections": [
+      {
+        "id": "31.1",
+        "title": "Tanım",
+        "paragraphs": [
+          "31.1.1 Sayı amacıyla sahadan ya da serbest atıştan yapılan bir atış:",
+          "• Top, atış halindeki bir oyuncunun el ya da ellerini terk ettiğinde başlar.",
+          "• Aşağıdaki durumlarda atış hali sona erer:",
+          "- Top sepete doğrudan üstten girdiğinde ve sepetin içinde kaldığında ya da sepetin içinden",
+          "geçtiğinde.",
+          "- Top sepete girme olasılığını kaybettiğinde.",
+          "- Top çembere temas ettiğinde.",
+          "- Top zemine temas ettiğinde.",
+          "- Top öldüğünde ."
+        ]
+      },
+      {
+        "id": "31.2",
+        "title": "Kural",
+        "paragraphs": [
+          "31.2.1 Sayı amacıyla sahadan yapılan bir atış sırasında, tamamen çember seviyesi üzerinde olan topa bir",
+          "oyuncu temas ederse, aşağıdaki durumlarda sayıya yönelen topa müdahale ihlali gerçekleşir.",
+          "- Top sepete doğru inmekteyse, veya",
+          "- Top arkalığa temas ettikten sonra",
+          "31.2.2 Bir serbest atış sırasında top sepete doğru giderken ve çembere temas etmeden önce bir oyuncu",
+          "topa dokunursa, sayıya yönelen topa müdahale ihlali olur.",
+          "31.2.3 Sayıya yönelen top kısıtlamaları şu durumlara kadar devam eder:",
+          "• Topun sepete girme olasılığı kaybolana kadar.",
+          "• Top çembere temas edene kadar.",
+          "31.2.4 Müdahale şu durumlarda oluşur:",
+          "• Sayı amacıyla sahadan yapılan bir şut ya da son serbest atıştan sonra top çemberle temas",
+          "halindeyken bir oyuncu sepete ya da arkalığa temas ettiğinde.",
+          "• Başka serbest atış ya da atışların takip edeceği bir serbest atıştan sonra topun hala sepete",
+          "girme olasılığı varken bir oyuncu topa, sepete ya da arkalığa temas ettiğinde.",
+          "• Bir oyuncu alttan sepetin içine uzanır ve topa dokunursa.",
+          "• Bir savunma oyuncusu, top sepetin içindeyken topa ve sepete temas ederek topun sepetten",
+          "geçmesini engellediğinde.",
+          "• Bir hakemin değerlendirmesine göre bir oyuncu, sepeti sallayarak ya da sepeti tutarak, topun",
+          "sepete girmesini engellediğinde ya da sepete girmesine neden olduğunda.",
+          "• Bir oyuncu sepeti tutar ve topla oynarsa.",
+          "31.2.5 Eğer bir hakem aşağıdaki durumlarda düdüğünü çalarsa:",
+          "- Top atış halinde olan bir oyuncunun ellerindeyken, veya",
+          "- Top, sayı amacıyla sahadan yapılan bir şut ya da son serbest atışta havada olduğunda,",
+          "• Oyun saati sesli işareti, çeyreğin ya da uzatmanın sonu için çaldığında,",
+          "Hiçbir oyuncu top çembere temas ettikten sonra hala sepete girme olasılığı varken topa",
+          "dokunmayacaktır.",
+          "Böyle bir durumda sayıya yönelen top ve müdahale ile ilgili tüm kısıtlamalar uygulanacaktır."
+        ]
+      },
+      {
+        "id": "31.3",
+        "title": "Cezası",
+        "paragraphs": [
+          "31.3.1 İhlal bir hücum oyuncusu tarafından yapılırsa sayı verilemez. Bu kurallarda aksi belirtilmedikçe",
+          "top, serbest atış çizgisinin uzantısından oyuna sokulması için rakibe verilecektir.",
+          "31.3.2 İhlal bir savunma oyuncusu tarafından yapılırsa hücum eden takıma,",
+          "• Top, serbest atış için elden çıkarsa 1 sayı.",
+          "• Top, 2 sayılık bölgeden elden çıkarsa 2 sayı.",
+          "• Top, 3 sayılık bölgeden elden çıkarsa, 3 sayı.",
+          "Verilecek ve top sepete girmiş gibi kabul edilecektir:",
+          "31.3.3 Son serbest atış sırasında bir savunma oyuncusu tarafından bir ihlal yapılırsa, hücum takımına",
+          "1 sayı verilecek ve ardından savunma oyuncusuna bir teknik faul verilecektir.",
+          "KURAL ALTI – FAULLER"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "32",
+    "title": "Fauller",
+    "page": 39,
+    "intro": [],
+    "sections": [
+      {
+        "id": "32.1",
+        "title": "Tanım",
+        "paragraphs": [
+          "32.1.1 Bir faul, bir rakibe kural dışı bir kişisel temas ve/veya sportmenlik dışı davranışla ilgili olan",
+          "kuralların ihlal edilmesidir.",
+          "32.1.2 Bir takıma herhangi bir sayıda faul çalınabilir. Cezasına bakılmaksızın her faul verilecek, maç",
+          "kağıdında faulü yapana işlenecek ve bu kurallara göre cezalandırılacaktır.",
+          "32.1.3 Top öldükten sonra bir faul meydana gelirse ve;",
+          "• Oyun saati çeyreğin veya uzatmaların sonu için sesli işaret verirse,",
+          "• Bir ihlal meydana gelirse,",
+          "bu durumda yapılan faul bir teknik, sportmenlik dışı veya diskalifiye edici bir faul olmadıkça",
+          "dikkate alınmayacaktır."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "33",
+    "title": "Temas: Genel Prensipler",
+    "page": 39,
+    "intro": [],
+    "sections": [
+      {
+        "id": "33.1",
+        "title": "Silindir prensibi",
+        "paragraphs": [
+          "Silindir prensibi, sahadaki bir oyuncunun işgal ettiği hayali bir silindirin içindeki boşluk olarak",
+          "tanımlanır. Bu boyutlar ve oyuncunun ayakları arasındaki mesafe, oyuncunun boyuna ve",
+          "oyuncunun boyutuna göre değişecektir ve bu boyutlar oyuncunun üzerindeki boşluğu da içerir.",
+          "Savunma oyuncusunun veya topsuz hücum oyuncusunun silindirinin sınırları aşağıda belirtilenler",
+          "ile kısıtlanmıştır:",
+          "• Önde ellerin avuç içleri,",
+          "• Arkada kalça, ve",
+          "• Yanlarda kolların ve bacakların dış kenarları.",
+          "Eller ve kollar, kurallara uygun savunma pozisyonunda, dirseklerden bükülü olarak kaldırılmış",
+          "bir şekilde, ayakların ve dizlerin konumundan daha fazla olmamak üzere gövdenin önüne",
+          "uzatılabilir.",
+          "Hücum oyuncusu kendi silindiri içerisinde normal basketbol bir oynamaya teşebbüs ederken",
+          "savunma oyuncusu, kendisinde top olan hücum oyuncusunun silindirine giremez ve kural dışı bir",
+          "temasa neden olamaz. Toplu hücum oyuncusunun silindirinin ölçüleri şu şekildedir.",
+          "• Önde ayaklar, bükülmüş dizler ve kollar, kalçalarının üzerinde topu tutarken,",
+          "• Arkada kalça, ve",
+          "• Yanlarda dirseklerin ve bacakların dış kenarları.",
+          "Topa sahip olan hücum oyuncusu kendi silindiri içerisinde normal bir basketbol oyunu için yeterli",
+          "alana sahip olmalıdır. Normal basketbol oyunu, driplinge başlamayı, pivot hareketini, şut atmayı",
+          "ve pas vermeyi içermektedir.",
+          "Hücum oyuncusu, bacaklarını ve kollarını kendi silindirinin dışına açamaz ve ek bir alan",
+          "kazanmak için savunma oyuncusuna kural dışı bir temasa neden olamaz.",
+          "Diyagram 6 Silindir prensibi"
+        ]
+      },
+      {
+        "id": "33.2",
+        "title": "Dikeylik prensibi",
+        "paragraphs": [
+          "Oyun sırasında her oyuncunun sahadaki bir rakip tarafından işgal edilmemiş herhangi bir",
+          "pozisyonu (silindiri) işgal etme hakkı vardır.",
+          "Bu prensip, oyuncunun sahada işgal ettiği alanı ve o boşluk içerisinde dikey olarak",
+          "sıçradığında üzerindeki boşluğu kapsar ve korur.",
+          "Oyuncu dikey pozisyonunu/silindirini terk ettiğinde ve kendi dikey pozisyonunu/silindirini",
+          "hali hazırda sağlamış olan bir rakiple vücut teması oluşturduğunda, bu temastan dikey",
+          "pozisyonunu/silindirini terk eden oyuncu sorumludur.",
+          "Savunma oyuncusu kendi silindiri içerisinde sahayı dik olarak terk ettiği için ya da ellerini ve",
+          "kollarını kendi silindiri içerisinde yukarıya doğru uzattığı için cezalandırılmamalıdır.",
+          "Hücum oyuncusu ister sahada ister havada olsun, aşağıda belirtilen durumlarda kurallara uygun",
+          "savunma pozisyonunda bulunan oyuncuya temasa neden olmayacaktır:",
+          "• Kendisine daha fazla yer açmak için kollarını kullanmak (iterek).",
+          "• Sahadan yapılan bir atış sırasında ya da hemen sonrasında, temasa neden olacak şekilde",
+          "bacaklarını veya kollarını açmak."
+        ]
+      },
+      {
+        "id": "33.3",
+        "title": "Kurallara uygun savunma pozisyonu",
+        "paragraphs": [
+          "Bir savunma oyuncusu şu durumlarda kurallara uygun savunma pozisyonunu oluşturmuştur:",
+          "• Yüzü rakibine dönük olduğunda, ve",
+          "• Her iki ayağı zeminde olduğunda.",
+          "Kurallara uygun savunma pozisyonu, zeminden tavana kadar oyuncunun üzerinde/silindirinde",
+          "dikey olarak uzanır. Oyuncu, kollarını ve ellerini başının üzerine kaldırabilir veya dikey olarak",
+          "sıçrayabilir, ancak onları hayali silindirinin içinde dikey bir pozisyonda tutması gerekir.",
+          "33.4 Topu kontrol eden bir oyuncunun savunulması",
+          "Topu kontrol eden (tutan ya da dripling yapan) bir oyuncu savunulurken zaman ve mesafe",
+          "faktörleri uygulanmaz.",
+          "Topa sahip olan oyuncu savunulmayı beklemelidir ve bir rakibi, bir saniyeden kısa bir süre içinde",
+          "olsa dahi kendisinin önünde kurallara uygun olarak savunma pozisyonu aldığında, durmaya veya",
+          "yönünü değiştirmeye hazır olmalıdır.",
+          "Savunma oyuncusu pozisyonunu almadan önce, temasa neden olmadan ilk olarak kurallara",
+          "uygun bir savunma pozisyonu oluşturmalıdır.",
+          "Savunma oyuncusu kurallara uygun olarak savunma pozisyonunu belirlediğinde rakibini",
+          "savunmak için hareket edebilir, ancak dripling yapan oyuncunun yanından geçmesini önlemek",
+          "için kollarını, omuzlarını, kalçalarını ya da bacaklarını uzatamaz.",
+          "Toplu bir oyuncuyla ilgili şarj/blok durumunu değerlendirirken, hakem aşağıdaki prensipleri",
+          "kullanacaktır:",
+          "• Savunma oyuncusu, toplu oyuncuya dönük olarak karşısında ve her iki ayağı zeminde olacak",
+          "şekilde kurallara uygun bir savunma pozisyonunu almış olmalıdır.",
+          "• Savunma oyuncusu kurallara uygun olan savunma pozisyonunu korumak için hareketsiz",
+          "kalabilir, dikey olarak sıçrayabilir, yanlara ya da geriye doğru hareket edebilir.",
+          "• Kurallara uygun savunma pozisyonunu korumak için, ancak topa sahip olan oyuncuya doğru",
+          "olmamak koşuluyla, yanlara ve geriye doğru hareket derken bir ya da iki ayağını bir an için",
+          "zeminden kaldırabilir.",
+          "• Savunma oyuncusunun temas yerine ilk gelmiş olduğu değerlendirilmesi yapılabilmesi için,",
+          "temas gövdeye olmalıdır.",
+          "• Savunma oyuncusu, kurallara uygun bir savunma pozisyonunu aldıktan sonra sakatlanmayı",
+          "önlemek için kendi silindirinin içinde dönebilir.",
+          "Yukarıdaki durumlardan herhangi biri meydana geldiğinde temasa, topa sahip olan oyuncunun",
+          "neden olduğu kabul edilecektir.",
+          "33.5 Topu kontrol etmeyen bir oyuncunun savunulması",
+          "Topu kontrol etmeyen bir oyuncu, sahada serbestçe hareket etme ve başka bir oyuncu",
+          "tarafından işgal edilmemiş herhangi bir pozisyonu alma hakkına sahiptir.",
+          "Topsuz bir oyuncu savunulurken, zaman ve uzaklık faktörleri uygulanacaktır. Bir savunma",
+          "oyuncusu, durması ya da yönünü değiştirmesi için yeterli zamanı veya mesafesi olmayan",
+          "hareketli bir rakibinin yolunda, çok yakınında ve/veya çok hızlı bir şekilde pozisyon alamaz.",
+          "Bu uzaklık rakibin hızıyla doğru orantılıdır ancak, asla 1 normal adımdan az değildir.",
+          "Bir savunma oyuncusu kurallara uygun savunma pozisyonunu alırken zaman ve uzaklık",
+          "faktörlerine uymazsa ve bir rakibiyle temas oluşursa, bu temastan kendisi sorumludur.",
+          "Savunma oyuncusu kurallara uygun olarak savunma pozisyonunu belirlediğinde, rakibini",
+          "savunmak için hareket edebilir. Oyuncunun yanından geçmesini önlemek için kollarını,",
+          "omuzlarını, kalçalarını ya da bacaklarını uzatamaz. Sakatlanmayı önlemek için kendi silindirinin",
+          "içinde dönebilir."
+        ]
+      },
+      {
+        "id": "33.6",
+        "title": "Havada olan bir oyuncu",
+        "paragraphs": [
+          "Sahadaki bir yerden havaya sıçrayan bir oyuncu tekrar aynı yere inme hakkına sahiptir.",
+          "Bu oyuncunun ineceği yer ile, sıçradığı ve ineceği yer arasındaki doğrudan yolun rakip ya da",
+          "rakipler tarafından işgal edilmemiş olması koşuluyla, sahadaki başka bir yere inme hakkına",
+          "sahiptir.",
+          "Bir oyuncu havaya sıçradıktan sonra yere inmiş fakat hareket hızı nedeniyle indiği yerin ötesinde",
+          "bulunan ve kurallara uygun bir savunma pozisyonu almış bir rakibe temasa neden olursa,",
+          "bu temastan havaya sıçrayan oyuncu sorumludur.",
+          "Bir rakip, o oyuncu havaya sıçradıktan sonra bu oyuncunun yoluna doğru hareket edemez.",
+          "Havadaki bir oyuncunun altına doğru hareket etmek ve temasa neden olmak, genellikle",
+          "sportmenlik dışı bir fauldür ve bazı durumlarda diskalifiye edici bir faul olabilir."
+        ]
+      },
+      {
+        "id": "33.7",
+        "title": "Perdeleme: Kurallara uygun ve kural dışı",
+        "paragraphs": [
+          "Perdeleme, topsuz bir rakibin sahada istediği bir pozisyona ulaşmasını geciktirme ya da",
+          "engelleme girişimidir.",
+          "Bir oyuncu, rakibine karşı aşağıda belirtildiği şekilde perdeleme yaptığında bu, kurallara uygun",
+          "bir perdelemedir:",
+          "• Temas oluştuğunda hareketsiz olduğunda (kendi silindiri içinde).",
+          "• Temas oluştuğunda her iki ayağı zeminde olduğunda.",
+          "Bir oyuncu rakibine karşı aşağıda belirtildiği şekilde perdeleme yaptığında bu, kural dışı bir",
+          "perdelemedir:",
+          "• Temas oluştuğunda hareketli olduğunda.",
+          "• Temas oluştuğunda hareketsiz duran rakibinin görüş alanı dışında perdeleme yaparken,",
+          "yeterli uzaklık bırakmadığında.",
+          "• Temas oluştuğunda hareket halinde olan bir rakibine karşı zaman ve uzaklık faktörlerine",
+          "uymadığında.",
+          "Perdeleme, hareketsiz duran bir rakibin görüş alanı içinde yapılırsa (önden ya da yandan),",
+          "perdeleme yapan oyuncu, temas olmaması koşuluyla rakibine istediği kadar yaklaşabilir.",
+          "Perdeleme, hareketsiz duran bir rakibin görüş alanı dışında yapılırsa, perdeleme yapan oyuncu",
+          "rakibine temas olmadan perdelemeye doğru 1 normal adım atma izin vermelidir.",
+          "Eğer rakip hareket halindeyse, zaman ve uzaklık faktörleri uygulanacaktır. Perdeleme yapan",
+          "oyuncu, rakibinin durarak ya da yön değiştirerek perdelemeden kurtulmasına olanak verecek",
+          "kadar yeterli mesafe bırakmalıdır.",
+          "Gerekli mesafe asla 1 normal adımdan az ve 2 normal adımdan fazla değildir.",
+          "Kurallara uygun olarak perdeleme yapılan oyuncu, perdeleme yapan oyuncuya yapacağı",
+          "temaslardan sorumludur."
+        ]
+      },
+      {
+        "id": "33.8",
+        "title": "Şarj",
+        "paragraphs": [
+          "Şarj, topla ya da topsuz olarak rakibin gövdesini, iterek ya da hareket ettirerek yapılan kural dışı",
+          "bir kişisel temastır."
+        ]
+      },
+      {
+        "id": "33.9",
+        "title": "Engelleme (Kapama)",
+        "paragraphs": [
+          "Engelleme (Kapama), rakibin topla ya da topsuz olarak ilerlemesini engelleyen kural dışı bir",
+          "kişisel temastır.",
+          "Perdeleme yapmaya çalışan bir oyuncunun kendisi hareket halindeyken ve rakibi hareketsiz",
+          "olduğunda ya da geri çekilmeye çalışırken bir temas oluşursa bu durum blok (engelleme) faulü",
+          "Bir oyuncu topla ilgilenmezse/dikkate almazsa, rakibiyle karşı karşıya bir durumdayken ve",
+          "rakibinin yer değiştirmesiyle kendi pozisyonunu da değiştirirse, başka faktörler içermedikçe",
+          "meydana gelecek herhangi bir temastan öncelikle kendisi sorumludur.",
+          "‘Başka faktörler içermedikçe’ ifadesi, perdeleme yapılan oyuncunun kasıtlı olarak, bilerek",
+          "itilmesi, şarj edilmesi ya da tutulması anlamına gelir.",
+          "Bir oyuncunun sahada pozisyon alırken kol ya da kollarını veya dirseklerini kendi silindirinin",
+          "dışına uzatması kurallara uygundur, ancak, bir rakip kendisini geçmeye çalıştığında bunlar",
+          "kendi silindirinin içinde hareket ettirilmelidir. Kol ya da kolları veya dirsekleri kendi silindirinin",
+          "dışındaysa ve temas oluşursa, bu durum bir engelleme (kapama) ya da tutmadır."
+        ]
+      },
+      {
+        "id": "33.10",
+        "title": "Şarjsız yarım daire alanları",
+        "paragraphs": [
+          "Sepetin altındaki şarj / blok (engelleme) durumlarının yorumlanması için belirli bir alan",
+          "belirlenmesi amacıyla sahada şarjsız yarım daire alanları çizilir.",
+          "Kurallara aykırı olarak ellerini, kollarını, bacaklarını ya da vücudunu kullanmadıkça, şarjsız yarım",
+          "daire alanına doğru herhangi bir içeriye doğru yüklenme sırasında, havadaki hücum oyuncusu",
+          "tarafından şarjsız yarım daire alanı içerisinde bulunan savunma oyuncusuna yapılan herhangi bir",
+          "temasa takım kontrolü faulü çalınmayacaktır. Bu kural şu durumlarda geçerlidir:",
+          "• Hücum oyuncusu havadayken topu kontrol ettiğinde, ve",
+          "• Bu oyuncu sahadan bir şut ya da topu pas olarak atmaya çalıştığında, ve",
+          "• Savunma oyuncusunun bir ayağı ya da her iki ayağı şarjsız yarım daire alanına temas",
+          "ettiğinde."
+        ]
+      },
+      {
+        "id": "33.11",
+        "title": "Bir rakibe el ya da ellerle ve/veya kol ya da kollarla temas etmek",
+        "paragraphs": [
+          "Bir rakibin el ya da ellerle dokunması, kendi başına bir faul değildir.",
+          "Hakemler, temasa neden olan oyuncunun bir avantaj elde edip etmediğine karar verecektir. Bir",
+          "oyuncunun neden olduğu temas, bir rakibin hareket serbestliğini herhangi bir şekilde engellerse,",
+          "bu temas fauldür.",
+          "El ya da ellerin veya öne doğru uzattığı kol ya da kolların kurallara aykırı kullanımı, savunma",
+          "oyuncusu, savunma pozisyonundayken ve el ya da ellerini veya kol ya da kollarını toplu veya",
+          "topsuz olan rakibinin ilerlemesini engellemek için vücudunun üzerine yerleştirildiğinde ve temas",
+          "halinde kaldığında meydana gelir.",
+          "Toplu ya da topsuz olan rakibine tekrar tekrar dokumak ya da ‘dürtmek’, oyunun sertleşmesine",
+          "neden olabileceği için bir fauldür.",
+          "Topa sahip olan bir hücum oyuncusu tarafından yapılan fauller şunlardır:",
+          "• Bir avantaj elde etmek için kolunu ya da dirseğini savunma oyuncusunun etrafına ‘çengel",
+          "yapmak’ veya sarmak.",
+          "• Savunma oyuncusunun topla oynamasını ya da oynamaya teşebbüs etmesini engellemek",
+          "veya kendisi için daha fazla boşluk yaratmak için ‘itmek’.",
+          "• Dripling yaparken bir rakibin, topun kontrolünü kazanmasını engellemek için öne doğru",
+          "uzatmış olduğu kolunun ön kısmını ya da elini kullanmak.",
+          "Topsuz olan bir hücum oyuncusu tarafından yapılan aşağıdaki durumlar bir ‘itme’ faulüdür:",
+          "• Topu yakalamaya çalışmak için rakibini itmek.",
+          "• Savunma oyuncusunun topla oynamasını ya da oynamaya teşebbüs etmesini engellemek.",
+          "• Kendisine daha fazla alan yaratmaya çalışmak için rakibini itmek."
+        ]
+      },
+      {
+        "id": "33.12",
+        "title": "Post oyunu (Potaya ya da rakip oyuncuya sırtını dönerek)",
+        "paragraphs": [
+          "Dikeylik prensibi (silindir prensibi), post oyunu için de geçerlidir.",
+          "Post pozisyonundaki hücum oyuncusu ve onu savunan savunma oyuncusu birbirlerinin dikeylik",
+          "pozisyonunun (silindir) haklarına uymalıdır.",
+          "Post pozisyonundaki bir hücum ya da savunma oyuncusunun rakibini, omuzu veya kalçasıyla",
+          "pozisyon dışı bırakmaya çalışması ya da öne doğru uzatılmış kollar, bacaklar veya vücudun diğer",
+          "kısımlarını kullanarak rakibinin hareket özgürlüğüne müdahale etmesi bir fauldür."
+        ]
+      },
+      {
+        "id": "33.13",
+        "title": "Arkadan yapılan kural dışı savunma",
+        "paragraphs": [
+          "Arkadan yapılan kural dışı savunma, bir savunma oyuncusu tarafından bir rakibe arkadan yapılan",
+          "bir kişisel temastır. Savunma oyuncusunun topla oynama girişimi gerçeği, bir rakibine arkadan",
+          "yaptığı temasın haklılığını göstermez."
+        ]
+      },
+      {
+        "id": "33.14",
+        "title": "Tutma",
+        "paragraphs": [
+          "Tutma, bir rakip oyuncunun hareket serbestliğine müdahale eden kurallara aykırı bir kişisel",
+          "temastır. Bu temas (tutma) vücudun herhangi bir kısmı ile olabilir."
+        ]
+      },
+      {
+        "id": "33.15",
+        "title": "İtme",
+        "paragraphs": [
+          "İtme, bir oyuncunun toplu ya da topsuz olan bir rakibini vücudunun herhangi bir bölümüyle zorla",
+          "hareket ettirdiği veya hareket ettirmeye çalıştığı kural dışı bir kişisel temastır."
+        ]
+      },
+      {
+        "id": "33.16",
+        "title": "Faul yapılmış aldatması",
+        "paragraphs": [
+          "Aldatma, bir oyuncunun kendisine faul yapılmış fikri oluşturmak ve böylece bir avantaj elde",
+          "etmek için faul yapılmış gibi göstermesi ya da doğal olmayan abartılı hareketler yapmasıdır."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "34",
+    "title": "Kişisel faul",
+    "page": 45,
+    "intro": [],
+    "sections": [
+      {
+        "id": "34.1",
+        "title": "Tanım",
+        "paragraphs": [
+          "34.1.1 Kişisel faul, top canlı ya da ölüyken bir oyuncunun rakibine yaptığı kural dışı temastır.",
+          "Bir oyuncu elini, kolunu, dirseğini, omuzunu, kalçasını, bacağını, dizini ya da ayağını uzatarak",
+          "veya vücudunu ‘anormal’ bir pozisyona getirerek (silindirinin dışında) rakibini tutmayacak, bloke",
+          "etmeyecek, itmeyecek, şarj yapmayacak, çelmelemeyecek ya da ilerlemesini engellemeyecek ve",
+          "de sert ve şiddetli bir şekilde oynamayacaktır.",
+          "34.1.2 Topun oyuna sokulması faulü, dördüncü çeyrekte ve her uzatmada oyun saati 2:00 dakika ya da",
+          "daha az gösterdiğinde, top oyuna sokulması için saha dışında ve hala hakemin ellerinde veya topu",
+          "oyuna sokacak oyuncunun kullanımında olduğunda rakip savunma oyuncusu tarafından yapılan",
+          "kişisel bir fauldür."
+        ]
+      },
+      {
+        "id": "34.2",
+        "title": "Cezası",
+        "paragraphs": [
+          "Bu oyuncuya bir kişisel faul verilecektir.",
+          "34.2.1 Faul, atış halinde olmayan bir oyuncuya yapılırsa:",
+          "• Oyun, faul yapılan takım tarafından bu ihlalin yapıldığı en yakın yerden topu oyuna",
+          "sokmasıyla devam edecektir.",
+          "• Faul yapan takım, takım faulü cezası durumundaysa, Madde 41 geçerli olacaktır.",
+          "34.2.2 Faul şut atan bir oyuncuya yapılırsa, o oyuncuya aşağıdaki şekilde bir dizi serbest atış",
+          "hakkı verilecektir:",
+          "• Sahadan yapılan şut başarılıysa sayı geçerli sayılacak ve ilave olarak, 1 serbest atış.",
+          "• Sahanın 2 sayılık bölgesinden yapılan şut başarısız olursa, 2 serbest atış.",
+          "• Sahanın 3 sayılık bölgesinden yapılan şut başarısız olursa, 3 serbest atış.",
+          "34.2.3 Faul, topun oyuna sokulması faulü olarak yapılmışsa:",
+          "• Faul yapan takımın, takım faul cezasının dolup dolmadığına bakılmaksızın faul yapılan",
+          "oyuncuya sadece 1 serbest atış hakkı verilecektir. Oyun, faul yapılan takım tarafından",
+          "ihlalin olduğu en yakın yerden topun oyuna sokulmasıyla devam edecektir."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "35",
+    "title": "Çift faul",
+    "page": 45,
+    "intro": [],
+    "sections": [
+      {
+        "id": "35.1",
+        "title": "Tanım",
+        "paragraphs": [
+          "35.1.1 Çift faul, 2 rakibin birbirlerine karşı yaklaşık olarak aynı anda yaptıkları kişisel ya da sportmenlik",
+          "dışı/diskalifiye edici fauller durumudur.",
+          "35.1.2 2 2 faulün bir çift faul olarak değerlendirilmesi için aşağıdaki koşullar olmalıdır:",
+          "• Her iki faul de oyuncu faulleridir.",
+          "• Her iki faul de fiziksel temas içerir.",
+          "• Her iki faul de birbirine faul yapan aynı 2 rakip arasındadır.",
+          "• Her iki faul de 2 kişisel veya sportmenlik dışı ya da diskalifiye edici faullerin herhangi bir",
+          "kombinasyonudur."
+        ]
+      },
+      {
+        "id": "35.2",
+        "title": "Cezası",
+        "paragraphs": [
+          "Her oyuncuya kişisel ya da sportmenlik dışı/diskalifiye edici faul verilecektir.",
+          "Serbest atış hakkı verilmeyecek ve oyun aşağıdaki gibi devam edecektir.",
+          "Yaklaşık olarak çift faul ile aynı anda:",
+          "• Bir geçerli sayı ya da başarılmış son serbest atış varsa, top, sayı yiyen takıma dip çizgisinin",
+          "gerisindeki herhangi bir yerden oyuna sokması için verilecektir.",
+          "• Topu kontrol eden ya da topu kontrol etme hakkına sahip olan takım varsa, top, ihlale en",
+          "yakın yerden topu oyuna sokması için bu takıma verilecektir.",
+          "• Hiçbir takım topu kontrol etmiyorsa ya da hiçbir takımın topu kontrol etme hakkı yoksa bir",
+          "hava atışı durumu oluşur."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "36",
+    "title": "Teknik faul",
+    "page": 46,
+    "intro": [],
+    "sections": [
+      {
+        "id": "36.1",
+        "title": "Davranış kuralları",
+        "paragraphs": [
+          "36.1.1 Oyunun düzgün bir şekilde yürütülmesi, oyuncuların, başantrenörlerin, antrenör yardımcılarının,",
+          "yedek oyuncuların, oyun dışı oyuncuların ve delegasyon üyelerinin, hakemler, masa görevlileri ve",
+          "komiser ile tam ve sadık bir işbirliğini gerektirir.",
+          "36.1.2 Her takım başarı sağlamak için elinden gelenin en iyisini yapacaktır, ancak bu, sportmenlik ve adil",
+          "oyun ruhu içinde yapılmalıdır.",
+          "36.1.3 Kasıtlı ya da tekrarlanan herhangi bir işbirliğini ve uyumu bozan davranışlar veya bu kuralın özüne",
+          "ve niyetine uyulmaması teknik faul olarak kabul edilecektir.",
+          "36.1.4 Hakemler, uyarıdan sonra aynı ihlalin tekrarlanmaması durumunda, uyarılar vererek veya açıkça",
+          "kasıt unsuru taşımayan ve oyun üzerinde doğrudan etkisi olmayan önemsiz ihlalleri görmezden",
+          "gelerek teknik faulleri önleyebilir.",
+          "36.1.5 Top canlandıktan sonra bir ihlal fark edilirse, oyun durdurulacak ve bir teknik faul verilecektir.",
+          "Cezası, teknik faul verildiği anda olmuş gibi yönetilecektir. İhlalle, oyunun durdurulması",
+          "arasındaki geçen süre içerisinde olanlar geçerli kalacaktır."
+        ]
+      },
+      {
+        "id": "36.2",
+        "title": "Tanım",
+        "paragraphs": [
+          "36.2.1 Teknik faul, aşağıdaki durumlarla sınırlı olmamak üzere bir oyuncunun davranışsal nitelikteki",
+          "temassız faulüdür:",
+          "• Hakemler tarafından verilen uyarıları dikkate almamak.",
+          "• Hakemler, eğer varsa komiser, masa görevlileri, rakipler veya takım sıralarında oturmalarına",
+          "izin verilen kişilere saygısız bir şekilde davranmak.",
+          "• Seyircileri rahatsız edecek ya da kışkırtabilecek tarzda sözlü ya da el/kol hareketleriyle",
+          "davranışlarda bulunmak.",
+          "• Rakibini taciz etmek ve rakibine sataşmak.",
+          "• El ya da ellerini rakibinin gözlerinin yakınına koyarak görüşünü engellemek.",
+          "• Dirseklerin aşırı sallaması.",
+          "• Sepeti geçtikten sonra topa kasıtlı olarak dokunarak topun oyuna sokulmasını ya da serbest",
+          "atışın derhal kullanılmasını önleyerek oyunu geciktirmek veya oyunun ya da ikinci yarının",
+          "başında sahaya geç gelmek,",
+          "• Faul yapılmış gibi aldatma yapmak.",
+          "• Bir oyuncu bir smaç sırasında bir anlık çemberi tutma ya da bir hakemin değerlendirmesine",
+          "göre kendisini ya da başka bir oyuncuyu yaralamaktan/sakatlamaktan koruma çabası dışında",
+          "oyuncunun ağırlığı çember tarafından desteklenecek şekilde çembere asılırsa.",
+          "• Son serbest atış sırasında bir savunma oyuncusu tarafından sayıya yönelen topa müdahale",
+          "olursa. Böyle bir durumda hücum takımına 1 sayı verilecek ve ardından savunma oyuncusuna",
+          "teknik faul çalınacaktır.",
+          "36.2.2 Takım sırasına oturmasına izin verilen herhangi bir kişinin teknik faulü, hakemlerle, eğer varsa",
+          "komiserle, masa görevlileriyle ya da rakiplerle saygısızca iletişim kurması veya bunlara",
+          "dokunması ya da bir prosedürün veya idari bir yapının ihlalinden dolayı verilen bir fauldür.",
+          "36.2.3 Bir oyuncu, 2 teknik faul ya da 2 sportmenlik dışı faulle veya 1 sportmenlik dışı faul ve 1 teknik",
+          "faulle cezalandırıldığında oyunun geri kalanından diskalifiye edilecektir (oyun diskalifiyesi).",
+          "36.2.4 Bir başantrenör, aşağıdaki durumlarda oyunun geri kalanından diskalifiye edilecektir (oyun",
+          "diskalifiyesi):",
+          "• Kendi kişisel sportmenlik dışı davranışı nedeniyle 2 teknik faul (C) ile cezalandırıldığında.",
+          "• Takım sırasına oturmasına izin verilen diğer kişilerin sportmenlik dışı davranışları",
+          "sonucunda, hepsi (B) veya biri (C) olmak üzere 3 teknik faulle cezalandırıldığında.",
+          "36.2.5 Bir oyuncu ya da bir başantrenör Madde 36.2.3 veya Madde 36.2.4 ‘e göre diskalifiye edilirse,",
+          "bu teknik faul olarak cezalandırılacak tek faul olacak ve diskalifiyeden dolayı hiçbir ek ceza",
+          "uygulanmayacaktır."
+        ]
+      },
+      {
+        "id": "36.3",
+        "title": "Cezası",
+        "paragraphs": [
+          "36.3.1 Eğer bir teknik faul:",
+          "• Bir oyuncuya verilirse, teknik faul oyuncunun kendisine bir oyuncu faulü olarak işlenecek ve",
+          "takım faullerinden biri olarak sayılacaktır.",
+          "• Takım sırasına oturmasına izin verilen herhangi bir kişiye verilirse, teknik faul başantrenöre",
+          "işlenecek ve takım faullerinden biri olarak sayılmayacaktır.",
+          "36.3.2 Rakiplere 1 serbest atış verilecektir. Oyun aşağıdaki gibi devam edecektir:",
+          "• Serbest atış hemen yönetilecektir. Serbest atıştan sonra topun oyuna sokulması, teknik faul",
+          "çalındığında topu kontrol eden ya da topu kontrol etme hakkı olan takım tarafından, oyun",
+          "durdurulduğunda topun olduğu en yakın yerden yönetilecektir.",
+          "• Diğer fauller için belirlenen diğer olası cezaların sırasının belirlenip belirlenmediğine ya da",
+          "cezaların uygulanmasına başlatılıp başlatılmadığına bakılmaksızın serbest atış derhal",
+          "yönetilecektir. Bir teknik faul için serbest atıştan sonra oyun, teknik faul çalındığında topu",
+          "kontrol eden veya topu kontrol etme hakkı olan takım tarafından teknik faulün cezası",
+          "nedeniyle oyunun durdurulduğu yerden devam ettirilecektir.",
+          "• Sahadan ya da son serbest atıştan yapılmış geçerli bir sayı varsa, oyun dip çizginin",
+          "gerisindeki herhangi bir yerden topun oyuna sokmasıyla devam edecektir.",
+          "• Eğer her iki takım da topu kontrol etmiyorsa ya da topu kontrol etme hakları yoksa bir hava",
+          "atışı durumu oluşur.",
+          "• İlk çeyreğin başlangıcında, orta dairede bir hava atışı ile."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "37",
+    "title": "Sportmenlik dışı faul",
+    "page": 48,
+    "intro": [],
+    "sections": [
+      {
+        "id": "37.1",
+        "title": "Tanım",
+        "paragraphs": [
+          "37.1.1 Sportmenlik dışı faul, bir hakemin değerlendirmesine göre temaslı bir oyuncu faulüdür.",
+          "• Kuralların ruhu ve amacı içerisinde, kurallara uygun olarak doğrudan topla oynamaya",
+          "teşebbüs etmeden rakibe temas etmek.",
+          "• Topla ya da rakibiyle oynama çabasındaki bir oyuncunun neden olduğu aşırı, sert temas.",
+          "• Hızlı geçiş hücumundaki takımının ilerleyişini durdurmak için savunma oyuncusu tarafından",
+          "yapılan gereksiz bir temas.",
+          "• Rakibin sepetine doğru ilerleyen bir oyuncuyla birlikte rakibin sepeti arasında başka bir rakip",
+          "oyuncu bulunmuyorsa ve ilerleyişini sürdüren bu oyuncuya bir rakip oyuncunun arkadan veya",
+          "yandan yaptığı kural dışı temasta;",
+          "- ilerlemekte olan oyuncu topu kontrol ediyorsa, veya",
+          "- ilerlemekte olan oyuncu topun kontrolünü elde etmeye çalışıyorsa, veya",
+          "- ilerlemekte olan oyuncuya doğru top pas olarak atıldığında.",
+          "Bu durum hücum oyuncusu atış hali başlayana kadar geçerlidir.",
+          "37.1.2 Hakem, sportmenlik dışı faulleri oyun boyunca tutarlı bir şekilde yorumlamalı ve sadece hareketi",
+          "değerlendirmelidir."
+        ]
+      },
+      {
+        "id": "37.2",
+        "title": "Cezası",
+        "paragraphs": [
+          "37.2.1 Faulü yapan oyuncuya bir sportmenlik dışı faul verilecektir.",
+          "37.2.2 Faul yapılan oyuncuya serbest atış ya da atışlar verilecek, sonrasında:",
+          "• Takımın ön sahasındaki topu oyuna sokma çizgisinden top oyuna sokulacaktır.",
+          "• Birinci çeyreğin başlangıcındaki orta dairede bir hava atışı yapılacaktır.",
+          "Serbest atış sayısı aşağıdaki gibi olacaktır:",
+          "• Faul atış halinde olmayan bir oyuncuya yapılırsa: 2 serbest atış",
+          "• Faul atış halinde olan bir oyuncuya yapılırsa: sayı varsa sayılacak ve ayrıca 1 serbest atış",
+          "• Faul atış halindeki bir oyuncuya yapılırsa ve sayı olmamışsa: 2 ya da 3 serbest atış",
+          "37.2.3 Bir oyuncu 2 sportmenlik dışı faul ya da 2 teknik faulle veya 1 teknik faul ve 1 sportmenlik dışı",
+          "faulle cezalandırıldığında oyunun geri kalanından diskalifiye edilecektir (oyun diskalifiyesi).",
+          "37.2.4 Bir oyuncu, Madde 37.2.3’e göre diskalifiye edilirse, bu sportmenlik dışı faul olarak",
+          "cezalandırılacak tek bir faul olacak ve diskalifiyeden dolayı hiçbir ek ceza uygulanmayacaktır."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "38",
+    "title": "Diskalifiye edici faul",
+    "page": 49,
+    "intro": [],
+    "sections": [
+      {
+        "id": "38.1",
+        "title": "Tanım",
+        "paragraphs": [
+          "38.1.1 Diskalifiye edici faul, oyuncular, yedekler, başantrenörler, yardımcı antrenörler, oyun dışı",
+          "oyuncular ve delegasyon üyelerinin aleni bir şekilde yaptıkları sportmenlik dışı eylemlerdir.",
+          "38.1.2 Diskalifiye edici faul alan bir başantrenörün yerine, maç kağıdına yazılan birinci yardımcı antrenör",
+          "geçecektir. Maç kağıdına yazılmış birinci yardımcı antrenör bulunmuyorsa, yerine kaptan (CAP)",
+          "geçecektir."
+        ]
+      },
+      {
+        "id": "38.2",
+        "title": "Şiddet",
+        "paragraphs": [
+          "38.2.1 Oyun sırasında sportmenlik ve adil oyun ruhuna aykırı şiddet eylemleri meydana gelebilir. Bunlar",
+          "hakemler tarafından ve gerekirse resmi güvenlik görevlileri tarafından derhal durdurulmalıdır.",
+          "38.2.2 Sahada ya da çevresinde oyuncuları içeren şiddet eylemleri meydana geldiğinde,",
+          "hakemler onları durdurmak için gerekli önlemleri alacaktır.",
+          "38.2.3 Rakiplere ya da hakemlere yönelik açık bir şekilde saldırgan davranışlarda bulunan ve suçlu olan",
+          "yukarıda belirtilen kişilerden herhangi biri veya birileri diskalifiye edilecektir. Başhakem olayı",
+          "yarışmanın organizasyon birimine rapor etmelidir.",
+          "38.2.4 Resmi güvenlik görevlileri, sadece hakemler tarafından istendiği takdirde sahaya girebilirler.",
+          "Ancak, seyircilerin açık bir şiddet eylemi yapma niyetiyle sahaya girmeleri durumunda resmi",
+          "güvenlik görevlileri takımları ve hakemleri korumak için derhal müdahale etmelidir.",
+          "38.2.5 Girişler, çıkışlar, koridorlar, soyunma odaları vb. dahil olmak üzere saha veya çevresi",
+          "dışındaki tüm alanlar, yarışmanın organizasyon biriminin ve resmi güvenlik görevlilerinin yetkisi",
+          "altındadır.",
+          "38.2.6 Oyuncuların veya takım sırasında oturmasına izin verilen herhangi bir kişinin oyun donanımına",
+          "zarar verebilecek fiziksel eylemlerine hakemler tarafından izin verilmemelidir.",
+          "Hakemler tarafından bu tür bir davranış gözlemlendiğinde, bu maddeyi ihlal eden takımın",
+          "başantrenörüne bir uyarı verilecektir.",
+          "Eylem ya da eylemler tekrarlanırsa, ilgisi olan kişi ya da kişilere derhal bir teknik veya hatta",
+          "diskalifiye edici faul çalınacaktır."
+        ]
+      },
+      {
+        "id": "38.3",
+        "title": "Cezası",
+        "paragraphs": [
+          "38.3.1 Sorumlusuna bir diskalifiye edici faul verilecektir.",
+          "38.3.2 Sorumlusu, bu kuralların ilgili maddelerine göre diskalifiye edildiğinde, oyun süresince takımının",
+          "soyunma odasına gidip orada kalacak ya da eğer isterse salonu terk edecektir.",
+          "38.3.3 Serbest atış ya da atışları kullanacaklar şu şekildedir:",
+          "• Temassız bir faul durumunda başantrenörü tarafından belirlenen herhangi bir rakip oyuncu.",
+          "• Temaslı bir faul durumunda faul yapılan oyuncu.",
+          "Sonrasında:",
+          "• Takımın ön sahasındaki topu oyuna sokma çizgisinden top oyuna sokulacaktır.",
+          "• Birinci çeyreğin başında orta dairede bir hava atışı yapılacaktır.",
+          "38.3.4 Serbest atış sayısı aşağıdaki gibi olacaktır:",
+          "• Faul temassız bir faul ise: 2 serbest atış.",
+          "• Faul atış halinde olmayan bir oyuncuya yapılırsa: 2 serbest atış.",
+          "• Faul atış halinde olan bir oyuncuya yapılırsa: sayı varsa sayılacak ve ayrıca 1 serbest atış.",
+          "• Faul atış halindeki bir oyuncuya yapılırsa ve sayı olmamışsa: 2 ya da 3 serbest atış.",
+          "• Faul bir başantrenörün diskalifiye olması ise: 2 serbest atış.",
+          "• Faul, birinci yardımcı antrenör, yedek oyuncu, oyun dışı oyuncu ya da delegasyon",
+          "üyelerinden birinin diskalifiye edilmesiyse, bu faul başantrenöre teknik faul olarak verilir:",
+          "2 serbest atış.",
+          "Buna ek olarak, birinci yardımcı antrenör, yedek oyuncu, oyun dışı oyuncu ya da delegasyon",
+          "üyelerinden birinin takım sıra bölgesini terk ettikten sonra herhangi bir kavga durumunda",
+          "aktif olarak katılmalarından dolayı ise:",
+          "- Birinci yardımcı antrenör, yedek oyuncu ve oyun dışı oyuncuların her bir diskalifiye edici",
+          "faulü için: 2 serbest atış. Tüm diskalifiye edici fauller, sorumlusuna verilecektir.",
+          "- Herhangi bir delegasyon üyesinin her diskalifiye edici faulü için: 2 serbest atış.",
+          "Tüm diskalifiye edici fauller başantrenöre verilecektir.",
+          "Rakip takıma verilen eşit cezalar birbirini götürdüğünden dolayı iptal edilmedikçe, tüm serbest",
+          "atış cezaları uygulanacaktır."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "39",
+    "title": "Kavga",
+    "page": 51,
+    "intro": [],
+    "sections": [
+      {
+        "id": "39.1",
+        "title": "Tanım",
+        "paragraphs": [
+          "Kavga, 2 veya daha fazla rakip oyuncu ve oyuncular ile takım sıra bölgelerinde oturmalarına izin",
+          "verilen herhangi başka kişiler arasındaki fiziksel bir etkileşimdir.",
+          "Bu madde sadece bir kavga sırasında ya da kavgaya yol açabilecek herhangi bir durumda takım",
+          "sıra bölgesi sınırlarını terk eden yedek oyuncular, başantrenörler, yardımcı antrenörler, oyun dışı",
+          "oyuncular ve delegasyon üyeleri için geçerlidir."
+        ]
+      },
+      {
+        "id": "39.2",
+        "title": "Kural",
+        "paragraphs": [
+          "39.2.1 Bir kavga sırasında ya da kavgaya yol açabilecek herhangi bir durumda takım sıra bölgesini terk",
+          "eden yedek oyuncular, oyun dışı oyuncular veya delegasyon üyeleri diskalifiye edilecektir.",
+          "39.2.2 Sadece başantrenörün ve/veya birinci yardımcı antrenörün bir kavga sırasında ya da kavgaya yol",
+          "açabilecek herhangi bir durumda hakemlerin düzeni korumasına veya yeniden sağlamasına",
+          "yardımcı olmak için takım sıra bölgesini terk etmesine izin verilir. Bu durumda diskalifiye",
+          "edilmeyeceklerdir.",
+          "39.2.3 Başantrenör ve/veya birinci yardımcı antrenör takım sıra bölgesini terk ederse ve düzeni korumak",
+          "veya yeniden sağlamak için hakemlere yardım etmez veya yardım etmeye teşebbüs etmezse",
+          "diskalifiye edilecektir."
+        ]
+      },
+      {
+        "id": "39.3",
+        "title": "Cezası",
+        "paragraphs": [
+          "39.3.1 Takım sıra bölgesini terk ettiği için diskalifiye edilen kişilerin sayısına bakılmaksızın,",
+          "başantrenöre tek bir teknik faul verilecektir ('B').",
+          "39.3.2 Her iki takımın ilgili kişileri bu maddeye göre diskalifiye edilirse ve yönetilecek başka faul",
+          "cezası kalmamışsa, oyun aşağıdaki şekilde devam edecektir.",
+          "Kavga nedeniyle oyun durdurulduğunda, yaklaşık olarak aynı anda:",
+          "• Sahadan geçerli bir şut ya da son serbest atış sayı olmuşsa top, dip çizgisinin gerisindeki",
+          "herhangi bir yerden oyuna sokması için sayı yiyen takıma verilecektir.",
+          "• Top bir takımın kontrolündeyse ya da bir takımın topu kontrol etme hakkı varsa top, kavga",
+          "başladığında topun bulunduğu en yakın yerden oyuna sokması için bu takıma verilecektir.",
+          "• Top hiçbir takımın kontrolünde değilse ya da hiçbir takımın topu kontrol etme hakkı yoksa",
+          "bir hava atışı durumu oluşur.",
+          "39.3.3 Tüm diskalifiye edici fauller, Ek Bölüm B.8.3'te açıklandığı gibi maç kağıdına kaydedilecek ve",
+          "takım faulü olarak sayılmayacaktır.",
+          "39.3.4 Bir kavgaya ya da kavgaya yol açan herhangi bir duruma karışan sahadaki oyunculara",
+          "verilebilecek tüm olası faul cezaları, Madde 42'ye göre uygulanacaktır.",
+          "39.3.5 Bir kavgaya ya da kavgaya yol açan herhangi bir duruma aktif olarak katılan birinci yardımcı",
+          "antrenör, yedek oyuncu, oyun dışı oyuncu veya bir delegasyon üyesine verilebilecek tüm olası",
+          "diskalifiye edici faul cezaları Madde 38.3.4, altıncı bölüme göre cezalandırılacaktır.",
+          "KURAL YEDİ – GENEL KOŞULLAR"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "40",
+    "title": "Bir oyuncunun 5 faulü",
+    "page": 52,
+    "intro": [],
+    "sections": [
+      {
+        "id": "40.1",
+        "title": "",
+        "paragraphs": [
+          "40.1 5 faul yapmış olan oyuncu, bir hakem tarafından bilgilendirilecek ve oyunu derhal terk edecektir.",
+          "30 saniye içinde değiştirilecektir.",
+          "40.2 Daha önce 5 faul yapmış olan bir oyuncunun yapacağı fauller, oyun dışı kalmış oyuncunun faulü",
+          "olarak kabul edilir ve bu faul maç kağıdında başantrenöre kaydedilir ('B')."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "41",
+    "title": "Takım faulleri: Cezası",
+    "page": 52,
+    "intro": [],
+    "sections": [
+      {
+        "id": "41.1",
+        "title": "Tanım",
+        "paragraphs": [
+          "41.1.1 Bir takım faulü, bir oyuncu tarafından yapılan kişisel, teknik, sportmenlik dışı ya da diskalifiye",
+          "edici fauldür. Bir takım, bir çeyrekte 4 takım faulü yaptıktan sonra, takım faulü cezası",
+          "durumundadır.",
+          "41.1.2 Bir oyun arasında yapılan tüm takım faulleri, bir sonraki çeyrek ya da uzatmada yapılmış olarak",
+          "kabul edilecektir.",
+          "41.1.3 Her uzatmada yapılan tüm takım faulleri, dördüncü çeyrekte yapılmış olarak değerlendirilecektir."
+        ]
+      },
+      {
+        "id": "41.2",
+        "title": "Kural",
+        "paragraphs": [
+          "41.2.1 Bir takım, takım faulü cezası durumundayken, sonrasındaki atış halinde olmayan bir oyuncuya",
+          "yapılan tüm oyuncu kişisel faulleri, topun oyuna sokulması yerine 2 serbest atışla",
+          "cezalandırılacaktır. Faul yapılan oyuncu serbest atışları atacaktır.",
+          "41.2.2 Canlı topu kontrol eden ya da topa sahip olma hakkı olan takımın bir oyuncusu bir kişisel faul",
+          "yaparsa bu tür bir faul, rakibin topu oyuna sokması ile cezalandırılacaktır."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "42",
+    "title": "Özel durumlar",
+    "page": 52,
+    "intro": [],
+    "sections": [
+      {
+        "id": "42.1",
+        "title": "Tanım",
+        "paragraphs": [
+          "Bir kural ihlalini izleyen, aynı duran oyun saati periyodunda ek kural ihlali ya da ihlalleri",
+          "yapıldığında ya da gerçekleşmiş olduğunda özel durumlar ortaya çıkabilir."
+        ]
+      },
+      {
+        "id": "42.2",
+        "title": "Prosedür",
+        "paragraphs": [
+          "42.2.1 Tüm fauller kaydedilecek ve cezaları belirlenecektir.",
+          "42.2.2 Tüm kural ihlallerinin hangi sıra ile yapıldığı belirlenecektir.",
+          "42.2.3 Takımlara verilen tüm eşit cezalar ve tüm çift faul cezaları, çalınma sırasına göre iptal edilecektir.",
+          "Bütün faul cezaları maç kağıdına işlenip iptal edildikten sonra hiçbir zaman olmamış gibi kabul",
+          "42.2.4 Bir teknik faul çalınırsa, cezaların sırasının belirlenip belirlenmediğine ya da cezaların",
+          "yönetilmesine başlanıp başlanılmadığına bakılmaksızın, ilk önce teknik faulün cezası",
+          "uygulanacaktır.",
+          "Teknik faul, birinci yardımcı antrenör, yedek oyuncu, oyun dışı kalan oyuncu ve delegasyon",
+          "üyesinin diskalifiye edilmesinden dolayı başantrenöre verilirse, bunun cezası ilk önce",
+          "uygulanmayacaktır. İptal edilmedikçe, tüm faullerin ve ihlallerin meydana geldiği sıraya göre",
+          "uygulanacaktır.",
+          "42.2.5 Yönetilecek son cezanın bir parçası olan topa sahip olma hakkı, önceki topa sahip olma haklarını",
+          "iptal edecektir.",
+          "42.2.6 Top ilk serbest atışta veya topun oyuna sokulması cezası için canlandığında, bu ceza artık kalan",
+          "başka cezaları iptal etmek için kullanılamaz.",
+          "42.2.7 Kalan tüm cezalar, meydana geliş sırasına göre yönetilecektir.",
+          "42.2.8 Her iki takıma verilen eşit cezaların iptalinden sonra yönetilecek başka ceza kalmamışsa, oyun",
+          "aşağıdaki şekilde devam edecektir.",
+          "Yaklaşık olarak, ilk kural ihlaliyle aynı zamanda olmuşsa:",
+          "• Geçerli bir şut ya da son serbest atış sayı olmuşsa top, dip çizgisinin gerisindeki herhangi bir",
+          "yerden oyuna sokması için sayı yiyen takıma verilecektir.",
+          "• Topu kontrol eden ya da topu kontrol etme hakkına sahip olan takım varsa top, ihlale en yakın",
+          "yerden topu oyuna sokması için bu takıma verilecektir.",
+          "• Top hiçbir takımın kontrolünde değilse ya da hiçbir takımın topu kontrol etme hakkı yoksa bir",
+          "hava atışı durumu oluşur."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "43",
+    "title": "Serbest atışlar",
+    "page": 53,
+    "intro": [],
+    "sections": [
+      {
+        "id": "43.1",
+        "title": "Tanım",
+        "paragraphs": [
+          "43.1.1 Serbest atış, bir oyuncuya serbest atış çizgisinin gerisindeki ve yarım dairenin içindeki bir yerden,",
+          "tek başına, 1 sayı atma fırsatıdır.",
+          "43.1.2 Serbest atışlar serisi, tek bir faulün cezasından kaynaklanan tüm serbest atışlardan ve devamında",
+          "olası topu oyuna sokma hakkından oluşur."
+        ]
+      },
+      {
+        "id": "43.2",
+        "title": "Kural",
+        "paragraphs": [
+          "43.2.1 Bir kişisel, bir sportmenlik dışı ya da bir temaslı diskalifiye edici faul meydana geldiğinde,",
+          "serbest atış ya da atışlar aşağıdaki şekilde verilecektir.",
+          "• Faulün yapıldığı oyuncu serbest atış ya da atışları atacaktır.",
+          "• Bu oyuncu için oyuncu değişikliği isteği varsa, oyunu terk etmeden önce serbest atış ya da",
+          "atışları atmalıdır.",
+          "• O kişinin sakatlanma, 5 faul yapmış veya diskalifiye edilmiş olması nedeniyle oyunu terk",
+          "etmesi gerekiyorsa, onun yerine oyuna giren yedek oyuncu serbest atış ya da atışları",
+          "atacaktır. Eğer yerine girecek yedek oyuncu yoksa, başantrenörü tarafından belirlenen",
+          "herhangi bir takım arkadaşı serbest atış ya da atışları atacaktır.",
+          "43.2.2 Bir teknik ya da temassız bir diskalifiye edici faul meydana geldiğinde, rakip takım",
+          "başantrenörünün belirlediği herhangi bir oyuncu serbest atış ya da atışları atacaktır.",
+          "43.2.3 Serbest atışı atan oyuncu:",
+          "• Serbest atış çizgisinin gerisinde ve yarım dairenin içinde pozisyon alacaktır.",
+          "• Topun sepete üstten gireceği ya da çembere temas edeceği şekilde serbest atış yapmak için",
+          "herhangi bir yöntemi kullanabilir.",
+          "• Hakem tarafından top kullanımına verildikten sonra, 5 saniye içinde topu elinden",
+          "çıkaracaktır.",
+          "• Top sepete girene veya çembere temas edene kadar serbest atış çizgisine basmayacak ya da",
+          "kısıtlamalı alana girmeyecektir.",
+          "• Serbest atış aldatması yapmayacaktır.",
+          "43.2.4 Serbest atış ribaunt yerlerindeki oyuncular, 1 m derinliğinde olduğu düşünülen bu boşluklarda",
+          "dönüşümlü pozisyon alma hakkına sahip olacaklardır (Diyagram 7).",
+          "Serbest atışlar sırasında bu oyuncular şunları yapmayacaktır:",
+          "• Kendilerine ait olmayan serbest atış ribaunt yerlerine yerleşmeyeceklerdir.",
+          "• Top, serbest atışı atan oyuncunun el ya da ellerini terk edene kadar kısıtlamalı alana, tarafsız",
+          "bölgeye girmeyecekler ya da serbest atış ribaunt yerlerini terk etmeyeceklerdir.",
+          "• Hareketleriyle serbest atış atan oyuncunun dikkatini dağıtmayacaklardır.",
+          "Diyagram 7 Serbest atışlar sırasında oyuncuların pozisyonları",
+          "43.2.5 Serbest atış ribaunt yerlerinde yer almayan oyuncular, serbest atış sona erene kadar serbest atış",
+          "çizgisinin uzantısının gerisinde ve 3 sayı çizgisinin arkasındaki alanda kalacaklardır.",
+          "43.2.6 Başka serbest atış set ya da setlerinin ya da sonrasında topun oyuna sokulmasını takip edeceği",
+          "serbest atış ya da atışlar sırasında, tüm oyuncular serbest atış çizgisi uzantısının gerisinde ve",
+          "3 sayı çizgisinin arkasındaki alanda bekleyeceklerdir.",
+          "Madde 43.2.3, 43.2.4, 43.2.5 ve 43.2.6’ya uyulmaması ihlaldir."
+        ]
+      },
+      {
+        "id": "43.3",
+        "title": "Cezası",
+        "paragraphs": [
+          "43.3.1 Bir serbest atış başarılı olursa ve ihlal serbest atışı atan oyuncu tarafından yapılırsa, sayı varsa",
+          "sayılmayacaktır.",
+          "Yönetilecek başka bir serbest atış ya da atışlar veya topa sahip olma hakkı olmadıkça top, serbest",
+          "atış çizgisinin uzantısından oyuna sokması için rakiplere verilecektir.",
+          "43.3.2 Bir serbest atış başarılı olursa ve ihlal serbest atışı atan oyuncu dışındaki herhangi bir oyuncu veya",
+          "oyuncular tarafından yapılırsa:",
+          "• Sayı sayılacaktır.",
+          "• İhlal ya da ihlaller dikkate alınmayacaktır.",
+          "Son serbest atış durumunda top, o takımın dip çizgisinin gerisindeki herhangi bir yerden topu",
+          "oyuna sokması için rakiplere verilecektir.",
+          "43.3.3 Bir serbest atış başarılı olmazsa ve ihlal aşağıdakiler tarafından yapılırsa:",
+          "• Son serbest atışta, serbest atışı atan oyuncu ya da takım arkadaşı tarafından yapılırsa, bu",
+          "takımın topa sahip olma hakkı olmadıkça, top serbest atış çizgisinin uzantısından oyuna",
+          "sokulması için rakibe verilecektir.",
+          "• Serbest atışı atan oyuncunun bir rakibi tarafından yapılırsa, serbest atışı atan oyuncuya yeni",
+          "bir serbest atış hakkı verilecektir.",
+          "• Son serbest atışta her iki takım tarafından da yapılırsa, bir hava atışı durumu oluşur."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "44",
+    "title": "Düzeltilebilir hatalar",
+    "page": 55,
+    "intro": [],
+    "sections": [
+      {
+        "id": "44.1",
+        "title": "Tanım",
+        "paragraphs": [
+          "Bir kural yanlışlıkla göz ardı edilirse, hakemler sadece aşağıdaki durumlarda bir hatayı",
+          "düzeltebilirler:",
+          "• Hak edilmeyen bir serbest atış ya da atışların verilmesi.",
+          "• Hak edilmiş bir serbest atış ya da atışların verilmemesi.",
+          "• Sayı ya da sayıların yanlışlıkla verilmesi veya iptal edilmesi.",
+          "• Yanlış oyuncunun serbest atış ya da atışları atmasına izin verilmesi."
+        ]
+      },
+      {
+        "id": "44.2",
+        "title": "Genel prosedür",
+        "paragraphs": [
+          "44.2.1 Yukarıda belirtilen hataların düzeltilebilir olması için hakemler, eğer varsa komiser veya masa",
+          "görevlileri tarafından hatanın ardından oyun saati çalışmaya başladıktan sonra ilk ölü top",
+          "sonrasında, top canlanmadan önce fark edilmelidir. Bu hatalar, oyun saati oyunun sonu için sesli",
+          "işaretini verip top öldükten sonra artık düzeltilemez.",
+          "44.2.2 Hakem, hiçbir takım dezavantajlı duruma düşürülmediği sürece, düzeltilebilir bir hatayı fark eder",
+          "etmez oyunu hemen durdurabilir.",
+          "44.2.3 Hatanın meydana gelmesi ile hatanın fark edilmesi arasında yapılan fauller, atılan sayılar, geçen",
+          "süre ve olabilecek diğer ek etkinlikler geçerli kalacaktır.",
+          "44.2.4 Hatanın düzeltilmesinden sonra oyun, bu kurallarda aksi belirtilmedikçe hatayı düzeltmek için",
+          "oyunun durdurulduğu yerden devam edecektir. Top, hatanın düzeltilmesi için oyun",
+          "durdurulduğunda topa sahip olan takıma verilecektir.",
+          "44.2.5 Bir hatanın hala düzeltilebilir olduğu fark edildiğinde ve:",
+          "• Hatanın düzeltilmesi ile ilgili olan oyuncu kurallara uygun olarak değiştirildikten sonra takım",
+          "sırasındaysa, hatanın düzeltilmesi için tekrar sahaya girmelidir, bu noktada oyuncu olur.",
+          "Hatanın düzeltilmesi işlemi tamamlandıktan sonra bu oyuncu kurallara uygun olarak tekrar",
+          "bir oyuncu değişikliği isteği olmadıkça oyunda kalabilir, istek varsa bu durumda sahayı terk",
+          "edebilir.",
+          "• Oyuncu, sakatlandığından veya yardım aldığından, 5 faul yapmış olduğundan ya da",
+          "diskalifiye edildiğinden dolayı değiştirilmişse, onun yerine giren yedek oyuncu hatanın",
+          "düzeltilmesine katılmalıdır.",
+          "44.2.6 Düzeltilebilir hatalar, başhakem maç kağıdını imzaladıktan sonra düzeltilemez.",
+          "44.2.7 Skor, faul sayısı, mola sayısı ve oyun saati ile şut saatinde geçen ve kalan süreyle ilgili, masa",
+          "görevlilerinin herhangi bir sayı, süre ya da şut saati operasyonları hatası, başhakem maç kağıdını",
+          "imzalamadan önce, herhangi bir zamanda hakemler tarafından düzeltilebilir."
+        ]
+      },
+      {
+        "id": "44.3",
+        "title": "Özel prosedür",
+        "paragraphs": [
+          "44.3.1 Hak edilmeyen bir serbest atış ya da atışların verilmesi:",
+          "• Hata sonucu verilen serbest atış ya da atışlar iptal edilecek ve oyun aşağıdaki şekilde devam",
+          "edecektir:",
+          "• Oyun saati çalışmamışsa top, serbest atış çizgisinin uzantısından oyuna sokması için serbest",
+          "atışları iptal edilen takıma verilecektir.",
+          "Oyun saati çalışmışsa ve:",
+          "- Hata fark edildiğinde topu kontrol eden ya da kontrol etme hakkı olan takım, hatanın",
+          "meydana geldiği anda topu kontrol etmekte olan aynı takımsa, ya da",
+          "- Hata fark edildiğinde top hiçbir takımın kontrolünde değilse,",
+          "top, hatanın meydana geldiği anda topu kontrol etme hakkı olan takıma verilecektir.",
+          "• Oyun saati çalışmış ve hata fark edildiğinde, topu kontrol eden ya da kontrol etme hakkı olan",
+          "takım, hata anında topu kontrol eden takımın rakibiyse, bir hava atışı durumu oluşur.",
+          "• Oyun saati çalışmış ve hata fark edildiğinde, serbest atış ya da atışları içeren bir faul kararı",
+          "verilmişse, serbest atış ya da atışlar yönetilecek ve top, oyuna sokması için hata meydana",
+          "geldiği anda topu kontrol etmekte olan takıma verilecektir.",
+          "44.3.2 Hak edilmiş serbest atış ya da atışların verilmemesi.",
+          "• Hata meydana geldikten sonra topun kontrolünde bir değişiklik olmazsa oyun, hatanın",
+          "düzeltilmesinden sonra herhangi bir normal son serbest atış sonrasında olduğu gibi devam",
+          "edecektir.",
+          "• Aynı takım, hata sonucu topu oyuna soktuktan sonra sayı yaparsa, hata göz ardı edilecektir.",
+          "44.3.3 Yanlış oyuncunun serbest atış ya da atışlar atmasına izin verilmesi:",
+          "Serbest atış ya da atışlar ve cezanın bir parçası ise topa sahip olma hakkı iptal edilecek ve top,",
+          "serbest atış çizgisinin uzantısından oyuna sokması için rakiplere verilecektir, oyun devam",
+          "etmedikçe ve hatanın düzeltilmesi için durdurulmadıkça veya başka ihlaller için cezalar",
+          "uygulanacaksa bu durumda oyun, hatayı düzeltmek için durdurulduğu yerden devam",
+          "ettirilecektir.",
+          "KURAL SEKİZ – HAKEMLER, MASA GÖREVLİLERİ, KOMİSER: GÖREVLERİ VE YETKİLERİ"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "45",
+    "title": "Hakemler, masa görevlileri ve komiser",
+    "page": 57,
+    "intro": [],
+    "sections": [
+      {
+        "id": "45.1",
+        "title": "",
+        "paragraphs": [
+          "45.1 Hakemler, bir başhakem ve 1 ya da 2 yardımcı hakemden oluşacaktır. Masa görevlileri ve varsa bir",
+          "komiser yardımcı olacaklardır.",
+          "45.2 Masa görevlileri, sayı görevlisi, yardımcı sayı görevlisi, süre görevlisi ve şut saati",
+          "görevlisinden oluşacaktır.",
+          "45.3 Eğer varsa, komiser, sayı görevlisi ile süre görevlisinin arasında oturacaktır. Oyun sırasında",
+          "öncelikli görevi, masa görevlilerinin çalışmalarını denetlemek ve oyunun düzgün işleyişi için",
+          "başhakem ve yardımcı hakemlere yardımcı olmaktır.",
+          "45.4 Hakemlerin sahadaki iki takımla hiçbir şekilde bağlantısı olmamalıdır.",
+          "45.5 Hakemler, masa görevlileri ve eğer varsa komiser oyunu bu kurallara göre yönetecek ve bunları",
+          "değiştirme yetkileri olmayacaktır.",
+          "45.6 Hakemlerin resmi kıyafetleri, hakem tişörtü, uzun siyah pantolon, siyah çorap ve siyah basketbol",
+          "ayakkabısından oluşacaktır.",
+          "45.7 Hakemler ve masa görevlileri bir örnek giyineceklerdir."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "46",
+    "title": "Başhakem: Görevleri ve yetkileri",
+    "page": 57,
+    "intro": [
+      "Başhakem:"
+    ],
+    "sections": [
+      {
+        "id": "46.1",
+        "title": "",
+        "paragraphs": [
+          "46.1 Oyun sırasında kullanılacak tüm donanımı kontrol edecek ve onaylayacaktır.",
+          "46.2 Oyun saatini, şut saatini, kronometreyi belirleyecek ve masa görevlileri ile tanışacaktır",
+          "46.3 Ev sahibi takım tarafından sağlanan en az 2 kullanılmış toptan bir maç topu seçecektir. Bu",
+          "toplardan hiçbiri maç topu olarak uygun değilse, mevcut en kaliteli topu seçebilir.",
+          "46.4 Hiçbir oyuncunun diğer oyuncuların yaralanmasına neden olabilecek nesneler takmasına izin",
+          "vermeyecektir.",
+          "46.5 Birinci çeyreğin başında hava atışını yapacak, diğer tüm çeyreklerin ve uzatmaların başında",
+          "pozisyon sırasına göre topun oyuna sokulmasını yönetecektir.",
+          "46.6 Koşullar gerektirdiğinde oyunu durdurma yetkisine sahiptir.",
+          "46.7 Bir takımın oyunu hükmen kaybetmesine karar verme yetkisine sahiptir.",
+          "46.8 Oyun süresinin sonunda veya gerekli olduğunu düşündüğü herhangi bir zamanda maç kağıdını",
+          "dikkatlice kontrol edecektir.",
+          "46.9 Hakemlerin yönetimini ve oyunla ilişkilerini sonlandırmak için oyun süresi bittikten sonra maç",
+          "kağıdını onaylayacak ve imzalayacaktır. Hakemlerin yetkileri, oyunun belirlenen başlama",
+          "saatinden 20 dakika önce sahaya çıkmalarıyla başlayacak ve oyun saatinin, oyun süresinin bittiği",
+          "gösteren sesli işaretinin başhakem tarafından onaylanmasıyla sona erecektir.",
+          "46.10 Soyunma odasında maç kağıdını imzalamadan önce maç kağıdının arkasına varsa, şunları",
+          "yazacaktır:",
+          "• Herhangi bir hükmen yenilgi ya da diskalifiye edici faul.",
+          "• Takım üyelerinin, başantrenörlerin, yardımcı antrenörlerin ve delegasyon üyelerinin oyunun",
+          "belirlenmiş başlama saatinden 20 dakika öncesindeki ya da oyunun sonuyla maç kağıdının",
+          "onaylanması ve imzalanması arasındaki meydana gelen sportmenlik dışı davranışları.",
+          "Böyle bir durumda, başhakem (veya eğer varsa komiser) müsabakanın organizasyon birimine",
+          "ayrıntılı bir rapor göndermelidir.",
+          "46.11 Gerekli gördüğü her durumda ya da hakemler arasında anlaşmazlık olduğunda son kararı",
+          "verecektir. Son kararı verirken, yardımcı hakemlere, eğer varsa komisere ve/veya masa",
+          "görevlilerine danışabilir.",
+          "46.12 Anlık Tekrar Sistemi’nin (IRS) kullanıldığı müsabakalar için lütfen Ek Bölüm F'ye bakın.",
+          "46.13 Süre görevlisi tarafından bilgilendirildikten sonra, birinci ve üçüncü çeyrekler öncesinde,",
+          "çeyreğin başlamasına 3 dakika ve 1.5 dakika kaldığında düdüğünü çalacaktır. Başhakem ayrıca",
+          "ikinci ve dördüncü çeyrekten önce ve her uzatmada, çeyreğin ve uzatmanın başlamasına 30 saniye",
+          "kaldığında düdüğünü çalacaktır.",
+          "46.14 Bu kurallarda açıkça belirtilmemiş herhangi bir konuda karar verme yetkisine sahiptir."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "47",
+    "title": "Hakemler: Görevleri ve yetkileri",
+    "page": 58,
+    "intro": [],
+    "sections": [
+      {
+        "id": "47.1",
+        "title": "",
+        "paragraphs": [
+          "47.1 Hakemler, hakem masası, takım sıraları ve çizgilerin hemen gerisindeki zemin alanları da dahil",
+          "olmak üzere, sınır çizgileri içinde ya da dışında, kurallara aykırı olan konularda karar verme",
+          "yetkilerine sahip olacaktır.",
+          "47.2 Hakemler kurallara aykırı bir durum olduğunda, bir çeyrek ya da uzatma sona erdiğinde ya da",
+          "oyunu durdurmaya gerekli gördüklerinde düdüklerini çalacaklardır. Hakemler, sahadan yapılan",
+          "başarılı bir atış, başarılı bir serbest atış ya da topun canlanmasından sonra düdük",
+          "çalmayacaklardır.",
+          "47.3 Hakemler, kişisel bir temas ya da ihlale karar verirken her durumda, aşağıdaki temel prensipleri",
+          "dikkate alacak ve buna göre değerlendirecektir.",
+          "• Kuralların ruhu ve amacı ile oyunun bütünlüğünü koruma ihtiyacı.",
+          "• “Avantaj/dezavantaj” kavramının uygulanmasının tutarlılığı. Hakemler, sorumlu oyuncuya bir",
+          "avantaj sağlamayan veya rakibini dezavantajlı duruma düşürmeyen küçük ve önemsiz kişisel",
+          "temasları cezalandırmak için oyunun akışını gereksiz yere kesmeye çalışmamalıdır.",
+          "• İlgili oyuncuların yetenekleri ve oyun sırasındaki tutum ve davranışlarını göz önünde",
+          "bulundurularak, her oyuna sağduyulu davranma tutarlılığı.",
+          "• Oyun kontrolü ile oyun akışı arasındaki dengenin sürdürülmesindeki tutarlılık, Oyunun",
+          "içindekilerin ne yapmak istediklerini ve oyun için doğru olanı çalmayı “hissetme”.",
+          "47.4 Takımlardan biri tarafından bir itiraz yapılırsa, başhakem (veya eğer varsa, komiser) itiraz",
+          "nedenlerini aldıktan sonra olayı yazılı olarak yarışmanın organizasyon birimine bildirecektir.",
+          "47.5 Bir hakem sakatlanırsa ya da başka herhangi bir nedenle, olaydan sonraki 5 dakika içinde görevini",
+          "yerine getirmeye devam edemezse, oyun devam edecektir. Aynı nitelikteki bir hakemin,",
+          "sakatlanan hakemin yerine geçme olasılığı bulunmadıkça, kalan hakem ya da hakemler, oyunun",
+          "devamını tek başına yönetecektir. Eğer varsa, komiser ile görüştükten sonra, kalan hakem ya da",
+          "hakemler olası değişiklik için karar verecektir.",
+          "47.6 Tüm uluslararası müsabakalarda, bir kararın açıklığa kavuşturulması için sözlü iletişim gerekliyse,",
+          "İngilizce dilinde yapılacaktır.",
+          "47.7 Her hakem, görevlerinin sınırları dahilinde karar verme yetkisine sahiptir, ancak diğer hakemin",
+          "verdiği kararları yok sayma ya da sorgulama yetkisi yoktur.",
+          "47.8 Resmi Basketbol Kurallarının hakemler tarafından uygulanması ve yorumlanması, açık bir karar",
+          "verilip verilmediğine bakılmaksızın kesindir ve bir resmi itiraz/protesto durumunun kabul",
+          "edilmesi durumu hariç, itiraz edilemez veya göz ardı edilemez (Ek Bölüm C'ye bakınız)."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "48",
+    "title": "Sayı görevlisi ve yardımcı sayı görevlisi: Görevleri",
+    "page": 59,
+    "intro": [],
+    "sections": [
+      {
+        "id": "48.1",
+        "title": "",
+        "paragraphs": [
+          "48.1 Sayı görevlisine bir maç kağıdı verilecek ve aşağıda belirtilenleri kaydedecektir:",
+          "• Takımların oyuna başlayacak oyuncularını ve oyuna giren tüm yedek oyuncularının isimlerini",
+          "ve numaralarını. Oyuna başlayacak 5 oyuncunun, oyuncu değişikliklerinin veya oyuncu",
+          "numaraları ile ilgili bir kural ihlali durumunda en yakın hakemi derhal bilgilendirmelidir.",
+          "• Sahadan ve serbest atıştan yapılan sayıların kronolojik/özet akışını.",
+          "• Her oyuncuya verilen faulleri. Her bir başantrenörün aldığı teknik faullere kaydedecek ve bir",
+          "başantrenörün diskalifiye edilmesi gerektiğinde derhal bir hakeme haber verecektir. Benzer",
+          "şekilde, bir oyuncunun 2 teknik faul veya 2 sportmenlik dışı faul veya 1 teknik ve 1",
+          "sportmenlik dışı faul yapması durumunda diskalifiye edilmesi gerektiğini derhal hakeme",
+          "bildirmelidir.",
+          "• Molalar: Bir devrede ya da uzatmada molası biten takımın başantrenörüne, hakem aracılığıyla",
+          "bildirimde bulunmalıdır.",
+          "• Pozisyon sırası okunu kullanarak bir sonraki pozisyon sırasını belirleme. Takımlar ikinci devre",
+          "için sepetleri değiştireceklerinden, birinci devre bitiminden hemen sonra sayı görevlisi,",
+          "pozisyon okunun yönünü tersine çevirecektir.",
+          "• Her takımın başantrenörlerine tekrar izleme talep etme (challenge) hakkı verilmiştir. Sayı",
+          "görevlisi, bir başantrenör yanlışlıkla ikinci kez tekrar izleme talebinde bulunduğunda",
+          "(challenge) en yakın hakeme derhal haber vermelidir.",
+          "48.2 Yardımcı sayı görevlisi, skorbordu kullanacak ve sayı görevlisi ile süre görevlisine yardımcı",
+          "olacaktır. Skorbord ile maç kağıdı arasında çözülemeyen herhangi bir tutarsızlık olması",
+          "durumunda maç kağıdı öncelikli olacak ve skorbord buna göre düzeltilecektir.",
+          "48.3 Maç kağıdında sayı görevlisinin bir hatası fark edilirse:",
+          "• Oyun sırasında, süre görevlisi sesli işaretini vermeden önce ilk ölü topu beklemelidir.",
+          "• Oyun süresinin bitiminden sonra ve maç kağıdı başhakem tarafından imzalanmadan önce, bu",
+          "düzeltme maçın sonucunu etkiliyor olsa bile, hata düzeltilecektir.",
+          "• Maç kağıdı başhakem tarafından imzalandıktan sonra, hata artık düzeltilemez. Bu durumda",
+          "başhakem veya eğer varsa komiser, yarışmanın organizasyon birimine ayrıntılı bir rapor",
+          "gönderecektir."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "49",
+    "title": "Süre görevlisi: Görevleri",
+    "page": 59,
+    "intro": [],
+    "sections": [
+      {
+        "id": "49.1",
+        "title": "",
+        "paragraphs": [
+          "49.1 Süre görevlisine bir oyun saati ile bir kronometre verilecek ve bunlarla:",
+          "• Oyun süresini, molaları ve oyun aralarının süresini tutacaktır.",
+          "• Bir çeyreğin ya da uzatmanın sonunda, oyun saatinin çok yüksek sesle ve otomatik olarak",
+          "sesli işaret vermesini sağlayacaktır.",
+          "• Süre görevlisinin sesli işareti çalışmaz ya da duyulmazsa hakemleri hemen bilgilendirmek",
+          "için mümkün olan her türlü yolu kullanacaktır.",
+          "• Her bir oyuncunun yaptığı faul sayısını, her iki başantrenör tarafından görülebilecek şekilde",
+          "faul göstergesini kaldırarak gösterecektir.",
+          "• Herhangi bir oyuncu 5 faul aldığında hemen bir hakeme haber vermelidir.",
+          "• Her biri hakem masasının takımının sırasına en yakın olan her iki tarafında bulunan takım faul",
+          "göstergelerini kullanacaktır.Takım faulü göstergesi, mevcut takım faullerinin sayısını",
+          "gösterecek ve bir çeyrekteki dördüncü takım faulünden sonra top yeniden canlandığında,",
+          "hiçbir sayı görünmeyecek şekilde tamamen kırmızı renkte olacaktır.",
+          "• Oyuncu değişikliklerini gerçekleştirecektir.",
+          "• Molaları yönetecektir. Bir takım mola talebinde bulunduğunda, hakemlere mola fırsatını",
+          "bildirmelidir.",
+          "• Sesli işaretini sadece top öldüğünde ve yeniden canlanmadan önce verecektir. Sesli işareti",
+          "oyun saatini veya oyunu durdurmaz ya da topun ölmesine neden olmaz.",
+          "49.2 Süre görevlisi, oyun süresini aşağıdaki şekilde ayarlayacaktır:",
+          "Oyun saatini şu durumlarda başlatır:",
+          "• Bir hava atışı sırasında topa, hava atışına sıçrayanlardan biri tarafından kurallara uygun olarak",
+          "dokunulduğunda.",
+          "- Başarısız bir son serbest atıştan sonra ve top canlı kalmaya devam ettiğinde, topa",
+          "sahadaki herhangi bir oyuncu dokunduğunda ya da top sahadaki bir oyuncuya temas",
+          "ettiğinde.",
+          "- Topun oyuna sokulması sırasında, topa sahadaki herhangi bir oyuncu kurallara uygun",
+          "olarak dokunduğunda ya da top sahadaki bir oyuncuya temas ettiğinde.",
+          "• Oyun saatini şu durumlarda durduracaktır:",
+          "- Bir çeyreğin ya da uzatmanın sonunda süre sona erdiğinde, oyun saati otomatik olarak",
+          "durmazsa,",
+          "- Top canlıyken bir hakem düdüğünü çaldığında.",
+          "- Mola talep eden takıma yapılan bir atış sayı olduğunda",
+          "- Dördüncü çeyrekte ve her uzatmada oyun saati 2:00 dakika veya daha az gösterdiğinde",
+          "yapılan bir atış sayı olduğunda.",
+          "- Bir takım topu kontrol ederken şut saati sesli işaret verirse.",
+          "49.3 Süre görevlisi bir mola süresini aşağıdaki şekilde ayarlayacaktır:",
+          "• Hakem düdüğünü çaldığında ve mola işaretini verdiğinde, hemen kronometreyi başlatır.",
+          "• Mola süresinin 50 saniyesi geçtikten sonra sesli işaretini verir.",
+          "• Mola süresi bittiğinde sesli işaretini verir.",
+          "49.4 Süre görevlisi bir oyun arasını aşağıdaki şekilde ayarlayacaktır:",
+          "• Bir önceki çeyrek ya da uzatma sona erdiğinde hemen kronometreyi başlatır.",
+          "• Birinci ve üçüncü çeyrekten önce, çeyreğin başlamasına 3 dakika ve 1.5 dakika kala hakemleri",
+          "bilgilendirir.",
+          "• İkinci ve dördüncü çeyrek ile her uzatmadan önce, çeyreğin ya da uzatmanın başlamasına 30",
+          "saniye kala sesli işaretini verir.",
+          "• Bir oyun arası sona erdiğinde, sesli işaretini verir ve aynı anda kronometreyi hemen durdurur."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "50",
+    "title": "ŞUT SAATİ GÖREVLİSİ: GÖREVLERİ ……………………………………………………………………………….56",
+    "page": 5,
+    "intro": [
+      "EK BÖLÜM A – HAKEMLERİN İŞARETLERİ………………………………………………………………………..………………………….61",
+      "EK BÖLÜM B – MAÇ KAĞIDI ..…………………………………………………………………………………….………………………………..69",
+      "EK BÖLÜM C – İTİRAZ PROSEDÜRÜ…………………………………………………………………………….………………………………79",
+      "EK BÖLÜM D – TAKIMLARIN SIRALAMASI…………………………………………………………………….…………………………….80",
+      "EK BÖLÜM E – MEDYA MOLALARI….. …………………………………………………………………………….……………………………89",
+      "EK BÖLÜM F – ANLIK TEKRAR SİSTEMİ (IRS).………………………………………………………………………………………………90",
+      "DİYAGRAMLAR TABLOSU",
+      "DİYAGRAM 1 SAHANIN TAM BOYUTLARI……..…..…………………………………………………………………………………6",
+      "DİYAGRAM 2 SAHA VE ZEMİN… ………………………………………………………………………………………………………..8",
+      "DİYAGRAM 3 KISTLAMALI ALAN ………………………………………………………………………………………………………..8",
+      "DİYAGRAM 4 2 SAYILIK / 3 SAYILIK ATIŞ BÖLGESİ……….……………………………………………………………………….8",
+      "DİYAGRAM 5 HAKEM MASASI ve OYUNCU DEĞİŞİKLİK SANDALYELERİ.....………………………………………..……9",
+      "DİYAGRAM 6 SİLİNDİR PRENSİBİ ………………………………………………………………………………………………………36",
+      "DİYAGRAM 7 SERBEST ATIŞLAR SIRASINDA OYUNCULARIN YERLERİ ……………………………………………………50",
+      "DİYAGRAM 8 HAKEM İŞARETLERİ ..........……………………………………………………………………………………………65",
+      "DİYAGRAM 9 MAÇ KAĞIDI …………..…………………………………………………………………………………………………..66",
+      "DİYAGRAM 10 MAÇ KAĞIDININ ÜST BÖLÜMÜ ……………………………………………………………………………………..67",
+      "DİYAGRAM 11 MAÇ KAĞIDINDA TAKIMLAR (MAÇ ÖNCESİ) ……………………………………………………………………68",
+      "DİYAGRAM 12 MAÇ KAĞIDINDA TAKIMLAR (MAÇ SONRASI) ………………………………………………………………….69",
+      "DİYAGRAM 13 DEVAM EDEN SKOR ......……………………………………………………………………………………………….73",
+      "DİYAGRAM 14 ÖZET ………………………………………………………………………………………………………………………….74",
+      "DİYAGRAM 15 MAÇ KAĞIDININ ALT BÖLÜMÜ ………………………………………………………………………………………74",
+      "Resmi basketbol kuralları göz önüne alındığında, bu metinde erkeklere veya kadınlara yapılan tüm",
+      "tanımlamaların her iki cinsiyet için de eşit olarak geçerli olduğu kabul edilmeli ve buna göre anlaşılmalıdır.",
+      "KURAL BİR – OYUN"
+    ],
+    "sections": []
+  }
+]
