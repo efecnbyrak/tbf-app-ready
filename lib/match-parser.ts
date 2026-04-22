@@ -423,6 +423,7 @@ export function getMatchesForUser(allMatches: MatchData[], firstName: string, la
         const allPeople = [
             ...match.hakemler, ...match.masa_gorevlileri,
             ...match.saglikcilar, ...match.istatistikciler, ...match.gozlemciler,
+            ...match.sahaKomiserleri,
         ];
         return allPeople.some(person => nameMatches(person, firstName, lastName));
     });
