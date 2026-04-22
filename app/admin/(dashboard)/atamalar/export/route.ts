@@ -3,6 +3,7 @@ import { verifySession } from "@/lib/session";
 import { db } from "@/lib/db";
 import ExcelJS from "exceljs";
 import { getCurrentSeason } from "@/lib/season-utils";
+import { PaymentConfig } from "@/app/actions/payments";
 
 export const dynamic = "force-dynamic";
 
@@ -15,6 +16,59 @@ function timeStringToExcelDate(timeStr: string | null): Date | null {
     if (isNaN(h) || isNaN(m)) return null;
     // Excel time base: 1899-12-30
     return new Date(1899, 11, 30, h, m, 0, 0);
+}
+
+function formatTurkishDate(d: Date): string {
+    return `${String(d.getDate()).padStart(2, "0")}.${String(d.getMonth() + 1).padStart(2, "0")}.${d.getFullYear()}`;
+}
+
+// Detect which payment category applies to an assignment
+function detectPaymentCategory(
+    kategori: string | null | undefined,
+    ligTuru: string | null | undefined,
+    config: PaymentConfig
+): { type: "okul" | "il" | "ilce" | "special" | null; leagueName: string; leagueRate: { basHakem: number; yardimciHakem: number } | null } {
+    const k = (kategori || "").toUpperCase().replace(/\s+/g, " ").trim();
+    const lt = (ligTuru || "").toUpperCase().replace(/\s+/g, " ").trim();
+
+    const isYerel =
+        lt.includes("OKUL") ||
+        lt.includes("İL VE İLÇE") ||
+        lt.includes("IL VE ILCE") ||
+        lt.includes("YEREL");
+
+    if (isYerel) {
+        if (k.includes("İLÇE") || k.includes("ILCE")) {
+            return { type: "ilce", leagueName: "İlçe Maçları", leagueRate: config.standardMatches.ilce };
+        }
+        if (k.includes("OKUL")) {
+            return { type: "okul", leagueName: "Okul Maçları", leagueRate: config.standardMatches.okul };
+        }
+        // Default: İl
+        return { type: "il", leagueName: "İl Maçları", leagueRate: config.standardMatches.il };
+    }
+
+    const isOzel =
+        lt.includes("ÖZEL") ||
+        lt.includes("OZEL") ||
+        lt.includes("ÜNİVERSİTE") ||
+        lt.includes("UNIVERSITE") ||
+        lt.includes("ÖZEL LİG");
+
+    if (isOzel) {
+        // Match kategori against configured special league names
+        for (const league of config.specialLeagues) {
+            const lName = league.name.toUpperCase().replace(/\s+/g, " ").trim();
+            if (!lName) continue;
+            if (k === lName || k.includes(lName) || lName.includes(k)) {
+                return { type: "special", leagueName: league.name, leagueRate: { basHakem: league.basHakem, yardimciHakem: league.yardimciHakem } };
+            }
+        }
+        // No match found — show kategori as category name without rate
+        return { type: "special", leagueName: kategori || "Özel Lig", leagueRate: null };
+    }
+
+    return { type: null, leagueName: kategori || ligTuru || "", leagueRate: null };
 }
 
 export async function GET(req: NextRequest) {
@@ -35,21 +89,37 @@ export async function GET(req: NextRequest) {
         if (ligTuru) where.ligTuru = ligTuru;
         if (hafta) where.hafta = hafta;
 
-        const assignments = await (db as any).gameAssignment.findMany({
-            where,
-            orderBy: [{ tarih: "asc" }, { salon: "asc" }, { saat: "asc" }],
-        });
+        const [assignments, paymentSetting] = await Promise.all([
+            (db as any).gameAssignment.findMany({
+                where,
+                orderBy: [{ tarih: "asc" }, { salon: "asc" }, { saat: "asc" }],
+            }),
+            db.systemSetting.findUnique({ where: { key: "PAYMENT_CONFIG" } }),
+        ]);
+
+        let paymentConfig: PaymentConfig = {
+            standardMatches: {
+                okul: { basHakem: 0, yardimciHakem: 0 },
+                il: { basHakem: 0, yardimciHakem: 0 },
+                ilce: { basHakem: 0, yardimciHakem: 0 },
+            },
+            specialLeagues: [],
+        };
+        if (paymentSetting?.value) {
+            try {
+                paymentConfig = JSON.parse(paymentSetting.value);
+            } catch { /* use default */ }
+        }
 
         const wb = new ExcelJS.Workbook();
         wb.creator = "BKS";
 
-        // Sheet name: date range of assignments
+        // ─── Sheet 1: Atamalar ───────────────────────────────────────────────────
         let sheetName = "Atamalar";
         if (assignments.length > 0) {
             const first = assignments[0].tarih as Date;
             const last = assignments[assignments.length - 1].tarih as Date;
-            const fmt = (d: Date) =>
-                `${String(d.getDate()).padStart(2, "0")}.${String(d.getMonth() + 1).padStart(2, "0")}.${d.getFullYear()}`;
+            const fmt = (d: Date) => formatTurkishDate(d);
             sheetName = `${fmt(first)} - ${fmt(last)}`;
             if (sheetName.length > 31) sheetName = sheetName.substring(0, 31);
         }
@@ -69,7 +139,7 @@ export async function GET(req: NextRequest) {
         const HEADER_FILL: ExcelJS.Fill = {
             type: "pattern",
             pattern: "solid",
-            fgColor: { argb: "FFC00000" }, // Kırmızı
+            fgColor: { argb: "FFC00000" },
         };
         const THIN_BLACK: Partial<ExcelJS.Borders> = {
             top: { style: "thin", color: { argb: "FF000000" } },
@@ -78,33 +148,28 @@ export async function GET(req: NextRequest) {
             right: { style: "thin", color: { argb: "FF000000" } },
         };
 
-        // Headers matching user specification exactly
         const HEADERS = [
             "TARİH", "SALON", "SAAT",
             "A TAKIMI", "B TAKIMI", "KATEGORİ", "GRUP",
-            "1.HAKEM", "2.HAKEM",
+            "1.HAKEM (BAŞ HAKEM)", "2.HAKEM (YARDIMCI HAKEM)",
             "SAYI GÖREVLİSİ", "SAAT GÖREVLİSİ", "ŞUT SAATİ GÖREVLİSİ",
             "GÖZLEMCİ", "SAHA KOMİSERİ", "SAĞLIKÇI",
             "İSTATİSTİKÇİ", "İSTATİSTİKÇİ",
         ];
 
         const headerRow = ws.addRow(HEADERS);
-        headerRow.height = 30; // Daha yüksek başlık satırı
+        headerRow.height = 30;
         for (let cn = 1; cn <= HEADERS.length; cn++) {
             const cell = headerRow.getCell(cn);
             cell.fill = HEADER_FILL;
-            cell.font = { bold: true, color: { argb: "FFFFFFFF" }, size: 11, name: "Calibri" }; // Beyaz yazı, büyük font
+            cell.font = { bold: true, color: { argb: "FFFFFFFF" }, size: 11, name: "Calibri" };
             cell.alignment = { vertical: "middle", horizontal: "center", wrapText: false };
             cell.border = THIN_BLACK;
         }
 
-        // Column widths (17 columns) — genişletildi
-        const colWidths = [28, 38, 10, 35, 35, 20, 15, 28, 28, 30, 30, 32, 28, 22, 20, 26, 26];
+        const colWidths = [28, 38, 10, 35, 35, 20, 15, 32, 32, 30, 30, 32, 28, 22, 20, 26, 26];
         colWidths.forEach((w, i) => { ws.getColumn(i + 1).width = w; });
 
-        // Build salon groups for alternating colors
-        // Each consecutive group of rows sharing the same salon gets a color.
-        // Groups alternate: white, green, white, green...
         let salonColorIndex = 0;
         let lastSalon = "";
 
@@ -113,7 +178,6 @@ export async function GET(req: NextRequest) {
             const currentSalon = a.salon || "";
 
             if (currentSalon !== lastSalon) {
-                // New salon group — advance the color
                 if (lastSalon !== "") salonColorIndex++;
                 lastSalon = currentSalon;
             }
@@ -140,13 +204,12 @@ export async function GET(req: NextRequest) {
                 a.istatistikci1 || "",
                 a.istatistikci2 || "",
             ]);
-            row.height = 22; // Daha yüksek veri satırları
+            row.height = 22;
 
             for (let cn = 1; cn <= 17; cn++) {
                 const cell = row.getCell(cn);
                 cell.font = { size: 10, name: "Calibri" };
                 cell.border = THIN_BLACK;
-                // Tarih (col 1) sola yaslı, diğer tüm sütunlar ortalı
                 cell.alignment = {
                     vertical: "middle",
                     horizontal: cn === 1 ? "left" : "center",
@@ -155,16 +218,117 @@ export async function GET(req: NextRequest) {
                 cell.fill = rowFill;
 
                 if (cn === 1) {
-                    // TARİH: Turkish long date format
                     cell.numFmt = 'd" "mmmm" "yyyy" "dddd';
                 } else if (cn === 3 && saatDate) {
-                    // SAAT: time format
                     cell.numFmt = "h:mm";
                 }
             }
         }
 
         ws.views = [{ state: "frozen", ySplit: 1 }];
+
+        // ─── Sheet 2: Ödemeler ───────────────────────────────────────────────────
+        const wsOdemeler = wb.addWorksheet("Ödemeler");
+
+        const PAYMENT_HEADER_FILL: ExcelJS.Fill = {
+            type: "pattern",
+            pattern: "solid",
+            fgColor: { argb: "FF1D4B2F" }, // Dark green for payments sheet
+        };
+        const PAYMENT_EVEN_FILL: ExcelJS.Fill = {
+            type: "pattern",
+            pattern: "solid",
+            fgColor: { argb: "FFF0FAF3" },
+        };
+        const TOTAL_FILL: ExcelJS.Fill = {
+            type: "pattern",
+            pattern: "solid",
+            fgColor: { argb: "FFFEF3C7" }, // Light amber for total rows
+        };
+
+        const PAYMENT_HEADERS = [
+            "TARİH", "A TAKIMI - B TAKIMI", "KATEGORİ", "LİG TÜRÜ", "İSİM", "GÖREV", "ÜCRET (₺)"
+        ];
+
+        const payHeaderRow = wsOdemeler.addRow(PAYMENT_HEADERS);
+        payHeaderRow.height = 32;
+        for (let cn = 1; cn <= PAYMENT_HEADERS.length; cn++) {
+            const cell = payHeaderRow.getCell(cn);
+            cell.fill = PAYMENT_HEADER_FILL;
+            cell.font = { bold: true, color: { argb: "FFFFFFFF" }, size: 11, name: "Calibri" };
+            cell.alignment = { vertical: "middle", horizontal: "center", wrapText: false };
+            cell.border = THIN_BLACK;
+        }
+
+        const payColWidths = [26, 42, 22, 28, 34, 24, 18];
+        payColWidths.forEach((w, i) => { wsOdemeler.getColumn(i + 1).width = w; });
+
+        let payRowIndex = 2;
+        let totalAmount = 0;
+
+        for (const a of assignments) {
+            const tarihDate: Date = a.tarih instanceof Date ? a.tarih : new Date(a.tarih);
+            const macAdi = `${a.aTeam || "—"} - ${a.bTeam || "—"}`;
+            const paymentCategory = detectPaymentCategory(a.kategori, a.ligTuru, paymentConfig);
+
+            const referees: { name: string; role: "basHakem" | "yardimciHakem"; label: string }[] = [];
+            if (a.hakem1) referees.push({ name: a.hakem1, role: "basHakem", label: "Baş Hakem" });
+            if (a.hakem2) referees.push({ name: a.hakem2, role: "yardimciHakem", label: "Yardımcı Hakem" });
+
+            for (const ref of referees) {
+                const amount = paymentCategory.leagueRate ? paymentCategory.leagueRate[ref.role] : null;
+                const isEven = (payRowIndex % 2 === 0);
+
+                const dataRow = wsOdemeler.addRow([
+                    tarihDate,
+                    macAdi,
+                    a.kategori || "—",
+                    paymentCategory.leagueName || a.ligTuru || "—",
+                    ref.name,
+                    ref.label,
+                    amount ?? "",
+                ]);
+                dataRow.height = 22;
+
+                for (let cn = 1; cn <= 7; cn++) {
+                    const cell = dataRow.getCell(cn);
+                    cell.font = { size: 10, name: "Calibri" };
+                    cell.border = THIN_BLACK;
+                    cell.fill = isEven ? PAYMENT_EVEN_FILL : WHITE_FILL;
+                    cell.alignment = {
+                        vertical: "middle",
+                        horizontal: cn === 1 || cn === 2 || cn === 5 ? "left" : "center",
+                        wrapText: false,
+                    };
+                    if (cn === 1) cell.numFmt = 'dd.mm.yyyy';
+                    if (cn === 7 && amount !== null) {
+                        cell.numFmt = '#,##0.00';
+                        cell.alignment = { vertical: "middle", horizontal: "right", wrapText: false };
+                    }
+                }
+
+                if (amount !== null) totalAmount += amount;
+                payRowIndex++;
+            }
+        }
+
+        // Add totals row
+        wsOdemeler.addRow([]); // Empty spacer row
+        const totalRow = wsOdemeler.addRow([
+            "", "", "", "", "", "GENEL TOPLAM", totalAmount,
+        ]);
+        totalRow.height = 26;
+        for (let cn = 1; cn <= 7; cn++) {
+            const cell = totalRow.getCell(cn);
+            cell.fill = TOTAL_FILL;
+            cell.border = THIN_BLACK;
+            cell.font = { bold: true, size: 11, name: "Calibri" };
+            cell.alignment = { vertical: "middle", horizontal: cn === 7 ? "right" : "center", wrapText: false };
+            if (cn === 7) cell.numFmt = '#,##0.00';
+        }
+
+        wsOdemeler.views = [{ state: "frozen", ySplit: 1 }];
+        wsOdemeler.autoFilter = { from: { row: 1, column: 1 }, to: { row: 1, column: 7 } };
 
         const buffer = await wb.xlsx.writeBuffer();
 

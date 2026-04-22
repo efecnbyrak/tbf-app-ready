@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { logout } from "@/app/actions/auth";
-import { Users, Calendar, LayoutDashboard, Settings, LogOut, Menu, X, Briefcase, History as LucideHistory, Megaphone, ClipboardList, CheckCircle, User, PlayCircle, BookOpen, Trophy, Bell, TableProperties, Clapperboard } from "lucide-react";
+import { Users, Calendar, LayoutDashboard, Settings, LogOut, Menu, X, Briefcase, History as LucideHistory, Megaphone, ClipboardList, CheckCircle, User, PlayCircle, BookOpen, Trophy, Bell, TableProperties, Clapperboard, Banknote } from "lucide-react";
 import Image from "next/image";
 import { useState, useEffect } from "react";
 
@@ -244,6 +244,21 @@ export function AdminLayoutClient({ children, role, imageUrl }: AdminLayoutClien
                             >
                                 <Trophy className="w-4 h-4 text-orange-400" />
                                 Maçlar
+                            </Link>
+                        )}
+
+                        {role === "SUPER_ADMIN" && (
+                            <Link
+                                href="/admin/payments"
+                                onClick={() => setIsOpen(false)}
+                                prefetch={false}
+                                className={`flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium transition-all text-[16px] ${isActive("/admin/payments")
+                                    ? "bg-red-700 text-white shadow-md border-l-4 border-red-900"
+                                    : "hover:bg-zinc-800/50 text-zinc-400 hover:text-white"
+                                    }`}
+                            >
+                                <Banknote className="w-4 h-4 text-emerald-400" />
+                                Ödemeler
                             </Link>
                         )}
 
