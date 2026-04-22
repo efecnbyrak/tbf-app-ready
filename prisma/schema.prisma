@@ -487,3 +487,29 @@ model AnnouncementRead {
   @@unique([announcementId, userId])
   @@map("announcement_reads")
 }
+
+model GameAssignment {
+  id                Int      @id @default(autoincrement())
+  tarih             DateTime
+  saat              String?
+  salon             String?
+  aTeam             String
+  bTeam             String
+  kategori          String?
+  grup              String?
+  hakem1            String?
+  hakem2            String?
+  sayiGorevlisi     String?
+  saatGorevlisi     String?
+  sutSaatiGorevlisi String?
+  gozlemci          String?
+  sahaKomiseri      String?
+  saglikci          String?
+  istatistikci1     String?
+  istatistikci2     String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([tarih])
+  @@map("game_assignments")
+}
