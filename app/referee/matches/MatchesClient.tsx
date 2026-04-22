@@ -7,6 +7,8 @@ import { format } from "date-fns";
 import { tr } from "date-fns/locale";
 
 import { MatchData } from "@/lib/match-parser";
+import { getPaymentConfig } from "@/app/actions/payments";
+import type { PaymentConfig, PaymentRate } from "@/lib/payment-types";
 
 interface MatchesClientProps {
     firstName: string;
@@ -445,6 +447,51 @@ export function MatchesClient({ firstName, lastName, initialMatches = [], initia
     }, [selectedHafta, haftaGroups.sortedWeeks]);
 
     // ============================================================
+    // ============================================================
+    // Payment config helper — determines ücret for a match + role
+    // ============================================================
+    function getRoleKey(match: MatchData): keyof PaymentRate | null {
+        const check = (arr: string[]) => arr.some(n => nameMatchesClient(n, firstName, lastName));
+        if (check(match.hakemler)) {
+            // 1st hakem = basHakem, 2nd+ = yardimciHakem
+            const idx = match.hakemler.findIndex(n => nameMatchesClient(n, firstName, lastName));
+            return idx === 0 ? "basHakem" : "yardimciHakem";
+        }
+        if (check(match.masa_gorevlileri)) return "masaGorevlisi";
+        if (check(match.saglikcilar)) return "saglikci";
+        if (check(match.istatistikciler)) return "istatistikci";
+        if (check(match.gozlemciler)) return "gozlemci";
+        if (check(match.sahaKomiserleri)) return "sahaKomiseri";
+        return null;
+    }
+
+    function getMatchRate(match: MatchData, payConfig: PaymentConfig): PaymentRate | null {
+        const lt = (match.ligTuru || "").toUpperCase();
+        const kat = (match.kategori || "").trim();
+
+        // Okul/İl/İlçe
+        if (lt.includes("OKUL") || lt.includes("İL VE İLÇE") || lt.includes("IL VE ILCE") || lt.includes("YEREL")) {
+            return payConfig.okulMaclari;
+        }
+
+        // Bölge
+        if (lt.includes("BÖLGE") || lt.includes("BOLGE") || kat.toUpperCase().includes("BÖLGE")) {
+            return payConfig.bolgeMaclari;
+        }
+
+        // Kategoriler (Özel Lig)
+        const katUpper = kat.toUpperCase();
+        for (const c of payConfig.kategoriler || []) {
+            const cName = c.name.toUpperCase().replace(/\s+/g, " ").trim();
+            if (!cName) continue;
+            if (katUpper === cName || katUpper.includes(cName) || cName.includes(katUpper)) {
+                return c.rates;
+            }
+        }
+
+        return null;
+    }
+
     // Excel Download Logic
     // ============================================================
     const handleDownloadExcel = async (downloadAll = false) => {
@@ -502,6 +549,9 @@ export function MatchesClient({ firstName, lastName, initialMatches = [], initia
         setDownloading(true);
 
         try {
+            // Load payment config
+            const payConfig = await getPaymentConfig();
+
             const ExcelJS = await import("exceljs");
             const workbook = new ExcelJS.Workbook();
             workbook.creator = "BKS Sistem";
@@ -784,15 +834,19 @@ export function MatchesClient({ firstName, lastName, initialMatches = [], initia
 
                     matches.forEach(m => {
                         const roleObj = getRole(m);
+                        const roleKey = getRoleKey(m);
+                        const matchRate = getMatchRate(m, payConfig);
+                        const ucretVal = (roleKey && matchRate) ? (matchRate[roleKey] ?? 0) : 0;
+
                         const row = odemSheet.addRow({
                             tarih: formatDisplayDate(m.tarih),
                             saat: m.saat || "-",
                             mac: m.mac_adi,
                             salon: m.salon || "-",
-                            lig: m.ligTuru,
+                            lig: m.kategori || m.ligTuru,
                             hafta: m.hafta ? `${m.hafta}. Hafta` : "-",
                             gorev: roleObj.label,
-                            ucret: "",
+                            ucret: ucretVal > 0 ? ucretVal : "",
                         });
                         row.alignment = { vertical: "middle", wrapText: false };
                         if (altRowIdx % 2 === 0) {
@@ -800,6 +854,9 @@ export function MatchesClient({ firstName, lastName, initialMatches = [], initia
                         }
                         altRowIdx++;
                         row.getCell("ucret").alignment = { vertical: "middle", horizontal: "center" };
+                        if (ucretVal > 0) {
+                            row.getCell("ucret").numFmt = '#,##0 ₺';
+                        }
                     });
 
                     const dataEnd = odemSheet.rowCount;

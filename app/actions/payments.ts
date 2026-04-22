@@ -61,7 +61,11 @@ export async function getAllMatchCategories(): Promise<string[]> {
         const matches: any[] = registry.allMatches || [];
         const cats = new Set<string>();
         for (const m of matches) {
-            if (m.kategori && m.kategori.trim().length > 0) {
+            if (
+                m.ligTuru === "ÖZEL LİG VE ÜNİVERSİTE" &&
+                m.kategori &&
+                m.kategori.trim().length > 0
+            ) {
                 cats.add(m.kategori.trim());
             }
         }
