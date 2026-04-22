@@ -385,51 +385,58 @@ export function AtamalarClient({
                 <div className="flex items-center gap-2">
                     <button
                         onClick={() => { setImportResult(null); setImportModalOpen(true); }}
-                        className="flex items-center gap-2 px-4 py-2.5 bg-blue-700 hover:bg-blue-600 text-white font-bold rounded-xl transition-colors shadow-md text-sm"
+                        className="flex items-center gap-2 px-3 sm:px-4 py-2.5 bg-blue-700 hover:bg-blue-600 text-white font-bold rounded-xl transition-colors shadow-md text-sm"
+                        title="Arşivden Aktar"
                     >
-                        <RefreshCw className="w-4 h-4" />
-                        Arşivden Aktar
+                        <RefreshCw className="w-4 h-4 shrink-0" />
+                        <span className="hidden sm:inline">Arşivden Aktar</span>
                     </button>
                     <button
                         onClick={() => setExportModalOpen(true)}
-                        className="flex items-center gap-2 px-4 py-2.5 bg-emerald-700 hover:bg-emerald-600 text-white font-bold rounded-xl transition-colors shadow-md text-sm"
+                        className="flex items-center gap-2 px-3 sm:px-4 py-2.5 bg-emerald-700 hover:bg-emerald-600 text-white font-bold rounded-xl transition-colors shadow-md text-sm"
+                        title="Excel İndir"
                     >
-                        <Download className="w-4 h-4" />
-                        Excel İndir
+                        <Download className="w-4 h-4 shrink-0" />
+                        <span className="hidden sm:inline">Excel İndir</span>
                     </button>
                     <button
                         onClick={openCreate}
-                        className="flex items-center gap-2 px-5 py-2.5 bg-red-700 hover:bg-red-600 text-white font-bold rounded-xl transition-colors shadow-md text-sm"
+                        className="flex items-center gap-2 px-3 sm:px-5 py-2.5 bg-red-700 hover:bg-red-600 text-white font-bold rounded-xl transition-colors shadow-md text-sm"
+                        title="Yeni Atama"
                     >
-                        <Plus className="w-4 h-4" />
-                        Yeni Atama
+                        <Plus className="w-4 h-4 shrink-0" />
+                        <span className="hidden sm:inline">Yeni Atama</span>
                     </button>
                 </div>
             </header>
 
             {/* Filters */}
-            <div className="space-y-3">
-                {/* Row 1: Search + Season */}
-                <div className="flex flex-wrap items-center gap-3">
-                    <div className="flex items-center gap-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-2.5 shadow-sm">
-                        <Search className="w-4 h-4 text-zinc-400" />
-                        <input
-                            type="text"
-                            placeholder="Takım, salon, hakem ara..."
-                            value={tableSearch}
-                            onChange={e => setTableSearch(e.target.value)}
-                            className="w-52 bg-transparent text-sm text-zinc-900 dark:text-white outline-none placeholder:text-zinc-400"
-                        />
-                    </div>
-                    {/* Season (Üst Kategori) */}
-                    <div className="flex items-center gap-1.5 flex-wrap">
-                        <span className="text-xs font-black text-zinc-400 uppercase tracking-wider mr-1">Sezon:</span>
+            <div className="space-y-2.5">
+                {/* Row 1: Search */}
+                <div className="flex items-center gap-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-2.5 shadow-sm">
+                    <Search className="w-4 h-4 text-zinc-400 shrink-0" />
+                    <input
+                        type="text"
+                        placeholder="Takım, salon, hakem ara..."
+                        value={tableSearch}
+                        onChange={e => setTableSearch(e.target.value)}
+                        className="flex-1 bg-transparent text-sm text-zinc-900 dark:text-white outline-none placeholder:text-zinc-400"
+                    />
+                    {tableSearch && (
+                        <button onClick={() => setTableSearch("")} className="shrink-0 text-zinc-400 hover:text-zinc-600 text-sm">✕</button>
+                    )}
+                </div>
+
+                {/* Row 2: Season — yatay kaydırılabilir */}
+                <div className="overflow-x-auto -mx-1 px-1">
+                    <div className="flex items-center gap-1.5 min-w-max">
+                        <span className="text-xs font-black text-zinc-400 uppercase tracking-wider mr-1 shrink-0">Sezon:</span>
                         {SEZON_OPTIONS.map(s => (
                             <button
                                 key={s}
                                 onClick={() => handleSezonChange(s)}
                                 disabled={fetchingSezon}
-                                className={`px-3 py-2 rounded-xl text-xs font-bold border transition-all disabled:opacity-60 ${filterSezon === s ? "bg-red-700 text-white border-red-700 shadow-sm" : "bg-white dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-zinc-700 hover:border-red-400"}`}
+                                className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all disabled:opacity-60 shrink-0 ${filterSezon === s ? "bg-red-700 text-white border-red-700 shadow-sm" : "bg-white dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-zinc-700 hover:border-red-400"}`}
                             >
                                 {s}
                             </button>
@@ -437,27 +444,29 @@ export function AtamalarClient({
                     </div>
                 </div>
 
-                {/* Row 2: Lig Türü */}
-                <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-xs font-black text-zinc-400 uppercase tracking-wider mr-1">Lig:</span>
-                    <button
-                        onClick={() => { setFilterLig(""); setFilterHafta(""); }}
-                        className={`px-3 py-2 rounded-xl text-xs font-bold border transition-all ${!filterLig ? "bg-red-700 text-white border-red-700 shadow-sm" : "bg-white dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-zinc-700 hover:border-red-400"}`}
-                    >
-                        Tümü ({assignments.length})
-                    </button>
-                    {LIG_TURU_OPTIONS.map(l => {
-                        const count = assignments.filter(a => a.ligTuru === l).length;
-                        return (
-                            <button
-                                key={l}
-                                onClick={() => { setFilterLig(l === filterLig ? "" : l); setFilterHafta(""); }}
-                                className={`px-3 py-2 rounded-xl text-xs font-bold border transition-all ${filterLig === l ? "bg-red-700 text-white border-red-700 shadow-sm" : "bg-white dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-zinc-700 hover:border-red-400"}`}
-                            >
-                                {l} ({count})
-                            </button>
-                        );
-                    })}
+                {/* Row 3: Lig Türü — yatay kaydırılabilir */}
+                <div className="overflow-x-auto -mx-1 px-1">
+                    <div className="flex items-center gap-1.5 min-w-max">
+                        <span className="text-xs font-black text-zinc-400 uppercase tracking-wider mr-1 shrink-0">Lig:</span>
+                        <button
+                            onClick={() => { setFilterLig(""); setFilterHafta(""); }}
+                            className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all shrink-0 ${!filterLig ? "bg-red-700 text-white border-red-700 shadow-sm" : "bg-white dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-zinc-700 hover:border-red-400"}`}
+                        >
+                            Tümü ({assignments.length})
+                        </button>
+                        {LIG_TURU_OPTIONS.map(l => {
+                            const count = assignments.filter(a => a.ligTuru === l).length;
+                            return (
+                                <button
+                                    key={l}
+                                    onClick={() => { setFilterLig(l === filterLig ? "" : l); setFilterHafta(""); }}
+                                    className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all shrink-0 ${filterLig === l ? "bg-red-700 text-white border-red-700 shadow-sm" : "bg-white dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-zinc-700 hover:border-red-400"}`}
+                                >
+                                    {l} ({count})
+                                </button>
+                            );
+                        })}
+                    </div>
                 </div>
 
                 {/* Row 3: Hafta dropdown (always visible) */}
@@ -475,9 +484,12 @@ export function AtamalarClient({
                                 .filter(a => a.hafta)
                                 .map(a => a.hafta!)
                         )).sort((a, b) => a - b).map(h => (
-                            <option key={h} value={String(h)}>{h}. Hafta</option>
+                            <option key={h} value={String(h)}>{h}. Hafta — {getWeekLabel(h)}</option>
                         ))}
                     </select>
+                    {filterHafta && (
+                        <span className="text-xs text-zinc-400 italic">{getWeekLabel(parseInt(filterHafta))}</span>
+                    )}
                     {filterHafta && (
                         <button
                             onClick={() => setFilterHafta("")}
@@ -489,7 +501,7 @@ export function AtamalarClient({
                 </div>
             </div>
 
-            {/* Table */}
+            {/* Table / Cards */}
             {fetchingSezon ? (
                 <div className="flex items-center justify-center py-20">
                     <RefreshCw className="w-6 h-6 text-zinc-400 animate-spin" />
@@ -508,65 +520,151 @@ export function AtamalarClient({
                     )}
                 </div>
             ) : (
-                <div className="rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-sm overflow-hidden bg-white dark:bg-zinc-900">
-                    <div className="overflow-x-auto">
-                        <table className="min-w-full text-xs">
-                            <thead>
-                                <tr className="bg-red-700 text-white">
-                                    {COLS.map(col => (
-                                        <th key={col.key} className={`${col.width} px-3 py-3 text-left font-black tracking-wider whitespace-nowrap border-r border-red-600 last:border-r-0`}>
-                                            {col.label}
-                                        </th>
-                                    ))}
-                                    <th className="w-24 px-3 py-3 text-center font-black tracking-wider">İŞLEM</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {filtered.map((a, i) => {
-                                    const vals: Record<string, any> = {
-                                        tarih: formatDate(a.tarih),
-                                        saat: a.saat,
-                                        salon: a.salon,
-                                        aTeam: a.aTeam,
-                                        bTeam: a.bTeam,
-                                        kategori: a.kategori,
-                                        hakem1: a.hakem1,
-                                        hakem2: a.hakem2,
-                                    };
-                                    return (
-                                        <tr
-                                            key={a.id}
+                <>
+                    {/* ===== MOBILE CARD LIST (md altında) ===== */}
+                    <div className="md:hidden space-y-2">
+                        {filtered.map((a) => (
+                            <div
+                                key={a.id}
+                                className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden shadow-sm active:scale-[0.99] transition-transform"
+                            >
+                                {/* Üst şerit: tarih + kategori/hafta */}
+                                <div
+                                    className="flex items-center justify-between px-3 py-2 bg-red-700 text-white cursor-pointer"
+                                    onClick={() => setSelectedMatch(a)}
+                                >
+                                    <div className="flex items-center gap-2 text-xs font-bold">
+                                        <span>📅 {formatDate(a.tarih)}</span>
+                                        {a.saat && <span>· {a.saat}</span>}
+                                    </div>
+                                    <div className="flex items-center gap-1">
+                                        {a.kategori && (
+                                            <span className="px-2 py-0.5 bg-white/25 rounded-full text-[10px] font-black tracking-wide">
+                                                {a.kategori}
+                                            </span>
+                                        )}
+                                        {a.hafta && (
+                                            <span className="px-2 py-0.5 bg-white/15 rounded-full text-[10px] font-bold">
+                                                {a.hafta}. H
+                                            </span>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Takımlar */}
+                                <div
+                                    className="px-3 py-3 cursor-pointer"
+                                    onClick={() => setSelectedMatch(a)}
+                                >
+                                    <div className="flex items-center gap-2">
+                                        <span className="flex-1 font-black text-sm text-zinc-900 dark:text-white text-right leading-tight truncate">{a.aTeam || "—"}</span>
+                                        <span className="shrink-0 px-2 py-0.5 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded-full text-[10px] font-black">VS</span>
+                                        <span className="flex-1 font-black text-sm text-zinc-900 dark:text-white leading-tight truncate">{a.bTeam || "—"}</span>
+                                    </div>
+                                    {a.salon && (
+                                        <p className="text-[10px] text-zinc-400 mt-1 text-center truncate">📍 {a.salon}</p>
+                                    )}
+                                </div>
+
+                                {/* Hakemler + alt satır */}
+                                <div className="border-t border-zinc-100 dark:border-zinc-800 px-3 py-2 flex items-center justify-between gap-2">
+                                    <div className="flex-1 min-w-0 text-xs text-zinc-600 dark:text-zinc-400 space-y-0.5">
+                                        {a.hakem1 && <div className="truncate"><span className="font-bold text-zinc-400">H1</span> {a.hakem1}</div>}
+                                        {a.hakem2 && <div className="truncate"><span className="font-bold text-zinc-400">H2</span> {a.hakem2}</div>}
+                                        {!a.hakem1 && !a.hakem2 && (
+                                            <span className="text-zinc-300 dark:text-zinc-600 italic text-[10px]">Hakem atanmadı</span>
+                                        )}
+                                    </div>
+                                    <div className="flex items-center gap-1 shrink-0" onClick={e => e.stopPropagation()}>
+                                        <button
                                             onClick={() => setSelectedMatch(a)}
-                                            className={`${i % 2 === 0 ? "bg-white dark:bg-zinc-900" : "bg-zinc-50 dark:bg-zinc-800/50"} hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors border-b border-zinc-100 dark:border-zinc-800 last:border-b-0 cursor-pointer`}
+                                            className="p-2 bg-zinc-100 dark:bg-zinc-800 hover:bg-blue-100 dark:hover:bg-blue-900/30 rounded-xl transition-colors"
+                                            title="Detay"
                                         >
-                                            {COLS.map(col => (
-                                                <td key={col.key} className="px-3 py-2.5 text-zinc-700 dark:text-zinc-300 border-r border-zinc-100 dark:border-zinc-800 max-w-[160px] truncate whitespace-nowrap" title={String(vals[col.key] || "")}>
-                                                    {vals[col.key] || <span className="text-zinc-300 dark:text-zinc-600">—</span>}
+                                            <Eye className="w-4 h-4 text-zinc-500 hover:text-blue-600" />
+                                        </button>
+                                        <button
+                                            onClick={() => openEdit(a)}
+                                            className="p-2 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded-xl transition-colors"
+                                            title="Düzenle"
+                                        >
+                                            <Pencil className="w-4 h-4 text-zinc-500" />
+                                        </button>
+                                        <button
+                                            onClick={() => setDeleteConfirmId(a.id)}
+                                            className="p-2 bg-zinc-100 dark:bg-zinc-800 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-xl transition-colors"
+                                            title="Sil"
+                                        >
+                                            <Trash2 className="w-4 h-4 text-zinc-400 hover:text-red-600" />
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                        <p className="text-center text-xs text-zinc-400 pt-1 pb-2">{filtered.length} maç gösteriliyor</p>
+                    </div>
+
+                    {/* ===== DESKTOP TABLE (md ve üstü) ===== */}
+                    <div className="hidden md:block rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-sm overflow-hidden bg-white dark:bg-zinc-900">
+                        <div className="overflow-x-auto">
+                            <table className="min-w-full text-xs">
+                                <thead>
+                                    <tr className="bg-red-700 text-white">
+                                        {COLS.map(col => (
+                                            <th key={col.key} className={`${col.width} px-3 py-3 text-left font-black tracking-wider whitespace-nowrap border-r border-red-600 last:border-r-0`}>
+                                                {col.label}
+                                            </th>
+                                        ))}
+                                        <th className="w-24 px-3 py-3 text-center font-black tracking-wider">İŞLEM</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {filtered.map((a, i) => {
+                                        const vals: Record<string, any> = {
+                                            tarih: formatDate(a.tarih),
+                                            saat: a.saat,
+                                            salon: a.salon,
+                                            aTeam: a.aTeam,
+                                            bTeam: a.bTeam,
+                                            kategori: a.kategori,
+                                            hakem1: a.hakem1,
+                                            hakem2: a.hakem2,
+                                        };
+                                        return (
+                                            <tr
+                                                key={a.id}
+                                                onClick={() => setSelectedMatch(a)}
+                                                className={`${i % 2 === 0 ? "bg-white dark:bg-zinc-900" : "bg-zinc-50 dark:bg-zinc-800/50"} hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors border-b border-zinc-100 dark:border-zinc-800 last:border-b-0 cursor-pointer`}
+                                            >
+                                                {COLS.map(col => (
+                                                    <td key={col.key} className="px-3 py-2.5 text-zinc-700 dark:text-zinc-300 border-r border-zinc-100 dark:border-zinc-800 max-w-[160px] truncate whitespace-nowrap" title={String(vals[col.key] || "")}>
+                                                        {vals[col.key] || <span className="text-zinc-300 dark:text-zinc-600">—</span>}
+                                                    </td>
+                                                ))}
+                                                <td className="px-3 py-2.5" onClick={e => e.stopPropagation()}>
+                                                    <div className="flex items-center gap-1 justify-center">
+                                                        <button onClick={() => setSelectedMatch(a)} className="p-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-700 rounded-lg transition-colors" title="Detay">
+                                                            <Eye className="w-3.5 h-3.5 text-zinc-400 hover:text-blue-600" />
+                                                        </button>
+                                                        <button onClick={() => openEdit(a)} className="p-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-700 rounded-lg transition-colors" title="Düzenle">
+                                                            <Pencil className="w-3.5 h-3.5 text-zinc-500 hover:text-blue-600" />
+                                                        </button>
+                                                        <button onClick={() => setDeleteConfirmId(a.id)} className="p-1.5 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors" title="Sil">
+                                                            <Trash2 className="w-3.5 h-3.5 text-zinc-400 hover:text-red-600" />
+                                                        </button>
+                                                    </div>
                                                 </td>
-                                            ))}
-                                            <td className="px-3 py-2.5" onClick={e => e.stopPropagation()}>
-                                                <div className="flex items-center gap-1 justify-center">
-                                                    <button onClick={() => setSelectedMatch(a)} className="p-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-700 rounded-lg transition-colors" title="Detay">
-                                                        <Eye className="w-3.5 h-3.5 text-zinc-400 hover:text-blue-600" />
-                                                    </button>
-                                                    <button onClick={() => openEdit(a)} className="p-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-700 rounded-lg transition-colors" title="Düzenle">
-                                                        <Pencil className="w-3.5 h-3.5 text-zinc-500 hover:text-blue-600" />
-                                                    </button>
-                                                    <button onClick={() => setDeleteConfirmId(a.id)} className="p-1.5 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors" title="Sil">
-                                                        <Trash2 className="w-3.5 h-3.5 text-zinc-400 hover:text-red-600" />
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    );
-                                })}
-                            </tbody>
-                        </table>
+                                            </tr>
+                                        );
+                                    })}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div className="px-4 py-2 border-t border-zinc-100 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50 text-xs text-zinc-400">
+                            {filtered.length} maç gösteriliyor — Detay için satıra tıklayın
+                        </div>
                     </div>
-                    <div className="px-4 py-2 border-t border-zinc-100 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50 text-xs text-zinc-400">
-                        {filtered.length} maç gösteriliyor — Detay için satıra tıklayın
-                    </div>
-                </div>
+                </>
             )}
 
             {/* ===== Match Detail Modal ===== */}

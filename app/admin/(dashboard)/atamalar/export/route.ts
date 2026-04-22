@@ -146,7 +146,12 @@ export async function GET(req: NextRequest) {
                 const cell = row.getCell(cn);
                 cell.font = { size: 10, name: "Calibri" };
                 cell.border = THIN_BLACK;
-                cell.alignment = { vertical: "middle", horizontal: "left", wrapText: false };
+                // Tarih (col 1) sola yaslı, diğer tüm sütunlar ortalı
+                cell.alignment = {
+                    vertical: "middle",
+                    horizontal: cn === 1 ? "left" : "center",
+                    wrapText: false,
+                };
                 cell.fill = rowFill;
 
                 if (cn === 1) {

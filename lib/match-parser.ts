@@ -188,12 +188,21 @@ function parseFileMetadata(fileName: string): { hafta?: number; ligTuru: string 
     return { hafta, ligTuru: "Yerel Lig" };
 }
 
+function isGenericSheetName(name: string): boolean {
+    return /^(sheet\s*\d*|sayfa\s*\d*|worksheet\s*\d*|çalışma\s*sayfası\s*\d*|data\s*\d*)$/i.test(name.trim());
+}
+
 export function parseWorkbook(workbook: ExcelJS.Workbook, fileName: string): MatchData[] {
     const allMatches: MatchData[] = [];
     const category = fileName.replace(/\.(xlsx|xls|csv)$/i, "").replace(/ARŞİV\s*/i, "").trim();
     const fileMeta = parseFileMetadata(fileName);
 
     for (const ws of workbook.worksheets) {
+        // Use worksheet name as category (e.g. "U18EA", "SBL"), fall back to file name
+        const sheetCategory = ws.name && ws.name.trim().length > 0 && !isGenericSheetName(ws.name)
+            ? ws.name.trim()
+            : category;
+
         const rows: string[][] = [];
         ws.eachRow({ includeEmpty: false }, (row: any) => {
             const vals: string[] = [];
@@ -355,7 +364,7 @@ export function parseWorkbook(workbook: ExcelJS.Workbook, fileName: string): Mat
 
             allMatches.push({
                 mac_adi: macAdi, tarih, saat, salon,
-                kategori: category, hafta: fileMeta.hafta, ligTuru: fileMeta.ligTuru,
+                kategori: sheetCategory, hafta: fileMeta.hafta, ligTuru: fileMeta.ligTuru,
                 hakemler, masa_gorevlileri: masaGorevlileri, saglikcilar, istatistikciler, gozlemciler,
                 sahaKomiserleri,
                 kaynak_dosya: `${fileName} → ${ws.name}`,
