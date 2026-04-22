@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import ExcelJS from "exceljs";
 import { getCurrentSeason } from "@/lib/season-utils";
 import type { PaymentConfig, PaymentRate } from "@/lib/payment-types";
+import { EMPTY_RATE } from "@/lib/payment-types";
 
 export const dynamic = "force-dynamic";
 
@@ -21,9 +22,6 @@ function timeStringToExcelDate(timeStr: string | null): Date | null {
 function formatTurkishDate(d: Date): string {
     return `${String(d.getDate()).padStart(2, "0")}.${String(d.getMonth() + 1).padStart(2, "0")}.${d.getFullYear()}`;
 }
-
-import type { PaymentRate } from "@/lib/payment-types";
-import { EMPTY_RATE } from "@/lib/payment-types";
 
 // Detect which payment category applies to an assignment
 function detectPaymentCategory(
