@@ -56,15 +56,20 @@ export async function GET(req: NextRequest) {
 
         const ws = wb.addWorksheet(sheetName);
 
-        const BLUE_FILL: ExcelJS.Fill = {
+        const WHITE_FILL: ExcelJS.Fill = {
+            type: "pattern",
+            pattern: "solid",
+            fgColor: { argb: "FFFFFFFF" },
+        };
+        const GREEN_FILL: ExcelJS.Fill = {
+            type: "pattern",
+            pattern: "solid",
+            fgColor: { argb: "FFD9EAD3" },
+        };
+        const HEADER_FILL: ExcelJS.Fill = {
             type: "pattern",
             pattern: "solid",
             fgColor: { argb: "FFDAEEF3" },
-        };
-        const GRAY_FILL: ExcelJS.Fill = {
-            type: "pattern",
-            pattern: "solid",
-            fgColor: { argb: "FFF2F2F2" },
         };
         const THIN_BLACK: Partial<ExcelJS.Borders> = {
             top: { style: "thin", color: { argb: "FF000000" } },
@@ -73,44 +78,47 @@ export async function GET(req: NextRequest) {
             right: { style: "thin", color: { argb: "FF000000" } },
         };
 
-        // Headers — columns 4,5,6 intentionally blank (A Takımı, B Takımı, Kategori)
+        // Headers matching user specification exactly
         const HEADERS = [
-            "TARİH", "SPOR SALONU", "SAAT",
-            "", "", "",
-            "I. HAKEM", "II. HAKEM",
+            "TARİH", "SALON", "SAAT",
+            "A TAKIMI", "B TAKIMI", "KATEGORİ", "GRUP",
+            "1.HAKEM", "2.HAKEM",
             "SAYI GÖREVLİSİ", "SAAT GÖREVLİSİ", "ŞUT SAATİ GÖREVLİSİ",
-            "GÖZLEMCİ / TEMSİLCİ", "SAHA KOMİSERİ", "SAĞLIKÇI",
-            "İSTATİSTİK GÖREVLİSİ", "İSTATİSTİK GÖREVLİSİ",
+            "GÖZLEMCİ", "SAHA KOMİSERİ", "SAĞLIKÇI",
+            "İSTATİSTİKÇİ", "İSTATİSTİKÇİ",
         ];
 
         const headerRow = ws.addRow(HEADERS);
         headerRow.height = 19.5;
         for (let cn = 1; cn <= HEADERS.length; cn++) {
             const cell = headerRow.getCell(cn);
-            cell.fill = BLUE_FILL;
+            cell.fill = HEADER_FILL;
             cell.font = { bold: true, color: { argb: "FF000000" }, size: 9, name: "Calibri" };
             cell.alignment = { vertical: "middle", horizontal: "center", wrapText: false };
             cell.border = THIN_BLACK;
         }
 
-        // Column widths matching 32.Hafta
-        const colWidths = [20.14, 20.43, 5.57, 24.14, 24.57, 19.86, 19.71, 19, 23.86, 23.86, 24, 18.43, 13.86, 8.14, 18.29, 18.29];
+        // Column widths (17 columns)
+        const colWidths = [20.14, 20.43, 5.57, 24.14, 24.57, 14, 10, 19.71, 19, 23.86, 23.86, 24, 18.43, 13.86, 8.14, 18.29, 18.29];
         colWidths.forEach((w, i) => { ws.getColumn(i + 1).width = w; });
 
-        let lastGroupKey = "";
+        // Build salon groups for alternating colors
+        // Each consecutive group of rows sharing the same salon gets a color.
+        // Groups alternate: white, green, white, green...
+        let salonColorIndex = 0;
+        let lastSalon = "";
 
         for (const a of assignments) {
             const tarihDate: Date = a.tarih instanceof Date ? a.tarih : new Date(a.tarih);
-            const dateKey = tarihDate.toISOString().split("T")[0];
-            const groupKey = `${dateKey}_${a.salon || ""}`;
+            const currentSalon = a.salon || "";
 
-            // Separator row between salon groups
-            if (lastGroupKey !== "" && groupKey !== lastGroupKey) {
-                const sepRow = ws.addRow([]);
-                sepRow.height = 3.75;
+            if (currentSalon !== lastSalon) {
+                // New salon group — advance the color
+                if (lastSalon !== "") salonColorIndex++;
+                lastSalon = currentSalon;
             }
-            lastGroupKey = groupKey;
 
+            const rowFill = salonColorIndex % 2 === 0 ? WHITE_FILL : GREEN_FILL;
             const saatDate = timeStringToExcelDate(a.saat);
 
             const row = ws.addRow([
@@ -120,6 +128,7 @@ export async function GET(req: NextRequest) {
                 a.aTeam || "",
                 a.bTeam || "",
                 a.kategori || "",
+                a.grup || "",
                 a.hakem1 || "",
                 a.hakem2 || "",
                 a.sayiGorevlisi || "",
@@ -133,22 +142,19 @@ export async function GET(req: NextRequest) {
             ]);
             row.height = 19.5;
 
-            for (let cn = 1; cn <= 16; cn++) {
+            for (let cn = 1; cn <= 17; cn++) {
                 const cell = row.getCell(cn);
                 cell.font = { size: 9, name: "Calibri" };
                 cell.border = THIN_BLACK;
                 cell.alignment = { vertical: "middle", horizontal: "left", wrapText: false };
+                cell.fill = rowFill;
 
                 if (cn === 1) {
-                    // TARİH: light blue + Turkish long date format
-                    cell.fill = BLUE_FILL;
+                    // TARİH: Turkish long date format
                     cell.numFmt = 'd" "mmmm" "yyyy" "dddd';
-                } else {
-                    cell.fill = GRAY_FILL;
-                    if (cn === 3 && saatDate) {
-                        // SAAT: time format
-                        cell.numFmt = "h:mm";
-                    }
+                } else if (cn === 3 && saatDate) {
+                    // SAAT: time format
+                    cell.numFmt = "h:mm";
                 }
             }
         }

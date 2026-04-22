@@ -376,8 +376,8 @@ export function OfficialListClient({ initialOfficials, refereeTypeMap, currentUs
                     <div className="bg-white dark:bg-zinc-900 rounded-[2rem] w-full max-w-md shadow-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-4 duration-300">
                         {/* Modal Header */}
                         <div className="bg-gradient-to-br from-emerald-600 to-emerald-800 p-6 text-white relative overflow-hidden">
-                            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2" />
-                            <button onClick={() => setExportModalOpen(false)} className="absolute top-4 right-4 w-8 h-8 bg-white/20 hover:bg-white/30 rounded-xl flex items-center justify-center transition-colors">
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+                            <button onClick={() => setExportModalOpen(false)} className="absolute top-4 right-4 z-10 w-8 h-8 bg-white/20 hover:bg-white/30 rounded-xl flex items-center justify-center transition-colors">
                                 <X className="w-4 h-4 text-white" />
                             </button>
                             <div className="flex items-center gap-3 relative z-10">

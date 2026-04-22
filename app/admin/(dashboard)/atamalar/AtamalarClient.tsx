@@ -460,28 +460,33 @@ export function AtamalarClient({
                     })}
                 </div>
 
-                {/* Row 3: Hafta (only for Yerel Ligler) */}
-                {filterLig === "Yerel Ligler" && (
-                    <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Hafta:</span>
+                {/* Row 3: Hafta dropdown (always visible) */}
+                <div className="flex items-center gap-3 flex-wrap">
+                    <span className="text-xs font-black text-zinc-400 uppercase tracking-wider">Hafta:</span>
+                    <select
+                        value={filterHafta}
+                        onChange={e => setFilterHafta(e.target.value)}
+                        className="px-3 py-2 rounded-xl text-xs font-bold border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 focus:outline-none focus:border-red-500 transition-colors"
+                    >
+                        <option value="">Tüm Haftalar</option>
+                        {Array.from(new Set(
+                            assignments
+                                .filter(a => !filterLig || a.ligTuru === filterLig)
+                                .filter(a => a.hafta)
+                                .map(a => a.hafta!)
+                        )).sort((a, b) => a - b).map(h => (
+                            <option key={h} value={String(h)}>{h}. Hafta</option>
+                        ))}
+                    </select>
+                    {filterHafta && (
                         <button
                             onClick={() => setFilterHafta("")}
-                            className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all ${!filterHafta ? "bg-red-700 text-white border-red-700 shadow-sm" : "bg-white dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-zinc-700 hover:border-red-400"}`}
+                            className="px-2 py-1 rounded-lg text-xs text-zinc-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors"
                         >
-                            Tümü
+                            ✕ Temizle
                         </button>
-                        {/* Show available weeks from current data */}
-                        {Array.from(new Set(assignments.filter(a => a.ligTuru === "Yerel Ligler" && a.hafta).map(a => a.hafta!))).sort((a, b) => a - b).map(h => (
-                            <button
-                                key={h}
-                                onClick={() => setFilterHafta(String(h) === filterHafta ? "" : String(h))}
-                                className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all ${filterHafta === String(h) ? "bg-red-700 text-white border-red-700 shadow-sm" : "bg-white dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-zinc-700 hover:border-red-400"}`}
-                            >
-                                {h}. Hafta
-                            </button>
-                        ))}
-                    </div>
-                )}
+                    )}
+                </div>
             </div>
 
             {/* Table */}
@@ -566,71 +571,141 @@ export function AtamalarClient({
 
             {/* ===== Match Detail Modal ===== */}
             {selectedMatch && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto">
-                    <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl w-full max-w-2xl border border-zinc-200 dark:border-zinc-700 my-8">
-                        {/* Header */}
-                        <div className="flex items-start justify-between px-6 py-4 border-b border-zinc-100 dark:border-zinc-800 bg-[#DAEEF3]/30 dark:bg-[#DAEEF3]/5 rounded-t-2xl">
-                            <div>
-                                <p className="text-xs font-bold text-zinc-400 uppercase tracking-wider mb-1">Maç Detayı</p>
-                                <h2 className="text-xl font-black text-zinc-900 dark:text-white">
-                                    {selectedMatch.aTeam} <span className="text-zinc-400 font-normal text-base">vs</span> {selectedMatch.bTeam}
-                                </h2>
-                                <p className="text-sm text-zinc-500 mt-0.5">
-                                    {formatDate(selectedMatch.tarih)} {selectedMatch.saat && `· ${selectedMatch.saat}`} {selectedMatch.salon && `· ${selectedMatch.salon}`}
-                                </p>
-                            </div>
-                            <button onClick={() => setSelectedMatch(null)} className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg transition-colors mt-0.5">
-                                <X className="w-5 h-5 text-zinc-500" />
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 overflow-y-auto">
+                    <div className="bg-white dark:bg-zinc-900 rounded-3xl shadow-2xl w-full max-w-2xl border border-zinc-200 dark:border-zinc-700 my-8 overflow-hidden">
+                        {/* Hero Header */}
+                        <div className="relative bg-gradient-to-br from-red-700 via-red-800 to-red-900 px-6 pt-6 pb-8 text-white">
+                            <div className="absolute top-0 right-0 w-48 h-48 bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+                            <button
+                                onClick={() => setSelectedMatch(null)}
+                                className="absolute top-4 right-4 z-10 w-8 h-8 bg-white/20 hover:bg-white/30 rounded-xl flex items-center justify-center transition-colors"
+                            >
+                                <X className="w-4 h-4 text-white" />
                             </button>
-                        </div>
-
-                        <div className="p-6 space-y-5">
-                            {/* Maç Bilgileri */}
-                            <div>
-                                <div className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] mb-3 pb-1 border-b border-zinc-100 dark:border-zinc-800">Maç Bilgileri</div>
-                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                                    <DetailRow label="Tarih" value={formatDate(selectedMatch.tarih)} />
-                                    <DetailRow label="Saat" value={selectedMatch.saat} />
-                                    <DetailRow label="Salon / Mekan" value={selectedMatch.salon} />
-                                    <DetailRow label="Lig Türü" value={selectedMatch.ligTuru} />
-                                    <DetailRow label="Hafta" value={selectedMatch.hafta ? `${selectedMatch.hafta}. Hafta` : null} />
-                                    <DetailRow label="Kategori" value={selectedMatch.kategori} />
-                                    <DetailRow label="Grup" value={selectedMatch.grup} />
-                                    <DetailRow label="Sezon" value={getSezonFromDate(selectedMatch.tarih)} />
+                            <div className="relative z-10">
+                                <div className="flex items-center gap-2 mb-3">
+                                    {selectedMatch.ligTuru && (
+                                        <span className="px-2 py-0.5 bg-white/20 rounded-full text-[10px] font-bold uppercase tracking-wider">{selectedMatch.ligTuru}</span>
+                                    )}
+                                    {selectedMatch.hafta && (
+                                        <span className="px-2 py-0.5 bg-white/20 rounded-full text-[10px] font-bold">{selectedMatch.hafta}. Hafta</span>
+                                    )}
+                                    {selectedMatch.kategori && (
+                                        <span className="px-2 py-0.5 bg-white/20 rounded-full text-[10px] font-bold">{selectedMatch.kategori}</span>
+                                    )}
+                                    {selectedMatch.grup && (
+                                        <span className="px-2 py-0.5 bg-white/20 rounded-full text-[10px] font-bold">{selectedMatch.grup}</span>
+                                    )}
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    <div className="flex-1 text-center">
+                                        <div className="text-lg font-black leading-tight">{selectedMatch.aTeam}</div>
+                                        <div className="text-xs text-white/60 mt-0.5">Ev Sahibi</div>
+                                    </div>
+                                    <div className="px-3 py-1.5 bg-white/20 rounded-xl">
+                                        <span className="text-sm font-black">VS</span>
+                                    </div>
+                                    <div className="flex-1 text-center">
+                                        <div className="text-lg font-black leading-tight">{selectedMatch.bTeam}</div>
+                                        <div className="text-xs text-white/60 mt-0.5">Deplasman</div>
+                                    </div>
+                                </div>
+                                <div className="flex items-center justify-center gap-4 mt-4 pt-4 border-t border-white/20 text-sm">
+                                    <div className="flex items-center gap-1.5 text-white/80">
+                                        <span className="text-base">📅</span>
+                                        <span className="font-semibold">{formatDate(selectedMatch.tarih)}</span>
+                                    </div>
+                                    {selectedMatch.saat && (
+                                        <div className="flex items-center gap-1.5 text-white/80">
+                                            <span className="text-base">🕐</span>
+                                            <span className="font-semibold">{selectedMatch.saat}</span>
+                                        </div>
+                                    )}
+                                    {selectedMatch.salon && (
+                                        <div className="flex items-center gap-1.5 text-white/80">
+                                            <span className="text-base">📍</span>
+                                            <span className="font-semibold">{selectedMatch.salon}</span>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
+                        </div>
 
+                        <div className="px-6 py-5 space-y-5">
                             {/* Hakemler */}
-                            <div>
-                                <div className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] mb-3 pb-1 border-b border-zinc-100 dark:border-zinc-800">Hakemler</div>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <DetailRow label="I. Hakem" value={selectedMatch.hakem1} />
-                                    <DetailRow label="II. Hakem" value={selectedMatch.hakem2} />
+                            <div className="bg-zinc-50 dark:bg-zinc-800/50 rounded-2xl p-4">
+                                <div className="flex items-center gap-2 mb-3">
+                                    <span className="text-base">🏀</span>
+                                    <span className="text-xs font-black text-zinc-500 dark:text-zinc-400 uppercase tracking-[0.15em]">Hakemler</span>
+                                </div>
+                                <div className="grid grid-cols-2 gap-3">
+                                    {selectedMatch.hakem1 ? (
+                                        <div className="bg-white dark:bg-zinc-800 rounded-xl px-4 py-3 border border-zinc-100 dark:border-zinc-700">
+                                            <div className="text-[10px] font-bold text-red-600 dark:text-red-400 uppercase tracking-wider mb-1">1. Hakem</div>
+                                            <div className="text-sm font-bold text-zinc-900 dark:text-white">{selectedMatch.hakem1}</div>
+                                        </div>
+                                    ) : (
+                                        <div className="bg-zinc-100/50 dark:bg-zinc-800/30 rounded-xl px-4 py-3 border border-dashed border-zinc-200 dark:border-zinc-700">
+                                            <div className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-1">1. Hakem</div>
+                                            <div className="text-xs text-zinc-400 italic">Atanmadı</div>
+                                        </div>
+                                    )}
+                                    {selectedMatch.hakem2 ? (
+                                        <div className="bg-white dark:bg-zinc-800 rounded-xl px-4 py-3 border border-zinc-100 dark:border-zinc-700">
+                                            <div className="text-[10px] font-bold text-red-600 dark:text-red-400 uppercase tracking-wider mb-1">2. Hakem</div>
+                                            <div className="text-sm font-bold text-zinc-900 dark:text-white">{selectedMatch.hakem2}</div>
+                                        </div>
+                                    ) : (
+                                        <div className="bg-zinc-100/50 dark:bg-zinc-800/30 rounded-xl px-4 py-3 border border-dashed border-zinc-200 dark:border-zinc-700">
+                                            <div className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-1">2. Hakem</div>
+                                            <div className="text-xs text-zinc-400 italic">Atanmadı</div>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
 
                             {/* Masa Görevlileri */}
                             {(selectedMatch.sayiGorevlisi || selectedMatch.saatGorevlisi || selectedMatch.sutSaatiGorevlisi) && (
-                                <div>
-                                    <div className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] mb-3 pb-1 border-b border-zinc-100 dark:border-zinc-800">Masa Görevlileri</div>
-                                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                                        <DetailRow label="Sayı Görevlisi" value={selectedMatch.sayiGorevlisi} />
-                                        <DetailRow label="Saat Görevlisi" value={selectedMatch.saatGorevlisi} />
-                                        <DetailRow label="Şut Saati Görevlisi" value={selectedMatch.sutSaatiGorevlisi} />
+                                <div className="bg-zinc-50 dark:bg-zinc-800/50 rounded-2xl p-4">
+                                    <div className="flex items-center gap-2 mb-3">
+                                        <span className="text-base">📋</span>
+                                        <span className="text-xs font-black text-zinc-500 dark:text-zinc-400 uppercase tracking-[0.15em]">Masa Görevlileri</span>
+                                    </div>
+                                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                                        {[
+                                            { label: "Sayı Görevlisi", value: selectedMatch.sayiGorevlisi },
+                                            { label: "Saat Görevlisi", value: selectedMatch.saatGorevlisi },
+                                            { label: "Şut Saati Görevlisi", value: selectedMatch.sutSaatiGorevlisi },
+                                        ].filter(r => r.value).map(r => (
+                                            <div key={r.label} className="bg-white dark:bg-zinc-800 rounded-xl px-3 py-2.5 border border-zinc-100 dark:border-zinc-700">
+                                                <div className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider mb-0.5">{r.label}</div>
+                                                <div className="text-xs font-semibold text-zinc-900 dark:text-white">{r.value}</div>
+                                            </div>
+                                        ))}
                                     </div>
                                 </div>
                             )}
 
                             {/* Diğer Görevliler */}
                             {(selectedMatch.gozlemci || selectedMatch.sahaKomiseri || selectedMatch.saglikci || selectedMatch.istatistikci1 || selectedMatch.istatistikci2) && (
-                                <div>
-                                    <div className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] mb-3 pb-1 border-b border-zinc-100 dark:border-zinc-800">Diğer Görevliler</div>
-                                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                                        <DetailRow label="Gözlemci / Temsilci" value={selectedMatch.gozlemci} />
-                                        <DetailRow label="Saha Komiseri" value={selectedMatch.sahaKomiseri} />
-                                        <DetailRow label="Sağlıkçı" value={selectedMatch.saglikci} />
-                                        <DetailRow label="İstatistikçi 1" value={selectedMatch.istatistikci1} />
-                                        <DetailRow label="İstatistikçi 2" value={selectedMatch.istatistikci2} />
+                                <div className="bg-zinc-50 dark:bg-zinc-800/50 rounded-2xl p-4">
+                                    <div className="flex items-center gap-2 mb-3">
+                                        <span className="text-base">👥</span>
+                                        <span className="text-xs font-black text-zinc-500 dark:text-zinc-400 uppercase tracking-[0.15em]">Diğer Görevliler</span>
+                                    </div>
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                                        {[
+                                            { label: "Gözlemci / Temsilci", value: selectedMatch.gozlemci },
+                                            { label: "Saha Komiseri", value: selectedMatch.sahaKomiseri },
+                                            { label: "Sağlıkçı", value: selectedMatch.saglikci },
+                                            { label: "İstatistikçi 1", value: selectedMatch.istatistikci1 },
+                                            { label: "İstatistikçi 2", value: selectedMatch.istatistikci2 },
+                                        ].filter(r => r.value).map(r => (
+                                            <div key={r.label} className="bg-white dark:bg-zinc-800 rounded-xl px-3 py-2.5 border border-zinc-100 dark:border-zinc-700">
+                                                <div className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider mb-0.5">{r.label}</div>
+                                                <div className="text-xs font-semibold text-zinc-900 dark:text-white">{r.value}</div>
+                                            </div>
+                                        ))}
                                     </div>
                                 </div>
                             )}
