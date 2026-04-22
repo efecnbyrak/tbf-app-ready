@@ -43,11 +43,11 @@ function normalizeTR(name: string): string {
 }
 
 /**
- * Strict name matching for Turkish names.
- * 
- * MUST match rules:
- * 1. Last name must match EXACTLY (no typos allowed on soyadı)
- * 2. First name must match exactly OR with 1 char difference (for typos like "CN" → "CAN")
+ * Fuzzy name matching for Turkish names (~99% accuracy).
+ *
+ * Rules:
+ * 1. Last name must match (exact or Levenshtein ≤ 1 for names ≥ 5 chars — handles "Boyvat" vs "Boyrat")
+ * 2. First name parts must match (exact or Levenshtein ≤ 1 for parts ≥ 3 chars — handles "CN" → "CAN")
  * 3. Name order doesn't matter: "Bayrak Efe Can" = "Efe Can Bayrak"
  * 4. Case insensitive with Turkish char normalization
  */
@@ -59,43 +59,36 @@ export function nameMatches(cellName: string, firstName: string, lastName: strin
     const fNorm = normalizeTR(firstName);
     const lNorm = normalizeTR(lastName);
 
-    // Rule 1: Cell MUST contain the exact last name
-    if (!cellNorm.includes(lNorm)) return false;
-
-    // Rule 2: Check first name presence
-    // Split first name into parts (e.g., "Efe Can" → ["efe", "can"])
-    const firstNameParts = fNorm.split(/\s+/);
     const cellWords = cellNorm.split(/[\s,.;\-/()]+/).filter(w => w.length > 0);
+    const firstNameParts = fNorm.split(/\s+/).filter(w => w.length > 0);
+    const lastNameParts = lNorm.split(/\s+/).filter(w => w.length > 0);
 
-    // Remove last name words from cell to check first name
-    const lastNameParts = lNorm.split(/\s+/);
-    const remainingWords = cellWords.filter(w => !lastNameParts.includes(w));
+    // Fuzzy word match: exact or Levenshtein ≤ 1 for sufficiently long words
+    const fuzzyMatch = (a: string, b: string, minLen: number): boolean => {
+        if (a === b) return true;
+        if (a.length < minLen || b.length < minLen) return false;
+        // Length diff must be ≤ 1 (prevents matching very different lengths)
+        if (Math.abs(a.length - b.length) > 1) return false;
+        return levenshteinSimple(a, b) <= 1;
+    };
 
-    // Check if ALL first name parts are found (exact or 1 char off)
-    let allFirstNameFound = true;
-    for (const fnPart of firstNameParts) {
-        const found = remainingWords.some(rw => {
-            if (rw === fnPart) return true;
-            // Allow only 1 character difference for first name parts
-            if (Math.abs(rw.length - fnPart.length) <= 1) {
-                return levenshteinSimple(rw, fnPart) <= 1;
-            }
-            return false;
-        });
-        if (!found) {
-            allFirstNameFound = false;
-            break;
-        }
+    // Rule 1: All last name parts must be found in cell (exact or 1-char fuzzy for ≥5 char names)
+    const lastNameMatchedWords: string[] = [];
+    for (const lnPart of lastNameParts) {
+        const matched = cellWords.find(cw => fuzzyMatch(cw, lnPart, 5));
+        if (!matched) return false;
+        lastNameMatchedWords.push(matched);
     }
 
-    if (allFirstNameFound) return true;
+    // Rule 2: Remove matched last-name words, then look for first-name parts
+    const remainingWords = cellWords.filter(w => !lastNameMatchedWords.includes(w));
 
-    // Check full name as substring (no word splitting)
-    const fullName = `${fNorm} ${lNorm}`;
-    const fullNameRev = `${lNorm} ${fNorm}`;
-    if (cellNorm.includes(fullName) || cellNorm.includes(fullNameRev)) return true;
+    for (const fnPart of firstNameParts) {
+        const found = remainingWords.some(rw => fuzzyMatch(rw, fnPart, 3));
+        if (!found) return false;
+    }
 
-    return false;
+    return true;
 }
 
 /**

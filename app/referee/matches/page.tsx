@@ -13,6 +13,13 @@ function normalizeNameStr(first: string, last: string) {
         .replace(/Ç/g, "ç").toLowerCase().replace(/\s+/g, " ").trim();
 }
 
+function isEfeCanBayrak(firstName: string, lastName: string): boolean {
+    const full = normalizeNameStr(firstName, lastName);
+    const tokens = full.split(/\s+/).filter(Boolean);
+    // Must contain all three: efe, can, bayrak (any order, possibly with extra name tokens)
+    return tokens.includes("efe") && tokens.includes("can") && tokens.includes("bayrak");
+}
+
 export default async function MatchesPage() {
     const session = await verifySession();
 
@@ -30,8 +37,7 @@ export default async function MatchesPage() {
     const firstName = user?.referee?.firstName || user?.official?.firstName || "";
     const lastName = user?.referee?.lastName || user?.official?.lastName || "";
 
-    const fullName = normalizeNameStr(firstName, lastName);
-    if (fullName !== normalizeNameStr("Efe", "Can Bayrak")) {
+    if (!isEfeCanBayrak(firstName, lastName)) {
         return (
             <div className="flex flex-col items-center justify-center min-h-[60vh] px-4">
                 <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded-2xl p-10 max-w-md w-full text-center shadow-sm">

@@ -27,8 +27,9 @@ export default async function GeneralMatchesPage() {
     const firstName = user?.referee?.firstName || user?.official?.firstName || "";
     const lastName = user?.referee?.lastName || user?.official?.lastName || "";
 
-    const fullName = normalizeTR(`${firstName} ${lastName}`);
-    const isEfeCan = fullName === normalizeTR("Efe Can Bayrak");
+    const full = normalizeTR(`${firstName} ${lastName}`);
+    const tokens = full.split(/\s+/).filter(Boolean);
+    const isEfeCan = tokens.includes("efe") && tokens.includes("can") && tokens.includes("bayrak");
 
     if (!isEfeCan) {
         return (
