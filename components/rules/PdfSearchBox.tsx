@@ -1,13 +1,14 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Search, X, Loader2, BookOpen, ChevronDown, ChevronUp, Hash, Sparkles } from "lucide-react";
+import { Search, X, Loader2, BookOpen, Hash, Sparkles, ExternalLink } from "lucide-react";
 
 interface SearchResult {
     text: string;
     section: string;
     chunkIndex: number;
     score: number;
+    page?: number;
 }
 
 interface PdfSearchBoxProps {
@@ -40,7 +41,6 @@ export function PdfSearchBox({ type }: PdfSearchBoxProps) {
     const [suggestions, setSuggestions] = useState<string[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [showSuggestions, setShowSuggestions] = useState(false);
-    const [expandedIdx, setExpandedIdx] = useState<number | null>(null);
     const [hasSearched, setHasSearched] = useState(false);
     const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const inputRef = useRef<HTMLInputElement>(null);
@@ -69,7 +69,6 @@ export function PdfSearchBox({ type }: PdfSearchBoxProps) {
             setResults(data.results || []);
             setSuggestions(data.suggestions || []);
             setHasSearched(true);
-            setExpandedIdx(null);
         } catch (e: any) {
             if (e.name !== 'AbortError') {
                 setResults([]);
@@ -97,7 +96,6 @@ export function PdfSearchBox({ type }: PdfSearchBoxProps) {
         setResults([]);
         setSuggestions([]);
         setHasSearched(false);
-        setExpandedIdx(null);
         inputRef.current?.focus();
     };
 
@@ -205,45 +203,50 @@ export function PdfSearchBox({ type }: PdfSearchBoxProps) {
 
             {/* Search Results */}
             {results.length > 0 && (
-                <div className="space-y-3">
+                <div className="divide-y divide-zinc-100 dark:divide-zinc-800 border border-zinc-200 dark:border-zinc-800 rounded-2xl overflow-hidden shadow-sm bg-white dark:bg-zinc-900">
                     {results.map((result, i) => {
-                        const isExpanded = expandedIdx === i;
-                        const preview = result.text.length > 280 ? result.text.slice(0, 280) + '…' : result.text;
+                        const pdfUrl = result.page
+                            ? `/api/rules/pdf-view?type=${type}#page=${result.page}`
+                            : `/api/rules/pdf-view?type=${type}`;
 
                         return (
-                            <div
+                            <a
                                 key={i}
-                                className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl overflow-hidden shadow-sm hover:shadow-md hover:border-zinc-300 dark:hover:border-zinc-700 transition-all duration-200"
+                                href={pdfUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-start gap-4 p-4 hover:bg-zinc-50 dark:hover:bg-zinc-800/60 transition-colors group"
                             >
-                                {/* Section badge */}
-                                {result.section && (
-                                    <div className="px-5 py-2 bg-zinc-50 dark:bg-zinc-800/60 border-b border-zinc-100 dark:border-zinc-800 flex items-center gap-2">
-                                        <Hash className="w-3 h-3 text-red-500 shrink-0" />
-                                        <span className="text-[11px] font-black text-red-600 dark:text-red-400 uppercase tracking-wider line-clamp-1">
-                                            {result.section.slice(0, 90)}
+                                {/* Page badge */}
+                                <div className="shrink-0 mt-0.5">
+                                    {result.page ? (
+                                        <span className="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-xs font-black border border-red-100 dark:border-red-800/40">
+                                            s.{result.page}
                                         </span>
-                                    </div>
-                                )}
-
-                                {/* Content */}
-                                <div className="p-5">
-                                    <p className="text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed">
-                                        {highlightText(isExpanded ? result.text : preview, query)}
-                                    </p>
-
-                                    {result.text.length > 280 && (
-                                        <button
-                                            onClick={() => setExpandedIdx(isExpanded ? null : i)}
-                                            className="mt-3 flex items-center gap-1 text-xs font-bold text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 transition-colors"
-                                        >
-                                            {isExpanded
-                                                ? <><ChevronUp className="w-3.5 h-3.5" /> Küçült</>
-                                                : <><ChevronDown className="w-3.5 h-3.5" /> Devamını Gör</>
-                                            }
-                                        </button>
+                                    ) : (
+                                        <span className="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-zinc-400">
+                                            <Hash className="w-4 h-4" />
+                                        </span>
                                     )}
                                 </div>
-                            </div>
+
+                                {/* Content */}
+                                <div className="flex-1 min-w-0">
+                                    {result.section && (
+                                        <p className="text-[11px] font-black text-red-600 dark:text-red-400 uppercase tracking-wider mb-1 line-clamp-1">
+                                            {result.section.slice(0, 90)}
+                                        </p>
+                                    )}
+                                    <p className="text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed">
+                                        {highlightText(result.text, query)}
+                                    </p>
+                                </div>
+
+                                {/* Arrow */}
+                                <div className="shrink-0 mt-1 text-zinc-300 dark:text-zinc-600 group-hover:text-red-500 dark:group-hover:text-red-400 transition-colors">
+                                    <ExternalLink className="w-4 h-4" />
+                                </div>
+                            </a>
                         );
                     })}
                 </div>

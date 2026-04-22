@@ -5,6 +5,7 @@ export interface SearchChunk {
     text: string;
     section: string;
     chunkIndex: number;
+    page?: number;
 }
 
 const PDF_FILES = {
@@ -89,7 +90,10 @@ export async function getPdfChunks(type: keyof typeof PDF_FILES): Promise<Search
         const loadingTask = pdfjsLib.getDocument({ data: uint8, useSystemFonts: true });
         const pdf = await loadingTask.promise;
 
-        let fullText = '';
+        const allChunks: SearchChunk[] = [];
+        let chunkIndex = 0;
+        let currentSection = '';
+
         for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
             const page = await pdf.getPage(pageNum);
             const content = await page.getTextContent();
@@ -103,12 +107,47 @@ export async function getPdfChunks(type: keyof typeof PDF_FILES): Promise<Search
                 if ((item as any).hasEOL) pageText += '\n';
                 lastY = y;
             }
-            fullText += pageText + '\n\n';
+
+            const normalized = pageText.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+            const paragraphs = normalized.split(/\n{2,}/);
+
+            for (const para of paragraphs) {
+                const trimmed = para.trim();
+                if (!trimmed || trimmed.length < 8) continue;
+
+                const isHeader =
+                    /^KURAL\s+\d+/i.test(trimmed) ||
+                    /^\d+\s+[A-ZÜŞÇÖĞIIH].{5,}/i.test(trimmed) ||
+                    (trimmed.length < 80 && /^[A-ZÜŞÇÖĞİI\s\d.,\-]+$/.test(trimmed) && trimmed.length > 5);
+
+                if (isHeader) {
+                    currentSection = trimmed.slice(0, 100);
+                }
+
+                if (trimmed.length > 450) {
+                    const words = trimmed.split(/\s+/);
+                    let buffer: string[] = [];
+                    for (const word of words) {
+                        buffer.push(word);
+                        if (buffer.join(' ').length >= 350) {
+                            const chunkText = buffer.join(' ');
+                            if (chunkText.trim().length >= 20) {
+                                allChunks.push({ text: chunkText.trim(), section: currentSection, chunkIndex: chunkIndex++, page: pageNum });
+                            }
+                            buffer = buffer.slice(-20);
+                        }
+                    }
+                    if (buffer.length > 5) {
+                        allChunks.push({ text: buffer.join(' ').trim(), section: currentSection, chunkIndex: chunkIndex++, page: pageNum });
+                    }
+                } else {
+                    allChunks.push({ text: trimmed, section: currentSection, chunkIndex: chunkIndex++, page: pageNum });
+                }
+            }
         }
 
-        const chunks = splitIntoChunks(fullText);
-        chunkCache[type] = chunks;
-        return chunks;
+        chunkCache[type] = allChunks;
+        return allChunks;
     } catch (e: any) {
         console.error(`[PDF Rules Cache] Failed to parse ${filename}:`, e?.message);
         return [];

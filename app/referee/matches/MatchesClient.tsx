@@ -41,12 +41,26 @@ function nameMatchesClient(cellName: string, firstName: string, lastName: string
     return false;
 }
 
+const TR_MONTHS_PARSE = ["ocak", "şubat", "mart", "nisan", "mayıs", "haziran", "temmuz", "ağustos", "eylül", "ekim", "kasım", "aralık"];
+
 function parseTurkishDate(dateStr: string): Date | null {
     if (!dateStr) return null;
+    // Format: DD.MM.YYYY or DD/MM/YYYY
     const match = dateStr.match(/(\d{1,2})\s*[./-]\s*(\d{1,2})\s*[./-]\s*(\d{4})/);
     if (match) {
         const [, day, month, year] = match;
         return new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+    }
+    // Format: DD Ay YYYY (e.g., "13 Nisan 2026" or "13 Nisan 2026 Pazartesi")
+    const textMatch = dateStr.match(/(\d{1,2})\s+([A-Za-zÇçĞğİıÖöŞşÜü]+)\s+(\d{4})/i);
+    if (textMatch) {
+        const [, day, monthName, year] = textMatch;
+        const monthIdx = TR_MONTHS_PARSE.indexOf(
+            monthName.toLowerCase().replace(/i̇/g, "i").replace(/İ/g, "i")
+        );
+        if (monthIdx !== -1) {
+            return new Date(parseInt(year), monthIdx, parseInt(day));
+        }
     }
     return null;
 }
@@ -656,9 +670,54 @@ export function MatchesClient({ firstName, lastName, initialMatches = [], initia
             // 1. Tümü
             createSheet("Tümü", matchesToExport);
 
-            // 2. Ödemeler — Aylara Göre Gruplanmış
+            // 2. Monthly Grouping (Ocak - Aralık) Month+Year
+            const MONTH_NAMES_TR = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"];
+            const monthMap: Record<string, MatchData[]> = {};
+            matchesToExport.forEach(m => {
+                const mDate = parseTurkishDate(m.tarih);
+                if (mDate) {
+                    const monthIdx = mDate.getMonth();
+                    const year = mDate.getFullYear();
+                    const key = `${year}-${monthIdx.toString().padStart(2, '0')}`;
+                    if (!monthMap[key]) monthMap[key] = [];
+                    monthMap[key].push(m);
+                }
+            });
+
+            // Descending: Newest month first
+            const sortedMonthKeys = Object.keys(monthMap).sort((a, b) => b.localeCompare(a));
+            for (const key of sortedMonthKeys) {
+                if (monthMap[key] && monthMap[key].length > 0) {
+                    const [y, mStr] = key.split('-');
+                    const targetMonthName = MONTH_NAMES_TR[parseInt(mStr, 10)];
+                    createSheet(`${targetMonthName} ${y}`, monthMap[key]);
+                }
+            }
+
+            // 3. Hafta Sheets
+            const haftaMap: Record<number, MatchData[]> = {};
+            matchesToExport.forEach(m => {
+                if (m.hafta) {
+                    if (!haftaMap[m.hafta]) haftaMap[m.hafta] = [];
+                    haftaMap[m.hafta].push(m);
+                }
+            });
+            Object.keys(haftaMap).map(Number).sort((a, b) => a - b).forEach(w => {
+                createSheet(`${w}. Hafta`, haftaMap[w]);
+            });
+
+            // 4. Okul
+            const okul = matchesToExport.filter(m => m.ligTuru === "OKUL İL VE İLÇE");
+            createSheet("Okul İl ve İlçe", okul);
+
+            // 5. Özel
+            const ozel = matchesToExport.filter(m => m.ligTuru === "ÖZEL LİG VE ÜNİVERSİTE");
+            createSheet("Özel Lig ve Üni", ozel);
+
+            // 6. Ödemeler — Aylara Göre Gruplanmış
             {
                 const odemSheet = workbook.addWorksheet("Ödemeler");
+                // 8 columns — Ödendi mi? ve Notlar kaldırıldı
                 odemSheet.columns = [
                     { header: "Tarih", key: "tarih", width: 22 },
                     { header: "Saat", key: "saat", width: 10 },
@@ -668,9 +727,10 @@ export function MatchesClient({ firstName, lastName, initialMatches = [], initia
                     { header: "Hafta", key: "hafta", width: 10 },
                     { header: "Görevim", key: "gorev", width: 22 },
                     { header: "Ücret (₺)", key: "ucret", width: 16 },
-                    { header: "Ödendi mi?", key: "odendi", width: 14 },
-                    { header: "Notlar", key: "notlar", width: 30 },
                 ];
+
+                const NUM_COLS = 8;
+                const lastColLetter = 'H';
 
                 // Main header row styling
                 const hRow = odemSheet.getRow(1);
@@ -706,11 +766,12 @@ export function MatchesClient({ firstName, lastName, initialMatches = [], initia
                 });
 
                 let altRowIdx = 0;
+                const blockTotalRows: number[] = [];
 
                 const addPaymentBlock = (label: string, matches: MatchData[]) => {
                     // Month header row (dark navy)
-                    const mRow = odemSheet.addRow([`  ${label.toUpperCase()}`, '', '', '', '', '', '', '', '', '']);
-                    odemSheet.mergeCells(`A${mRow.number}:J${mRow.number}`);
+                    const mRow = odemSheet.addRow([`  ${label.toUpperCase()}`, ...Array(NUM_COLS - 1).fill('')]);
+                    odemSheet.mergeCells(`A${mRow.number}:${lastColLetter}${mRow.number}`);
                     mRow.font = { bold: true, color: { argb: "FFFFFFFF" }, size: 11 };
                     mRow.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF1E3A5F" } };
                     mRow.getCell(1).alignment = { vertical: "middle", horizontal: "left" };
@@ -729,8 +790,6 @@ export function MatchesClient({ firstName, lastName, initialMatches = [], initia
                             hafta: m.hafta ? `${m.hafta}. Hafta` : "-",
                             gorev: roleObj.label,
                             ucret: "",
-                            odendi: "",
-                            notlar: "",
                         });
                         row.alignment = { vertical: "middle", wrapText: false };
                         if (altRowIdx % 2 === 0) {
@@ -738,13 +797,12 @@ export function MatchesClient({ firstName, lastName, initialMatches = [], initia
                         }
                         altRowIdx++;
                         row.getCell("ucret").alignment = { vertical: "middle", horizontal: "center" };
-                        row.getCell("odendi").alignment = { vertical: "middle", horizontal: "center" };
                     });
 
                     const dataEnd = odemSheet.rowCount;
 
                     // TOPLAM row (dark green)
-                    const tRow = odemSheet.addRow([`${label.toUpperCase()} — TOPLAM`, '', '', '', '', '', '', '', '', '']);
+                    const tRow = odemSheet.addRow([`${label.toUpperCase()} — TOPLAM`, ...Array(NUM_COLS - 1).fill('')]);
                     odemSheet.mergeCells(`A${tRow.number}:G${tRow.number}`);
                     tRow.getCell('H').value = { formula: `SUM(H${dataStart}:H${dataEnd})` };
                     tRow.getCell('H').numFmt = '#,##0.00 ₺';
@@ -754,6 +812,7 @@ export function MatchesClient({ firstName, lastName, initialMatches = [], initia
                     tRow.getCell('H').alignment = { vertical: "middle", horizontal: "center" };
                     tRow.getCell('H').font = { bold: true, color: { argb: "FFFFFFFF" } };
                     tRow.height = 20;
+                    blockTotalRows.push(tRow.number);
                 };
 
                 for (const key of [...payMonthMap.keys()].sort()) {
@@ -763,6 +822,21 @@ export function MatchesClient({ firstName, lastName, initialMatches = [], initia
 
                 if (payUndated.length > 0) {
                     addPaymentBlock("Tarihi Belirsiz Maçlar", payUndated);
+                }
+
+                // GENEL TOPLAM row
+                if (blockTotalRows.length > 0) {
+                    const genelRow = odemSheet.addRow([`GENEL TOPLAM`, ...Array(NUM_COLS - 1).fill('')]);
+                    odemSheet.mergeCells(`A${genelRow.number}:G${genelRow.number}`);
+                    const sumFormula = blockTotalRows.map(r => `H${r}`).join('+');
+                    genelRow.getCell('H').value = { formula: sumFormula };
+                    genelRow.getCell('H').numFmt = '#,##0.00 ₺';
+                    genelRow.font = { bold: true, size: 12, color: { argb: "FFFFFFFF" } };
+                    genelRow.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF7C3AED" } };
+                    genelRow.getCell(1).alignment = { vertical: "middle", horizontal: "center" };
+                    genelRow.getCell('H').alignment = { vertical: "middle", horizontal: "center" };
+                    genelRow.getCell('H').font = { bold: true, size: 12, color: { argb: "FFFFFFFF" } };
+                    genelRow.height = 24;
                 }
 
                 // Add borders
@@ -776,52 +850,6 @@ export function MatchesClient({ firstName, lastName, initialMatches = [], initia
                         };
                     });
                 });
-            }
-
-            // Group by Week (TBF Leagues)
-            const haftaMap: Record<number, MatchData[]> = {};
-            matchesToExport.forEach(m => {
-                if (m.hafta) {
-                    if (!haftaMap[m.hafta]) haftaMap[m.hafta] = [];
-                    haftaMap[m.hafta].push(m);
-                }
-            });
-
-            // 2. Hafta Sheets
-            Object.keys(haftaMap).map(Number).sort((a, b) => a - b).forEach(w => {
-                createSheet(`${w}. Hafta`, haftaMap[w]);
-            });
-
-            // 3. Okul
-            const okul = matchesToExport.filter(m => m.ligTuru === "OKUL İL VE İLÇE");
-            createSheet("Okul İl ve İlçe", okul);
-
-            // 4. Özel
-            const ozel = matchesToExport.filter(m => m.ligTuru === "ÖZEL LİG VE ÜNİVERSİTE");
-            createSheet("Özel Lig ve Üni", ozel);
-
-            // 5. Monthly Grouping (Ocak - Aralık) Month+Year
-            const MONTH_NAMES_TR = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"];
-            const monthMap: Record<string, MatchData[]> = {};
-            matchesToExport.forEach(m => {
-                const mDate = parseTurkishDate(m.tarih);
-                if (mDate) {
-                    const monthIdx = mDate.getMonth(); // 0-11
-                    const year = mDate.getFullYear();
-                    const key = `${year}-${monthIdx.toString().padStart(2, '0')}`;
-                    if (!monthMap[key]) monthMap[key] = [];
-                    monthMap[key].push(m);
-                }
-            });
-
-            // Create sheets for each Year/Month combo in calendar order
-            const sortedMonthKeys = Object.keys(monthMap).sort((a, b) => b.localeCompare(a)); // Descending: Newest month first
-            for (const key of sortedMonthKeys) {
-                if (monthMap[key] && monthMap[key].length > 0) {
-                    const [y, mStr] = key.split('-');
-                    const targetMonthName = MONTH_NAMES_TR[parseInt(mStr, 10)];
-                    createSheet(`${targetMonthName} ${y}`, monthMap[key]);
-                }
             }
 
             const buffer = await workbook.xlsx.writeBuffer();

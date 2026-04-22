@@ -64,6 +64,7 @@ export async function GET(req: NextRequest) {
             section: r.item.section,
             chunkIndex: r.item.chunkIndex,
             score: r.score ?? 1,
+            page: r.item.page,
         }));
 
         const suggestions = generateSuggestions(q, keywords);
