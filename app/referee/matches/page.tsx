@@ -2,6 +2,7 @@ import { verifySession } from "@/lib/session";
 import { db } from "@/lib/db";
 import { MatchesClient } from "./MatchesClient";
 import { getUserMatchesStore } from "@/lib/matches-store";
+import { nameMatches } from "@/lib/match-parser";
 
 export const dynamic = "force-dynamic";
 
@@ -13,11 +14,10 @@ function normalizeNameStr(first: string, last: string) {
         .replace(/Ç/g, "ç").toLowerCase().replace(/\s+/g, " ").trim();
 }
 
+// Checks if user's DB name corresponds to "Efe Can Bayrak" (the allowed user).
+// Uses the same fuzzy nameMatches logic so DB name variations (e.g. "EFE CAN" / "BAYRAK") all pass.
 function isEfeCanBayrak(firstName: string, lastName: string): boolean {
-    const full = normalizeNameStr(firstName, lastName);
-    const tokens = full.split(/\s+/).filter(Boolean);
-    // Must contain all three: efe, can, bayrak (any order, possibly with extra name tokens)
-    return tokens.includes("efe") && tokens.includes("can") && tokens.includes("bayrak");
+    return nameMatches("Efe Can Bayrak", firstName, lastName);
 }
 
 export default async function MatchesPage() {

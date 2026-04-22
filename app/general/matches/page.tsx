@@ -1,17 +1,9 @@
 import { verifySession } from "@/lib/session";
 import { db } from "@/lib/db";
 import { MatchesClient } from "@/app/referee/matches/MatchesClient";
+import { nameMatches } from "@/lib/match-parser";
 
 export const dynamic = "force-dynamic";
-
-function normalizeTR(str: string) {
-    return str
-        .replace(/İ/g, "i").replace(/I/g, "ı")
-        .replace(/Ğ/g, "ğ").replace(/Ü/g, "ü")
-        .replace(/Ş/g, "ş").replace(/Ö/g, "ö")
-        .replace(/Ç/g, "ç")
-        .toLowerCase().replace(/\s+/g, " ").trim();
-}
 
 export default async function GeneralMatchesPage() {
     const session = await verifySession();
@@ -27,9 +19,7 @@ export default async function GeneralMatchesPage() {
     const firstName = user?.referee?.firstName || user?.official?.firstName || "";
     const lastName = user?.referee?.lastName || user?.official?.lastName || "";
 
-    const full = normalizeTR(`${firstName} ${lastName}`);
-    const tokens = full.split(/\s+/).filter(Boolean);
-    const isEfeCan = tokens.includes("efe") && tokens.includes("can") && tokens.includes("bayrak");
+    const isEfeCan = nameMatches("Efe Can Bayrak", firstName, lastName);
 
     if (!isEfeCan) {
         return (
