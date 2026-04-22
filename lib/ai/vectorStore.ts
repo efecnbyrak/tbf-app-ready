@@ -1,12 +1,2 @@
-import { OpenAI } from "openai";
-
-let openaiClient: OpenAI | null = null;
-
-export const getOpenAI = () => {
-    if (!openaiClient) {
-        openaiClient = new OpenAI({
-            apiKey: process.env.OPENAI_API_KEY,
-        });
-    }
-    return openaiClient;
-};
+// Bu dosya artık kullanılmıyor. OpenAI kaldırıldı, sistem Gemini kullanıyor.
+export {};
