@@ -340,23 +340,26 @@ export async function moveFormsToLastWeek() {
         return { success: true, count: 0 };
     }
 
-    await db.$transaction(async (tx: any) => {
-        for (const form of currentForms) {
-            await tx.availabilityForm.update({
+    const ops: any[] = [];
+    for (const form of currentForms) {
+        ops.push(
+            db.availabilityForm.update({
                 where: { id: form.id },
                 data: { weekStartDate: lastWeekStart }
-            });
-
-            for (const day of form.days) {
-                const newDate = new Date(day.date);
-                newDate.setDate(newDate.getDate() - 7);
-                await tx.availabilityDay.update({
+            })
+        );
+        for (const day of form.days) {
+            const newDate = new Date(day.date);
+            newDate.setDate(newDate.getDate() - 7);
+            ops.push(
+                db.availabilityDay.update({
                     where: { id: day.id },
                     data: { date: newDate }
-                });
-            }
+                })
+            );
         }
-    });
+    }
+    await db.$transaction(ops);
 
     revalidatePath("/admin/availability");
     revalidatePath("/admin/all-availabilities");
