@@ -38,7 +38,6 @@ export default async function MatchesPage() {
 
     const firstName = user?.referee?.firstName || user?.official?.firstName || "";
     const lastName = user?.referee?.lastName || user?.official?.lastName || "";
-    const fullName = `${firstName} ${lastName}`.toLowerCase().trim();
 
 
 

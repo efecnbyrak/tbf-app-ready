@@ -11,22 +11,10 @@ export async function GET() {
             return NextResponse.json({ hasUnread: false, count: 0 });
         }
 
-        // Fetch user's roles/types to determine which announcements they should see
-        const user = await db.user.findUnique({
-            where: { id: session.userId },
-            include: { referee: true, official: true }
-        });
-
-        if (!user) {
-            return NextResponse.json({ hasUnread: false, count: 0 });
-        }
-
+        // Role is already in the verified session JWT — no extra DB fetch needed
         const targetGroups = ["ALL"];
-        if (session.role === "REFEREE") targetGroups.push("REFEREE");
-        if (session.role === "OBSERVER") targetGroups.push("OBSERVER");
-        if (session.role === "TABLE") targetGroups.push("TABLE");
-        if (user.official?.officialType === "STATISTICIAN") targetGroups.push("STATISTICIAN");
-        if (user.official?.officialType === "HEALTH") targetGroups.push("HEALTH");
+        const roleTargets = ["REFEREE", "OBSERVER", "TABLE", "STATISTICIAN", "HEALTH", "FIELD_COMMISSIONER"];
+        if (roleTargets.includes(session.role)) targetGroups.push(session.role);
 
         // Count announcements that are targeted to the user but not read
         const unreadCount = await db.announcement.count({

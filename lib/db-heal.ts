@@ -61,22 +61,29 @@ export async function ensureSchemaColumns() {
         // Generate missing recovery codes safely
         try {
             const usersMissingCode = await db.user.findMany({
-                where: { OR: [{ recoveryCode: null }, { recoveryCode: "" }] }
+                where: { OR: [{ recoveryCode: null }, { recoveryCode: "" }] },
+                select: { id: true }
             });
 
             if (usersMissingCode.length > 0) {
                 const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-                for (const u of usersMissingCode) {
+                const generateCode = () => {
                     let code = "";
-                    for(let i=0; i<8; i++) {
-                        if(i === 4) code += "-";
+                    for (let i = 0; i < 8; i++) {
+                        if (i === 4) code += "-";
                         code += chars.charAt(Math.floor(Math.random() * chars.length));
                     }
-                    await db.user.update({
-                        where: { id: u.id },
-                        data: { recoveryCode: code }
-                    });
-                }
+                    return code;
+                };
+
+                await Promise.all(
+                    usersMissingCode.map(u =>
+                        db.user.update({
+                            where: { id: u.id },
+                            data: { recoveryCode: generateCode() }
+                        })
+                    )
+                );
                 console.log(`[DB-HEAL] Generated recovery codes for ${usersMissingCode.length} users.`);
             }
         } catch(e) {

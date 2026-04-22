@@ -8,27 +8,35 @@ import { PastAvailabilitiesModal } from "@/components/referee/PastAvailabilities
 
 export default async function AvailabilityPage() {
     const session = await verifySession();
-    let sourceData: any = await db.referee.findUnique({
-        where: { userId: session.userId },
-        include: {
-            user: true,
-            regions: true,
-            forms: { include: { days: true } }
-        },
-    });
 
-    let isOfficial = false;
+    // Compute the 2-week lookback boundary before the DB calls so the query filters server-side
+    const twoWeeksAgo = new Date();
+    twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
 
-    if (!sourceData) {
-        sourceData = await db.generalOfficial.findUnique({
+    const [refereeData, officialData] = await Promise.all([
+        db.referee.findUnique({
+            where: { userId: session.userId },
+            include: {
+                user: true,
+                regions: true,
+                // Filter at DB level — only fetch forms from the last 14 days instead of all-time history
+                forms: {
+                    where: { weekStartDate: { gte: twoWeeksAgo } },
+                    include: { days: true }
+                }
+            },
+        }),
+        db.generalOfficial.findUnique({
             where: { userId: session.userId },
             include: {
                 user: true,
                 regions: true,
             }
-        });
-        isOfficial = true;
-    }
+        }),
+    ]);
+
+    const isOfficial = !refereeData;
+    const sourceData: any = refereeData || officialData;
 
     if (!sourceData) return <div>Profil Hatası</div>;
 
@@ -68,15 +76,9 @@ export default async function AvailabilityPage() {
         days.push(d);
     }
 
-    // Filter and sort past forms (last 14 days only)
-    const twoWeeksAgo = new Date();
-    twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
-
-    const pastForms = sourceData.forms
-        .filter((f: any) => {
-            const formDate = new Date(f.weekStartDate).getTime();
-            return formDate < startDate.getTime() && formDate >= twoWeeksAgo.getTime();
-        })
+    // DB query already filtered to last 14 days — just exclude the current week and sort
+    const pastForms = (sourceData.forms ?? [])
+        .filter((f: any) => new Date(f.weekStartDate).getTime() < startDate.getTime())
         .sort((a: any, b: any) => new Date(b.weekStartDate).getTime() - new Date(a.weekStartDate).getTime());
 
     return (

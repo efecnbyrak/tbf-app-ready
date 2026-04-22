@@ -21,23 +21,45 @@ export function AvailabilityList({ forms, startDate, endDate }: AvailabilityList
     const [searchTerm, setSearchTerm] = useState("");
     const [expandedId, setExpandedId] = useState<number | null>(null);
 
-    const filteredForms = React.useMemo(() => {
-        return forms.filter((form) => {
-            const profile = form.referee || form.official;
-            if (!profile) return false;
-
-            const fullName = `${profile.firstName} ${profile.lastName}`.toLowerCase();
-            const search = searchTerm.toLowerCase();
-            const matchesName = fullName.includes(search);
-
-            const matchesClass = form.referee
-                ? form.referee.classification.toLowerCase().includes(search)
-                : (form.official?.officialType?.toLowerCase().includes(search) || false);
-
-            const matchesRegion = profile.regions?.some((r) => r.name.toLowerCase().includes(search)) || false;
-
-            return matchesName || matchesClass || matchesRegion;
+    // Pre-compute the 7 day objects once — shared across all form rows.
+    // Without this, DayGrid re-creates these on every render for every form.
+    const weekDays = React.useMemo(() => {
+        return Array.from({ length: 7 }, (_, i) => {
+            const d = new Date(startDate);
+            d.setDate(startDate.getDate() + i);
+            return { date: d, str: d.toISOString().split('T')[0] };
         });
+    }, [startDate]);
+
+    const filteredForms = React.useMemo(() => {
+        return forms
+            .filter((form) => {
+                const profile = form.referee || form.official;
+                if (!profile) return false;
+
+                const fullName = `${profile.firstName} ${profile.lastName}`.toLowerCase();
+                const search = searchTerm.toLowerCase();
+                const matchesName = fullName.includes(search);
+
+                const matchesClass = form.referee
+                    ? form.referee.classification.toLowerCase().includes(search)
+                    : (form.official?.officialType?.toLowerCase().includes(search) || false);
+
+                const matchesRegion = profile.regions?.some((r) => r.name.toLowerCase().includes(search)) || false;
+
+                return matchesName || matchesClass || matchesRegion;
+            })
+            .map((form) => ({
+                ...form,
+                // Pre-index days by ISO date string for O(1) lookup in DayGrid.
+                // Without this, each cell does a linear scan of form.days.
+                daysByStr: Object.fromEntries(
+                    form.days.map((day) => [
+                        new Date(day.date).toISOString().split('T')[0],
+                        day.slots,
+                    ])
+                ) as Record<string, string>,
+            }));
     }, [forms, searchTerm]);
 
     const toggleExpand = (id: number) => {
@@ -61,22 +83,14 @@ export function AvailabilityList({ forms, startDate, endDate }: AvailabilityList
         );
     };
 
-    const DayGrid = ({ form, isMobile }: { form: AvailabilityFormWithDetails, isMobile: boolean }) => (
+    const DayGrid = ({ form, isMobile }: { form: AvailabilityFormWithDetails & { daysByStr: Record<string, string> }, isMobile: boolean }) => (
         <div className={isMobile
             ? "mt-4 pt-4 border-t border-zinc-100 dark:border-zinc-800 space-y-2"
             : "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-3 p-2"
         }>
-            {Array.from({ length: 7 }).map((_, i) => {
-                const d = new Date(startDate);
-                d.setDate(startDate.getDate() + i);
-                const dayStr = d.toISOString().split('T')[0];
-
-                const record = form.days.find((day) => {
-                    const recordDate = new Date(day.date);
-                    return recordDate.toISOString().split('T')[0] === dayStr;
-                });
-
-                const slot = record ? record.slots : "Uygun Değil";
+            {weekDays.map(({ date: d, str: dayStr }, i) => {
+                // O(1) lookup using pre-indexed map instead of O(M) linear find
+                const slot = form.daysByStr[dayStr] ?? "Uygun Değil";
                 const isAvailable = slot !== "Uygun Değil";
 
                 if (isMobile) {

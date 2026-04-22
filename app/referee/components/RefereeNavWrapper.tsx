@@ -2,17 +2,19 @@ import { db } from "@/lib/db";
 import { ResponsiveNav } from "../ResponsiveNav";
 import { verifySession } from "@/lib/session";
 
-export async function RefereeNavWrapper({ userId, basePath }: { userId: number, basePath?: string }) {
-    const session = await verifySession();
-    const isAdmin = session.role === "ADMIN" || session.role === "SUPER_ADMIN" || session.role === "ADMIN_IHK" || session.role === "OBSERVER";
+const ADMIN_ROLES = ["ADMIN", "SUPER_ADMIN", "ADMIN_IHK", "OBSERVER"];
 
-    const referee = await db.referee.findUnique({
-        where: { userId }
-    });
+export async function RefereeNavWrapper({ userId, role, basePath }: { userId: number, role?: string, basePath?: string }) {
+    // If role is passed from the parent layout (already verified), skip re-verifying session.
+    // Fall back to verifySession() only when called standalone without a role prop.
+    const resolvedRole = role ?? (await verifySession()).role;
+    const isAdmin = ADMIN_ROLES.includes(resolvedRole);
 
-    const official = await db.generalOfficial.findUnique({
-        where: { userId }
-    });
+    // Run both queries in parallel — saves one full DB round-trip for GeneralOfficials
+    const [referee, official] = await Promise.all([
+        db.referee.findUnique({ where: { userId } }),
+        db.generalOfficial.findUnique({ where: { userId } }),
+    ]);
 
     const isObserver = official?.officialType === "OBSERVER";
     const showAdminLinks = isAdmin; // Universal for all Official-Admins

@@ -1,5 +1,4 @@
 import { verifySession } from "@/lib/session";
-import { ensureSchemaColumns } from "@/lib/db-heal";
 import { Suspense } from "react";
 import { RefereeNavWrapper } from "./components/RefereeNavWrapper";
 import Link from "next/link";
@@ -16,14 +15,13 @@ export default async function RefereeLayout({
     children: React.ReactNode;
 }) {
     const session = await verifySession();
-    await ensureSchemaColumns();
 
     const [user, ibanSetting] = await Promise.all([
         db.user.findUnique({
             where: { id: session.userId },
-            include: {
-                referee: true,
-                official: true
+            select: {
+                referee: { select: { firstName: true, lastName: true, imageUrl: true, iban: true } },
+                official: { select: { firstName: true, lastName: true, imageUrl: true, iban: true } },
             }
         }),
         db.systemSetting.findUnique({ where: { key: "IBAN_COLLECTION_ENABLED" } })
@@ -47,7 +45,7 @@ export default async function RefereeLayout({
                     roleType="REFEREE"
                 />
             }>
-                <RefereeNavWrapper userId={session.userId} />
+                <RefereeNavWrapper userId={session.userId} role={session.role} />
             </Suspense>
 
             <main className="flex-1 md:pl-72 flex flex-col min-h-screen">

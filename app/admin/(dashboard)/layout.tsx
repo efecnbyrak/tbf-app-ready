@@ -2,7 +2,6 @@
 import { getSession } from "@/lib/session";
 import { AdminLayoutClient } from "./AdminLayoutClient";
 import { redirect } from "next/navigation";
-import { ensureSchemaColumns } from "@/lib/db-heal";
 import { db } from "@/lib/db";
 import { Suspense } from "react";
 import { RefereeNavWrapper } from "@/app/referee/components/RefereeNavWrapper";
@@ -16,7 +15,6 @@ export default async function AdminLayout({
     children: React.ReactNode;
 }) {
     const session = await getSession();
-    await ensureSchemaColumns();
 
     // Secure the admin area
     if (!session || !["ADMIN", "SUPER_ADMIN", "ADMIN_IHK"].includes(session.role)) {
@@ -50,7 +48,7 @@ export default async function AdminLayout({
                         isAdminObserver={true}
                     />
                 }>
-                    <RefereeNavWrapper userId={session.userId} basePath="/admin" />
+                    <RefereeNavWrapper userId={session.userId} role={session.role} basePath="/admin" />
                 </Suspense>
 
                 <main className="flex-1 md:pl-80 flex flex-col min-h-screen relative w-full">

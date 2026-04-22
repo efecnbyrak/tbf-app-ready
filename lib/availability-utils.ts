@@ -1,8 +1,11 @@
 import { getDay } from "date-fns";
+import { cache } from "react";
 import { db } from "@/lib/db";
 
 // Helper to get window
-export async function getAvailabilityWindow() {
+// `cache()` deduplicates calls within a single server render tree —
+// multiple server components on the same page share one DB fetch.
+export const getAvailabilityWindow = cache(async function getAvailabilityWindow() {
     // 0. Get current time in Turkey Time (TRT - UTC+3)
     const trtDateStr = new Date().toLocaleString("en-US", { timeZone: "Europe/Istanbul" });
     const today = new Date(trtDateStr);
@@ -13,19 +16,22 @@ export async function getAvailabilityWindow() {
     let setting = "AUTO";
 
     let isManualOverride = false;
+    let lastWeekRolloverKey = "";
 
     try {
-        const [targetS, weekS, modeS, manualS] = await Promise.all([
+        const [targetS, weekS, modeS, manualS, rolloverS] = await Promise.all([
             db.systemSetting.findUnique({ where: { key: "AVAILABILITY_TARGET_DATE" } }),
             db.systemSetting.findUnique({ where: { key: "CURRENT_WEEK_NUMBER" } }),
             db.systemSetting.findUnique({ where: { key: "AVAILABILITY_MODE" } }),
-            db.systemSetting.findUnique({ where: { key: "AVAILABILITY_TARGET_MANUAL" } })
+            db.systemSetting.findUnique({ where: { key: "AVAILABILITY_TARGET_MANUAL" } }),
+            db.systemSetting.findUnique({ where: { key: "LAST_WEEK_ROLLOVER_DATE" } }),
         ]);
 
         if (targetS?.value) storedTargetDate = new Date(targetS.value);
         if (weekS?.value) storedWeekNumber = parseInt(weekS.value);
         if (modeS?.value) setting = modeS.value;
         if (manualS?.value === "true") isManualOverride = true;
+        lastWeekRolloverKey = rolloverS?.value || "";
     } catch (e) {
         console.error("[AVAILABILITY] Error fetching settings:", e);
     }
@@ -73,11 +79,6 @@ export async function getAvailabilityWindow() {
 
     // 2. Rollover for Week Number (Monday 00:00)
     // Use YYYY-MM-DD to avoid ISO timezone shifts causing double-increments
-    let lastWeekRolloverKey = "";
-    try {
-        const s = await db.systemSetting.findUnique({ where: { key: "LAST_WEEK_ROLLOVER_DATE" } });
-        lastWeekRolloverKey = s?.value || "";
-    } catch (e) { }
 
     // Current Monday in YYYY-MM-DD according to TRT
     const day = today.getDay();
@@ -152,4 +153,4 @@ export async function getAvailabilityWindow() {
         mode: setting,
         weekNumber: currentWeek
     };
-}
+});

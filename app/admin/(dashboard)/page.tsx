@@ -95,50 +95,13 @@ export default async function AdminDashboard() {
     const session = await verifySession();
     const role = session.role;
 
-    // Fetch pending approvals for the notification system
-    const pendingCount = await db.user.count({ where: { isApproved: false } });
-
-    // --- TEMPORARY FIX FOR ALTAN RENKSOY ---
-    try {
-        const altan = await db.generalOfficial.findFirst({
-            where: { firstName: { contains: "Altan", mode: "insensitive" }, lastName: { contains: "Renksoy", mode: "insensitive" } },
-            include: { regions: true }
-        });
-        if (altan && !altan.regions.some((r: any) => r.name === "Anadolu")) {
-            const anadolu = await db.region.findUnique({ where: { name: "Anadolu" } });
-            if (anadolu) {
-                await db.generalOfficial.update({
-                    where: { id: altan.id },
-                    data: { regions: { set: [{ id: anadolu.id }] } }
-                });
-                console.log("[FIX] Updated Altan Renksoy's region to Anadolu.");
-            }
-        }
-
-        // Also check if referee just in case
-        const altanRef = await db.referee.findFirst({
-            where: { firstName: { contains: "Altan", mode: "insensitive" }, lastName: { contains: "Renksoy", mode: "insensitive" } },
-            include: { regions: true }
-        });
-        if (altanRef && !altanRef.regions.some((r: any) => r.name === "Anadolu")) {
-            const anadolu = await db.region.findUnique({ where: { name: "Anadolu" } });
-            if (anadolu) {
-                await db.referee.update({
-                    where: { id: altanRef.id },
-                    data: { regions: { set: [{ id: anadolu.id }] } }
-                });
-                console.log("[FIX] Updated Altan Renksoy's (Referee) region to Anadolu.");
-            }
-        }
-    } catch (e) {
-        console.error("Failed to run Altan Renksoy fix:", e);
-    }
-    // --- END TEMPORARY FIX ---
-
-    const user = await db.user.findUnique({
-        where: { id: session.userId },
-        include: { referee: true, official: true }
-    });
+    const [pendingCount, user] = await Promise.all([
+        db.user.count({ where: { isApproved: false } }),
+        db.user.findUnique({
+            where: { id: session.userId },
+            select: { referee: { select: { id: true } }, official: { select: { id: true } } }
+        }),
+    ]);
 
     const hasReferee = !!user?.referee;
     const hasOfficial = !!user?.official;

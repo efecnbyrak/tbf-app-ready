@@ -1,62 +1,53 @@
 import { db } from "@/lib/db";
 import { RefereeListClient } from "./RefereeListClient";
-import { ensureSchemaColumns } from "@/lib/db-heal";
 import { verifySession } from "@/lib/session";
 
 export const dynamic = 'force-dynamic';
 
 export default async function RefereesPage() {
-    await ensureSchemaColumns();
     const session = await verifySession();
 
-    // Get current user details
-    const currentUserWithEmail = await db.user.findUnique({
-        where: { id: session.userId },
-        include: {
-            referee: { select: { email: true } },
-            official: { select: { email: true } }
-        }
-    });
-    const currentUserEmail = currentUserWithEmail?.referee?.email || currentUserWithEmail?.official?.email || currentUserWithEmail?.username || "";
-
-
-    // Fetch all referees (table now only contains actual referees)
-    const referees = await db.referee.findMany({
-
-        include: {
-            user: {
-                include: {
-                    penalties: true,
-                    role: true
-                }
-            },
-            regions: true,
-            assignments: {
-                include: {
-                    match: true
-                },
-                orderBy: {
-                    match: {
-                        date: 'desc'
+    // Run user-email lookup and full referee fetch in parallel
+    const [currentUserWithEmail, referees] = await Promise.all([
+        db.user.findUnique({
+            where: { id: session.userId },
+            select: {
+                username: true,
+                referee: { select: { email: true } },
+                official: { select: { email: true } }
+            }
+        }),
+        db.referee.findMany({
+            include: {
+                user: {
+                    include: {
+                        penalties: true,
+                        role: true
                     }
                 },
-                take: 5
+                regions: true,
+                assignments: {
+                    include: { match: true },
+                    orderBy: { match: { date: 'desc' } },
+                    take: 5
+                },
+                _count: { select: { assignments: true } }
             },
-            _count: {
-                select: { assignments: true }
-            }
-        },
-        orderBy: { createdAt: 'desc' }
-    });
+            orderBy: { createdAt: 'desc' }
+        }),
+    ]);
 
-    // Re-construct the map for component compatibility (Fixed for Client Component)
-    const refereeTypeMap: Record<string, string> = {};
-    referees.forEach(r => {
-        refereeTypeMap[r.id] = "REFEREE";
-    });
+    const currentUserEmail = currentUserWithEmail?.referee?.email
+        || currentUserWithEmail?.official?.email
+        || currentUserWithEmail?.username
+        || "";
 
     // Make data plain for client component
     const plainReferees = JSON.parse(JSON.stringify(referees));
+    // Every referee entry is type "REFEREE" — no need for a dynamic map
+    const refereeTypeMap: Record<string, string> = Object.fromEntries(
+        referees.map(r => [r.id, "REFEREE"])
+    );
 
     return (
         <div className="space-y-12">

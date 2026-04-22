@@ -5,7 +5,6 @@ import { ExportButton } from "./ExportButton";
 import { CleanupButton } from "@/components/admin/CleanupButton";
 import { AvailabilityList } from "./AvailabilityList";
 import Link from "next/link";
-import { ensureSchemaColumns } from "@/lib/db-heal";
 import { User, Users, Table, Shield, Activity, FileSpreadsheet } from "lucide-react";
 import { format } from "date-fns";
 import { tr } from "date-fns/locale";
@@ -17,7 +16,6 @@ interface PageProps {
 }
 
 export default async function AvailabilityAdminPage({ searchParams }: PageProps) {
-    await ensureSchemaColumns();
     const params = await searchParams;
     const { startDate: currentStartDate, endDate: currentEndDate, weekNumber } = await getAvailabilityWindow();
 
