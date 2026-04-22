@@ -17,6 +17,11 @@ const nextConfig: NextConfig = {
         "@aws-sdk/client-s3",
         "pdf-parse",
     ],
+    // Ensure PDF files in data/ are included in Vercel's output bundle
+    outputFileTracingIncludes: {
+        '/api/rules/pdf-search': ['./data/gameRules/**'],
+        '/api/rules/pdf-view': ['./data/gameRules/**'],
+    },
     experimental: {
         serverActions: {
             bodySizeLimit: '50mb',

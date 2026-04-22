@@ -40,7 +40,7 @@ export function ResponsiveNav({ refereeName, roleType, basePath = "/referee", ti
         };
 
         checkNotifications();
-        const interval = setInterval(checkNotifications, 60 * 1000); // Check every minute
+        const interval = setInterval(checkNotifications, 5 * 60 * 1000); // Check every 5 minutes
         return () => clearInterval(interval);
     }, []);
 

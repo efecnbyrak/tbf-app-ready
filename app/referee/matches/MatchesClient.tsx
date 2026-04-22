@@ -656,7 +656,7 @@ export function MatchesClient({ firstName, lastName, initialMatches = [], initia
             // 1. Tümü
             createSheet("Tümü", matchesToExport);
 
-            // 2. Ödemeler
+            // 2. Ödemeler — Aylara Göre Gruplanmış
             {
                 const odemSheet = workbook.addWorksheet("Ödemeler");
                 odemSheet.columns = [
@@ -667,18 +667,19 @@ export function MatchesClient({ firstName, lastName, initialMatches = [], initia
                     { header: "Kategori / Lig", key: "lig", width: 25 },
                     { header: "Hafta", key: "hafta", width: 10 },
                     { header: "Görevim", key: "gorev", width: 22 },
-                    { header: "Ücret (₺)", key: "ucret", width: 14 },
+                    { header: "Ücret (₺)", key: "ucret", width: 16 },
                     { header: "Ödendi mi?", key: "odendi", width: 14 },
                     { header: "Notlar", key: "notlar", width: 30 },
                 ];
 
-                // Header styling
+                // Main header row styling
                 const hRow = odemSheet.getRow(1);
                 hRow.font = { bold: true, color: { argb: "FFFFFFFF" } };
                 hRow.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFDC2626" } };
                 hRow.alignment = { vertical: "middle", horizontal: "center" };
+                hRow.height = 24;
 
-                // Sort ascending by date for payment tracking (oldest first)
+                // Sort ascending by date (oldest first)
                 const paymentMatches = [...matchesToExport].sort((a, b) => {
                     const dA = parseTurkishDate(a.tarih);
                     const dB = parseTurkishDate(b.tarih);
@@ -688,33 +689,84 @@ export function MatchesClient({ firstName, lastName, initialMatches = [], initia
                     return dA.getTime() - dB.getTime();
                 });
 
-                paymentMatches.forEach((m, i) => {
-                    const roleObj = getRole(m);
-                    const row = odemSheet.addRow({
-                        tarih: formatDisplayDate(m.tarih),
-                        saat: m.saat || "-",
-                        mac: m.mac_adi,
-                        salon: m.salon || "-",
-                        lig: m.ligTuru,
-                        hafta: m.hafta ? `${m.hafta}. Hafta` : "-",
-                        gorev: roleObj.label,
-                        ucret: "",
-                        odendi: "",
-                        notlar: "",
-                    });
-                    row.alignment = { vertical: "middle", wrapText: false };
-                    if ((i + 1) % 2 === 0) {
-                        row.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFF3F4F6" } };
+                // Group by month
+                const PAY_MONTHS = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"];
+                const payMonthMap = new Map<string, MatchData[]>();
+                const payUndated: MatchData[] = [];
+
+                paymentMatches.forEach(m => {
+                    const d = parseTurkishDate(m.tarih);
+                    if (d) {
+                        const key = `${d.getFullYear()}-${d.getMonth().toString().padStart(2, '0')}`;
+                        if (!payMonthMap.has(key)) payMonthMap.set(key, []);
+                        payMonthMap.get(key)!.push(m);
+                    } else {
+                        payUndated.push(m);
                     }
-                    // Style the Ücret and Ödendi cells for easy fill-in
-                    const ucretCell = row.getCell("ucret");
-                    ucretCell.alignment = { vertical: "middle", horizontal: "center" };
-                    const odendiCell = row.getCell("odendi");
-                    odendiCell.alignment = { vertical: "middle", horizontal: "center" };
                 });
 
+                let altRowIdx = 0;
+
+                const addPaymentBlock = (label: string, matches: MatchData[]) => {
+                    // Month header row (dark navy)
+                    const mRow = odemSheet.addRow([`  ${label.toUpperCase()}`, '', '', '', '', '', '', '', '', '']);
+                    odemSheet.mergeCells(`A${mRow.number}:J${mRow.number}`);
+                    mRow.font = { bold: true, color: { argb: "FFFFFFFF" }, size: 11 };
+                    mRow.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF1E3A5F" } };
+                    mRow.getCell(1).alignment = { vertical: "middle", horizontal: "left" };
+                    mRow.height = 22;
+
+                    const dataStart = odemSheet.rowCount + 1;
+
+                    matches.forEach(m => {
+                        const roleObj = getRole(m);
+                        const row = odemSheet.addRow({
+                            tarih: formatDisplayDate(m.tarih),
+                            saat: m.saat || "-",
+                            mac: m.mac_adi,
+                            salon: m.salon || "-",
+                            lig: m.ligTuru,
+                            hafta: m.hafta ? `${m.hafta}. Hafta` : "-",
+                            gorev: roleObj.label,
+                            ucret: "",
+                            odendi: "",
+                            notlar: "",
+                        });
+                        row.alignment = { vertical: "middle", wrapText: false };
+                        if (altRowIdx % 2 === 0) {
+                            row.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFF9FAFB" } };
+                        }
+                        altRowIdx++;
+                        row.getCell("ucret").alignment = { vertical: "middle", horizontal: "center" };
+                        row.getCell("odendi").alignment = { vertical: "middle", horizontal: "center" };
+                    });
+
+                    const dataEnd = odemSheet.rowCount;
+
+                    // TOPLAM row (dark green)
+                    const tRow = odemSheet.addRow([`${label.toUpperCase()} — TOPLAM`, '', '', '', '', '', '', '', '', '']);
+                    odemSheet.mergeCells(`A${tRow.number}:G${tRow.number}`);
+                    tRow.getCell('H').value = { formula: `SUM(H${dataStart}:H${dataEnd})` };
+                    tRow.getCell('H').numFmt = '#,##0.00 ₺';
+                    tRow.font = { bold: true, color: { argb: "FFFFFFFF" } };
+                    tRow.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF15803D" } };
+                    tRow.getCell(1).alignment = { vertical: "middle", horizontal: "center" };
+                    tRow.getCell('H').alignment = { vertical: "middle", horizontal: "center" };
+                    tRow.getCell('H').font = { bold: true, color: { argb: "FFFFFFFF" } };
+                    tRow.height = 20;
+                };
+
+                for (const key of [...payMonthMap.keys()].sort()) {
+                    const [y, mStr] = key.split('-');
+                    addPaymentBlock(`${PAY_MONTHS[parseInt(mStr, 10)]} ${y}`, payMonthMap.get(key)!);
+                }
+
+                if (payUndated.length > 0) {
+                    addPaymentBlock("Tarihi Belirsiz Maçlar", payUndated);
+                }
+
                 // Add borders
-                odemSheet.eachRow((row) => {
+                odemSheet.eachRow(row => {
                     row.eachCell(cell => {
                         cell.border = {
                             top: { style: "thin" },

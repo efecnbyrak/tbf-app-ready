@@ -29,6 +29,8 @@ export async function GET() {
         return NextResponse.json({
             hasUnread: unreadCount > 0,
             count: unreadCount
+        }, {
+            headers: { 'Cache-Control': 'private, max-age=60, stale-while-revalidate=120' }
         });
     } catch (e) {
         console.error("Error fetching unread announcements:", e);

@@ -28,7 +28,7 @@ export function AdminLayoutClient({ children, role, imageUrl }: AdminLayoutClien
             } catch (e) { }
         };
         checkNotifications();
-        const interval = setInterval(checkNotifications, 120 * 1000);
+        const interval = setInterval(checkNotifications, 5 * 60 * 1000);
         return () => clearInterval(interval);
     }, []);
 

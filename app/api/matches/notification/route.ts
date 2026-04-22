@@ -36,6 +36,8 @@ export async function GET() {
         return NextResponse.json({
             hasNew: hasUpcoming,
             totalMatches: cached.matches.length,
+        }, {
+            headers: { 'Cache-Control': 'private, max-age=60, stale-while-revalidate=120' }
         });
     } catch (e) {
         return NextResponse.json({ hasNew: false });
