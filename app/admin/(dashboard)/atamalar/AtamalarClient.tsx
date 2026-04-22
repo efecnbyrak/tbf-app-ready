@@ -188,6 +188,8 @@ export function AtamalarClient({
     const [tableSearch, setTableSearch] = useState("");
     const [filterLig, setFilterLig] = useState("");
     const [filterHafta, setFilterHafta] = useState("");
+    const [exportModalOpen, setExportModalOpen] = useState(false);
+    const [exportLig, setExportLig] = useState("");
 
     const teamOptions = teamNames.map(t => ({ name: t }));
     const categoryOptions = categories.map(c => ({ name: c }));
@@ -321,9 +323,7 @@ export function AtamalarClient({
         { key: "istatistikci2", label: "İSTAT. 2", width: "w-32" },
     ];
 
-    const exportUrl = `/admin/atamalar/export?${filterLig ? `ligTuru=${encodeURIComponent(filterLig)}&` : ""}${filterHafta ? `hafta=${filterHafta}` : ""}`;
-
-    const isYerelLigler = form.ligTuru === "Yerel Ligler";
+const isYerelLigler = form.ligTuru === "Yerel Ligler";
 
     return (
         <div className="space-y-6">
@@ -338,13 +338,13 @@ export function AtamalarClient({
                     </p>
                 </div>
                 <div className="flex items-center gap-2">
-                    <a
-                        href={exportUrl}
+                    <button
+                        onClick={() => setExportModalOpen(true)}
                         className="flex items-center gap-2 px-4 py-2.5 bg-emerald-700 hover:bg-emerald-600 text-white font-bold rounded-xl transition-colors shadow-md text-sm"
                     >
                         <Download className="w-4 h-4" />
                         Excel İndir
-                    </a>
+                    </button>
                     <button
                         onClick={openCreate}
                         className="flex items-center gap-2 px-5 py-2.5 bg-red-700 hover:bg-red-600 text-white font-bold rounded-xl transition-colors shadow-md text-sm"
@@ -356,34 +356,57 @@ export function AtamalarClient({
             </header>
 
             {/* Filters */}
-            <div className="flex flex-wrap items-center gap-3">
-                <div className="flex items-center gap-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-2.5 shadow-sm">
-                    <Search className="w-4 h-4 text-zinc-400" />
-                    <input
-                        type="text"
-                        placeholder="Takım, salon, hakem ara..."
-                        value={tableSearch}
-                        onChange={e => setTableSearch(e.target.value)}
-                        className="w-52 bg-transparent text-sm text-zinc-900 dark:text-white outline-none placeholder:text-zinc-400"
-                    />
+            <div className="space-y-3">
+                <div className="flex flex-wrap items-center gap-3">
+                    <div className="flex items-center gap-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-2.5 shadow-sm">
+                        <Search className="w-4 h-4 text-zinc-400" />
+                        <input
+                            type="text"
+                            placeholder="Takım, salon, hakem ara..."
+                            value={tableSearch}
+                            onChange={e => setTableSearch(e.target.value)}
+                            className="w-52 bg-transparent text-sm text-zinc-900 dark:text-white outline-none placeholder:text-zinc-400"
+                        />
+                    </div>
+                    {/* Lig Türü boxes */}
+                    <div className="flex items-center gap-2">
+                        <button
+                            onClick={() => { setFilterLig(""); setFilterHafta(""); }}
+                            className={`px-3 py-2 rounded-xl text-xs font-bold border transition-all ${!filterLig ? "bg-red-700 text-white border-red-700 shadow-sm" : "bg-white dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-zinc-700 hover:border-red-400"}`}
+                        >
+                            Tümü
+                        </button>
+                        {LIG_TURU_OPTIONS.map(l => (
+                            <button
+                                key={l}
+                                onClick={() => { setFilterLig(l === filterLig ? "" : l); setFilterHafta(""); }}
+                                className={`px-3 py-2 rounded-xl text-xs font-bold border transition-all ${filterLig === l ? "bg-red-700 text-white border-red-700 shadow-sm" : "bg-white dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-zinc-700 hover:border-red-400"}`}
+                            >
+                                {l}
+                            </button>
+                        ))}
+                    </div>
                 </div>
-                <select
-                    value={filterLig}
-                    onChange={e => setFilterLig(e.target.value)}
-                    className="px-3 py-2.5 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-sm text-zinc-700 dark:text-zinc-300 outline-none shadow-sm"
-                >
-                    <option value="">Tüm Lig Türleri</option>
-                    {LIG_TURU_OPTIONS.map(l => <option key={l} value={l}>{l}</option>)}
-                </select>
+                {/* Hafta boxes — only when Yerel Ligler selected */}
                 {filterLig === "Yerel Ligler" && (
-                    <select
-                        value={filterHafta}
-                        onChange={e => setFilterHafta(e.target.value)}
-                        className="px-3 py-2.5 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-sm text-zinc-700 dark:text-zinc-300 outline-none shadow-sm"
-                    >
-                        <option value="">Tüm Haftalar</option>
-                        {haftaOptions.map(h => <option key={h.name} value={h.name}>{h.label}</option>)}
-                    </select>
+                    <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Hafta:</span>
+                        <button
+                            onClick={() => setFilterHafta("")}
+                            className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all ${!filterHafta ? "bg-red-700 text-white border-red-700 shadow-sm" : "bg-white dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-zinc-700 hover:border-red-400"}`}
+                        >
+                            Tümü
+                        </button>
+                        {haftaOptions.map(h => (
+                            <button
+                                key={h.name}
+                                onClick={() => setFilterHafta(h.name === filterHafta ? "" : h.name)}
+                                className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all ${filterHafta === h.name ? "bg-red-700 text-white border-red-700 shadow-sm" : "bg-white dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-zinc-700 hover:border-red-400"}`}
+                            >
+                                {h.name}. Hafta
+                            </button>
+                        ))}
+                    </div>
                 )}
             </div>
 
@@ -462,6 +485,45 @@ export function AtamalarClient({
                                 })}
                             </tbody>
                         </table>
+                    </div>
+                </div>
+            )}
+
+            {/* Export Modal */}
+            {exportModalOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+                    <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl p-6 max-w-sm w-full border border-zinc-200 dark:border-zinc-700">
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className="text-lg font-bold text-zinc-900 dark:text-white">Excel İndir</h3>
+                            <button onClick={() => setExportModalOpen(false)} className="p-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg transition-colors">
+                                <X className="w-4 h-4 text-zinc-500" />
+                            </button>
+                        </div>
+                        <p className="text-zinc-500 text-sm mb-4">İndirmek istediğiniz kategoriyi seçin:</p>
+                        <div className="flex flex-col gap-2">
+                            {["", ...LIG_TURU_OPTIONS].map(l => (
+                                <button
+                                    key={l || "tumu"}
+                                    onClick={() => setExportLig(l)}
+                                    className={`px-4 py-2.5 rounded-xl text-sm font-semibold border transition-all text-left ${exportLig === l ? "bg-red-700 text-white border-red-700" : "bg-zinc-50 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-zinc-700 hover:border-red-400"}`}
+                                >
+                                    {l || "Tüm Kategoriler"}
+                                </button>
+                            ))}
+                        </div>
+                        <div className="flex gap-3 mt-5">
+                            <button onClick={() => setExportModalOpen(false)} className="flex-1 px-4 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm font-semibold hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors">
+                                Vazgeç
+                            </button>
+                            <a
+                                href={`/admin/atamalar/export?${exportLig ? `ligTuru=${encodeURIComponent(exportLig)}&` : ""}${filterHafta && exportLig === "Yerel Ligler" ? `hafta=${filterHafta}` : ""}`}
+                                onClick={() => setExportModalOpen(false)}
+                                className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-emerald-700 hover:bg-emerald-600 text-white rounded-xl text-sm font-bold transition-colors"
+                            >
+                                <Download className="w-4 h-4" />
+                                İndir
+                            </a>
+                        </div>
                     </div>
                 </div>
             )}
