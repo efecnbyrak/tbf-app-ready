@@ -54,15 +54,15 @@ export async function getAvailabilityWindow() {
     let didRolloverTarget = false;
     let didRolloverWeek = false;
 
-    // 1. Rollover for Target Date (Tuesday 20:30)
+    // 1. Rollover for Target Date (on the Saturday itself)
     // Skipped when admin has manually set the target date via settings panel.
     if (!isManualOverride) {
         while (true) {
+            // Advance only when the target Saturday itself has arrived
             const rolloverThreshold = new Date(currentTarget);
-            rolloverThreshold.setDate(currentTarget.getDate() - 4); // Tuesday
-            rolloverThreshold.setHours(20, 30, 0, 0);
+            rolloverThreshold.setHours(0, 0, 0, 0);
 
-            if (today > rolloverThreshold) {
+            if (today >= rolloverThreshold) {
                 currentTarget.setDate(currentTarget.getDate() + 7);
                 didRolloverTarget = true;
             } else {

@@ -46,6 +46,23 @@ function parseTurkishDate(dateStr: string): Date | null {
     return null;
 }
 
+function matchKey(m: MatchData): string {
+    const norm = (s: string) => (s || "").replace(/\s+/g, " ").trim().toLowerCase();
+    const hakems = [...m.hakemler].map(norm).sort().join(",");
+    const masa = [...m.masa_gorevlileri].map(norm).sort().join(",");
+    return `${norm(m.mac_adi)}|${norm(m.tarih)}|${norm(m.saat || "")}|${norm(m.salon || "")}|${hakems}|${masa}`;
+}
+
+function dedupeMatches(matches: MatchData[]): MatchData[] {
+    const seen = new Set<string>();
+    return matches.filter(m => {
+        const key = matchKey(m);
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+    });
+}
+
 function formatDisplayDate(dateStr: string): string {
     const d = parseTurkishDate(dateStr);
     if (!d) return dateStr || "";
@@ -64,7 +81,7 @@ const ROLE_CONFIG = {
 type FilterMode = "all" | "played" | "upcoming" | "okul" | "ozel" | "hafta";
 
 export function MatchesClient({ firstName, lastName, initialMatches = [], initialLastSync = null, initialPersonnelPhones = {} }: MatchesClientProps) {
-    const [allMatches, setAllMatches] = useState<MatchData[]>(initialMatches);
+    const [allMatches, setAllMatches] = useState<MatchData[]>(() => dedupeMatches(initialMatches));
     const [personnelPhones, setPersonnelPhones] = useState<Record<string, string>>(initialPersonnelPhones);
     const [loading, setLoading] = useState(initialMatches.length === 0);
     const [refreshing, setRefreshing] = useState(false);
@@ -119,7 +136,7 @@ export function MatchesClient({ firstName, lastName, initialMatches = [], initia
             const data = await res.json();
 
             if (res.ok) {
-                setAllMatches(data.matches || []);
+                setAllMatches(dedupeMatches(data.matches || []));
                 setLastSync(data.lastSync || null);
                 setFromCache(data.fromCache || false);
                 if (data.personnelPhones) {
@@ -170,7 +187,7 @@ export function MatchesClient({ firstName, lastName, initialMatches = [], initia
                 const data = await res.json();
 
                 if (res.ok && data.matches) {
-                    setAllMatches(data.matches);
+                    setAllMatches(dedupeMatches(data.matches));
                     if (data.newMatchesFound > 0) {
                         setLastSync(data.lastSync);
                     }
@@ -196,7 +213,7 @@ export function MatchesClient({ firstName, lastName, initialMatches = [], initia
             const data = await res.json();
 
             if (res.ok && data.matches) {
-                setAllMatches(data.matches);
+                setAllMatches(dedupeMatches(data.matches));
                 setLastSync(data.lastSync);
                 setFromCache(false);
                 if (data.personnelPhones) {

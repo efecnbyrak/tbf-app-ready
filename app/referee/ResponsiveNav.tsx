@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { User, Calendar, Menu, X, Sparkles, LayoutDashboard, Users, Briefcase, CheckCircle, Megaphone, Settings, ClipboardList, Shield, PlayCircle, Trophy, BookOpen, Bell, Bot } from "lucide-react";
+import { User, Calendar, Menu, X, Sparkles, LayoutDashboard, Users, Briefcase, CheckCircle, Megaphone, ClipboardList, Shield, PlayCircle, Trophy, BookOpen, Bell, Bot } from "lucide-react";
 import { SignOutButton } from "@/components/auth/SignOutButton";
 
 interface ResponsiveNavProps {
@@ -231,23 +231,6 @@ export function ResponsiveNav({ refereeName, roleType, basePath = "/referee", ti
                                 >
                                     <ClipboardList className="w-4 h-4 text-orange-400" />
                                     Gözlemci Raporları
-                                </Link>
-
-                                <div className="pt-3 pb-1 px-4">
-                                    <span className="text-[10px] font-black text-zinc-900 dark:text-zinc-500 uppercase tracking-[0.2em]">Sistem</span>
-                                </div>
-
-                                <Link
-                                    href="/admin/settings"
-                                    onClick={() => setIsOpen(false)}
-                                    prefetch={false}
-                                    className={`flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium transition-all text-[16px] ${isActive("/admin/settings")
-                                        ? "bg-red-700 text-white shadow-md border-l-4 border-red-900 scale-[1.02]"
-                                        : "hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-200 hover:translate-x-1"
-                                        }`}
-                                >
-                                    <Settings className="w-4 h-4" />
-                                    Ayarlar
                                 </Link>
 
                                 <div className="pt-6 pb-2 px-4 border-t border-zinc-100 dark:border-zinc-800 mt-4">
