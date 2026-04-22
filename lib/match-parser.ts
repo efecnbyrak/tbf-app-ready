@@ -257,6 +257,8 @@ export function parseWorkbook(workbook: ExcelJS.Workbook, fileName: string): Mat
                     if (!colMap["saat"]) colMap["saat"] = []; colMap["saat"].push(j);
                 } else if (c.includes("salon") || c.includes("spor")) {
                     if (!colMap["salon"]) colMap["salon"] = []; colMap["salon"].push(j);
+                } else if (c.includes("organizasyon") || c === "org") {
+                    if (!colMap["organizasyon"]) colMap["organizasyon"] = []; colMap["organizasyon"].push(j);
                 } else if (c.includes("maç") || c.includes("karşılaşma") || c.includes("müsabaka") || c.includes("takım") || c.includes("ev sahibi")) {
                     if (!colMap["mac"]) colMap["mac"] = []; colMap["mac"].push(j);
                 } else if (c.includes("istatistik") || c.includes("stat")) {
@@ -362,9 +364,16 @@ export function parseWorkbook(workbook: ExcelJS.Workbook, fileName: string): Mat
             if (salon && salon.length > 2) lastSalon = salon;
             else if (!salon && lastSalon) salon = lastSalon;
 
+            // If there's an ORGANİZASYON column, use its value as kategori
+            let rowKategori = sheetCategory;
+            if (colMap["organizasyon"]?.length) {
+                const orgVal = (row[colMap["organizasyon"][0]] || "").trim();
+                if (orgVal.length > 1) rowKategori = orgVal;
+            }
+
             allMatches.push({
                 mac_adi: macAdi, tarih, saat, salon,
-                kategori: sheetCategory, hafta: fileMeta.hafta, ligTuru: fileMeta.ligTuru,
+                kategori: rowKategori, hafta: fileMeta.hafta, ligTuru: fileMeta.ligTuru,
                 hakemler, masa_gorevlileri: masaGorevlileri, saglikcilar, istatistikciler, gozlemciler,
                 sahaKomiserleri,
                 kaynak_dosya: `${fileName} → ${ws.name}`,

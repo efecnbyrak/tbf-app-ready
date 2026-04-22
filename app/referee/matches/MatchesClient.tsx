@@ -714,8 +714,11 @@ export function MatchesClient({ firstName, lastName, initialMatches = [], initia
             const ozel = matchesToExport.filter(m => m.ligTuru === "ÖZEL LİG VE ÜNİVERSİTE");
             createSheet("Özel Lig ve Üni", ozel);
 
-            // 6. Ödemeler — Aylara Göre Gruplanmış
-            {
+            // 6. Ödemeler — Sadece EFE CAN BAYRAK için (test)
+            const isEfeCan =
+                firstName?.toUpperCase().includes("EFE") &&
+                lastName?.toUpperCase().includes("BAYRAK");
+            if (isEfeCan) {
                 const odemSheet = workbook.addWorksheet("Ödemeler");
                 // 8 columns — Ödendi mi? ve Notlar kaldırıldı
                 odemSheet.columns = [
