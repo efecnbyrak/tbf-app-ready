@@ -8,7 +8,6 @@ import { Suspense } from "react";
 import { RefereeNavWrapper } from "@/app/referee/components/RefereeNavWrapper";
 import { ResponsiveNav } from "@/app/referee/ResponsiveNav";
 
-import { FloatingChat } from "@/components/chat/FloatingChat";
 import { UpcomingMatchPopup } from "@/components/matches/UpcomingMatchPopup";
 
 export default async function AdminLayout({
@@ -31,12 +30,6 @@ export default async function AdminLayout({
             official: { select: { firstName: true, lastName: true, officialType: true, imageUrl: true } }
         }
     });
-
-    const currentUserName = userDetails?.referee
-        ? `${userDetails.referee.firstName} ${userDetails.referee.lastName}`
-        : userDetails?.official
-            ? `${userDetails.official.firstName} ${userDetails.official.lastName}`
-            : session.userId.toString();
 
     // Check if it's an Official Admin (Observer/Referee with admin rights)
     // SUPER_ADMIN ALWAYS sees the master sidebar.
@@ -67,7 +60,6 @@ export default async function AdminLayout({
                         </div>
                     </div>
 
-                    <FloatingChat currentUserId={session.userId} currentUserName={currentUserName} />
                     <UpcomingMatchPopup />
 
                     <footer className="p-6 border-t border-zinc-200 dark:border-zinc-800 text-center text-zinc-500 text-xs mt-auto">
@@ -85,7 +77,6 @@ export default async function AdminLayout({
     return (
         <AdminLayoutClient role={session.role} imageUrl={imageUrl}>
             {children}
-            <FloatingChat currentUserId={session.userId} currentUserName={currentUserName} />
             <UpcomingMatchPopup />
         </AdminLayoutClient>
     );
