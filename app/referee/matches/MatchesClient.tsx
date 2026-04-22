@@ -98,6 +98,7 @@ export function MatchesClient({ firstName, lastName, initialMatches = [], initia
     const [lastSync, setLastSync] = useState<string | null>(initialLastSync);
     const [fromCache, setFromCache] = useState(initialMatches.length > 0);
     const [visibleCount, setVisibleCount] = useState(30);
+    const filterSectionRef = useRef<HTMLDivElement>(null);
 
     // Archive scanning state
     const [archiveStatus, setArchiveStatus] = useState<string>("");
@@ -417,6 +418,18 @@ export function MatchesClient({ firstName, lastName, initialMatches = [], initia
         } catch { return null; }
     }, [lastSync]);
 
+    // Mobile-only: clicking stat card sets filter and scrolls to filter section
+    const handleStatCardClick = useCallback((mode: FilterMode) => {
+        if (typeof window !== "undefined" && window.innerWidth >= 640) return;
+        setFilterMode(mode);
+        if (mode === "hafta" && !selectedHafta && haftaGroups.sortedWeeks.length > 0) {
+            setSelectedHafta(haftaGroups.sortedWeeks[haftaGroups.sortedWeeks.length - 1]);
+        }
+        setTimeout(() => {
+            filterSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+        }, 50);
+    }, [selectedHafta, haftaGroups.sortedWeeks]);
+
     // ============================================================
     // Excel Download Logic
     // ============================================================
@@ -643,6 +656,76 @@ export function MatchesClient({ firstName, lastName, initialMatches = [], initia
             // 1. Tümü
             createSheet("Tümü", matchesToExport);
 
+            // 2. Ödemeler
+            {
+                const odemSheet = workbook.addWorksheet("Ödemeler");
+                odemSheet.columns = [
+                    { header: "Tarih", key: "tarih", width: 22 },
+                    { header: "Saat", key: "saat", width: 10 },
+                    { header: "Maç", key: "mac", width: 40 },
+                    { header: "Salon", key: "salon", width: 30 },
+                    { header: "Kategori / Lig", key: "lig", width: 25 },
+                    { header: "Hafta", key: "hafta", width: 10 },
+                    { header: "Görevim", key: "gorev", width: 22 },
+                    { header: "Ücret (₺)", key: "ucret", width: 14 },
+                    { header: "Ödendi mi?", key: "odendi", width: 14 },
+                    { header: "Notlar", key: "notlar", width: 30 },
+                ];
+
+                // Header styling
+                const hRow = odemSheet.getRow(1);
+                hRow.font = { bold: true, color: { argb: "FFFFFFFF" } };
+                hRow.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFDC2626" } };
+                hRow.alignment = { vertical: "middle", horizontal: "center" };
+
+                // Sort ascending by date for payment tracking (oldest first)
+                const paymentMatches = [...matchesToExport].sort((a, b) => {
+                    const dA = parseTurkishDate(a.tarih);
+                    const dB = parseTurkishDate(b.tarih);
+                    if (!dA && !dB) return 0;
+                    if (!dA) return 1;
+                    if (!dB) return -1;
+                    return dA.getTime() - dB.getTime();
+                });
+
+                paymentMatches.forEach((m, i) => {
+                    const roleObj = getRole(m);
+                    const row = odemSheet.addRow({
+                        tarih: formatDisplayDate(m.tarih),
+                        saat: m.saat || "-",
+                        mac: m.mac_adi,
+                        salon: m.salon || "-",
+                        lig: m.ligTuru,
+                        hafta: m.hafta ? `${m.hafta}. Hafta` : "-",
+                        gorev: roleObj.label,
+                        ucret: "",
+                        odendi: "",
+                        notlar: "",
+                    });
+                    row.alignment = { vertical: "middle", wrapText: false };
+                    if ((i + 1) % 2 === 0) {
+                        row.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFF3F4F6" } };
+                    }
+                    // Style the Ücret and Ödendi cells for easy fill-in
+                    const ucretCell = row.getCell("ucret");
+                    ucretCell.alignment = { vertical: "middle", horizontal: "center" };
+                    const odendiCell = row.getCell("odendi");
+                    odendiCell.alignment = { vertical: "middle", horizontal: "center" };
+                });
+
+                // Add borders
+                odemSheet.eachRow((row) => {
+                    row.eachCell(cell => {
+                        cell.border = {
+                            top: { style: "thin" },
+                            left: { style: "thin" },
+                            bottom: { style: "thin" },
+                            right: { style: "thin" },
+                        };
+                    });
+                });
+            }
+
             // Group by Week (TBF Leagues)
             const haftaMap: Record<number, MatchData[]> = {};
             matchesToExport.forEach(m => {
@@ -831,10 +914,10 @@ export function MatchesClient({ firstName, lastName, initialMatches = [], initia
             {/* Stats */}
             {allMatches.length > 0 && (
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                    <StatCard icon={<Trophy className="w-5 h-5" />} value={allMatches.length} label="Toplam Maç" gradient="from-red-500 to-red-700" />
+                    <StatCard icon={<Trophy className="w-5 h-5" />} value={allMatches.length} label="Toplam Maç" gradient="from-red-500 to-red-700" onClick={() => handleStatCardClick("all")} />
                     <StatCard icon={<CheckCircle2 className="w-5 h-5" />} value={playedMatches.length} label="Oynanmış" gradient="from-emerald-500 to-emerald-700" />
-                    <StatCard icon={<CalendarDays className="w-5 h-5" />} value={upcomingMatches.length} label="Gelecek" gradient="from-blue-500 to-blue-700" />
-                    <StatCard icon={<Layers className="w-5 h-5" />} value={haftaGroups.sortedWeeks.length} label="Hafta" gradient="from-violet-500 to-violet-700" />
+                    <StatCard icon={<CalendarDays className="w-5 h-5" />} value={upcomingMatches.length} label="Gelecek" gradient="from-blue-500 to-blue-700" onClick={() => handleStatCardClick("upcoming")} />
+                    <StatCard icon={<Layers className="w-5 h-5" />} value={haftaGroups.sortedWeeks.length} label="Hafta" gradient="from-violet-500 to-violet-700" onClick={() => handleStatCardClick("hafta")} />
                 </div>
             )}
 
@@ -904,7 +987,7 @@ export function MatchesClient({ firstName, lastName, initialMatches = [], initia
 
             {/* Filters */}
             {allMatches.length > 0 && (
-                <div className="space-y-2">
+                <div className="space-y-2" ref={filterSectionRef}>
                     <div className="overflow-x-auto pb-1">
                         <div className="flex gap-2 min-w-max">
                             <FilterTab active={filterMode === "all"} onClick={() => setFilterMode("all")} label={`🏀 Tümü (${allMatches.length})`} />
@@ -1128,9 +1211,12 @@ export function MatchesClient({ firstName, lastName, initialMatches = [], initia
 // Sub-components
 // ============================================================
 
-function StatCard({ icon, value, label, gradient }: { icon: React.ReactNode; value: number; label: string; gradient: string }) {
+function StatCard({ icon, value, label, gradient, onClick }: { icon: React.ReactNode; value: number; label: string; gradient: string; onClick?: () => void }) {
     return (
-        <div className={`bg-gradient-to-br ${gradient} rounded-2xl p-4 text-white shadow-lg`}>
+        <div
+            className={`bg-gradient-to-br ${gradient} rounded-2xl p-4 text-white shadow-lg${onClick ? " sm:cursor-default cursor-pointer active:scale-95 sm:active:scale-100 transition-transform" : ""}`}
+            onClick={onClick}
+        >
             <div className="opacity-80 mb-2">{icon}</div>
             <p className="text-3xl font-black">{value}</p>
             <p className="text-white/80 text-xs font-medium">{label}</p>

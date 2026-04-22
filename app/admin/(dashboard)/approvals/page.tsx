@@ -1,6 +1,6 @@
 import { db } from "@/lib/db";
 import { User as UserIcon } from "lucide-react";
-import { ApprovalCard } from "@/components/admin/ApprovalCard";
+import { ApprovalsClient } from "./ApprovalsClient";
 
 export const dynamic = 'force-dynamic';
 
@@ -37,11 +37,7 @@ export default async function ApprovalsPage() {
                     <p className="text-zinc-500 font-medium">Şu an için onay listesi tamamen boş. Her şey yolunda!</p>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
-                    {pendingUsers.map((user: any) => (
-                        <ApprovalCard key={user.id} user={user} />
-                    ))}
-                </div>
+                <ApprovalsClient users={pendingUsers} />
             )}
         </div>
     );

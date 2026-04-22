@@ -253,6 +253,18 @@ export async function GET(request: Request) {
                 }
             }
 
+            // Regional sheets: Avrupa, Anadolu, BGM
+            const regionNames = ["Avrupa", "Anadolu", "BGM"];
+            for (const regionName of regionNames) {
+                const regionForms = allForms.filter(form => {
+                    const ref = form.referee || form.official;
+                    return ref?.regions?.some((r: any) => r.name === regionName);
+                });
+                if (regionForms.length > 0) {
+                    await addDataSheet(regionName, regionForms);
+                }
+            }
+
         } else if (group === "GENERAL") {
             const officialsMap = new Map<string, typeof allForms>();
             const addToMap = (sheetName: string, form: any) => {
@@ -295,6 +307,18 @@ export async function GET(request: Request) {
             for (const key of Array.from(officialsMap.keys())) {
                 if (!officialOrder.includes(key)) {
                     await addDataSheet(key.substring(0, 31), officialsMap.get(key)!);
+                }
+            }
+
+            // Regional sheets: Avrupa, Anadolu, BGM
+            const regionNames = ["Avrupa", "Anadolu", "BGM"];
+            for (const regionName of regionNames) {
+                const regionForms = allForms.filter(form => {
+                    const ref = form.referee || form.official;
+                    return ref?.regions?.some((r: any) => r.name === regionName);
+                });
+                if (regionForms.length > 0) {
+                    await addDataSheet(regionName, regionForms);
                 }
             }
         }
