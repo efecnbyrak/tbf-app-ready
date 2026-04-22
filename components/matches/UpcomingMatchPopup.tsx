@@ -2,16 +2,16 @@
 
 import { useEffect, useState } from "react";
 import { getUpcomingUserMatches } from "@/app/actions/matches";
-import { X, Calendar, MapPin, Clock, Trophy, Sparkles } from "lucide-react";
+import { X, Calendar, MapPin, Clock, Trophy, Sparkles, ChevronLeft, ChevronRight } from "lucide-react";
 
 export function UpcomingMatchPopup() {
     const [matches, setMatches] = useState<any[]>([]);
     const [isOpen, setIsOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
+    const [currentIndex, setCurrentIndex] = useState(0);
 
     useEffect(() => {
         const checkUpcomingMatches = async () => {
-            // Check if we already showed it this session
             const hasSeenPopup = sessionStorage.getItem("upcomingMatchShown");
             if (hasSeenPopup) {
                 setIsLoading(false);
@@ -37,34 +37,80 @@ export function UpcomingMatchPopup() {
 
     if (isLoading || !isOpen || matches.length === 0) return null;
 
-    const match = matches[0]; // Show the most imminent match
+    const match = matches[currentIndex];
+    const total = matches.length;
 
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-6 bg-zinc-950/60 backdrop-blur-sm animate-in fade-in duration-300">
             <div className="bg-white dark:bg-zinc-900 rounded-2xl sm:rounded-[2.5rem] w-full max-w-lg shadow-2xl border border-zinc-200/50 dark:border-zinc-800/50 overflow-hidden relative animate-in zoom-in-95 slide-in-from-bottom-8 duration-500 max-h-[90vh] flex flex-col">
-                
+
                 {/* Close Button */}
-                <button 
+                <button
                     onClick={() => setIsOpen(false)}
                     className="absolute top-3 right-3 sm:top-4 sm:right-4 z-10 w-8 h-8 sm:w-10 sm:h-10 bg-white/20 hover:bg-white/40 dark:bg-zinc-800/50 dark:hover:bg-zinc-700 backdrop-blur-md rounded-full flex items-center justify-center transition-colors text-zinc-900 dark:text-white"
                 >
                     <X className="w-4 h-4 sm:w-5 sm:h-5" />
                 </button>
 
-                {/* Header Header */}
+                {/* Header */}
                 <div className="bg-gradient-to-br from-red-600 to-red-800 p-5 sm:p-8 text-center relative overflow-hidden shrink-0">
                     <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
                     <div className="w-16 h-16 sm:w-20 sm:h-20 bg-white/20 backdrop-blur-md rounded-2xl sm:rounded-3xl mx-auto flex items-center justify-center mb-3 sm:mb-4 rotate-3 shadow-xl">
                         <Trophy className="w-8 h-8 sm:w-10 sm:h-10 text-white" strokeWidth={1.5} />
                     </div>
-                    <h2 className="text-xl sm:text-3xl font-black text-white uppercase italic tracking-tighter mb-1 relative z-10">Yaklaşan Maçınız Var!</h2>
-                    <p className="text-red-100 font-medium text-xs sm:text-sm">Sisteme hoş geldiniz, görevli olduğunuz yeni bir müsabaka bulunuyor.</p>
+                    <h2 className="text-xl sm:text-3xl font-black text-white uppercase italic tracking-tighter mb-1 relative z-10">
+                        {total === 1 ? "Yaklaşan Maçınız Var!" : `${total} Yaklaşan Maçınız Var!`}
+                    </h2>
+                    <p className="text-red-100 font-medium text-xs sm:text-sm">
+                        {total === 1
+                            ? "Sisteme hoş geldiniz, görevli olduğunuz yeni bir müsabaka bulunuyor."
+                            : "Sisteme hoş geldiniz, aşağıda tüm yaklaşan görevleriniz listeleniyor."
+                        }
+                    </p>
+
+                    {/* Pagination indicator */}
+                    {total > 1 && (
+                        <div className="flex items-center justify-center gap-1.5 mt-3 relative z-10">
+                            {matches.map((_, i) => (
+                                <button
+                                    key={i}
+                                    onClick={() => setCurrentIndex(i)}
+                                    className={`rounded-full transition-all ${i === currentIndex ? "w-5 h-2 bg-white" : "w-2 h-2 bg-white/40 hover:bg-white/60"}`}
+                                />
+                            ))}
+                        </div>
+                    )}
                 </div>
 
                 {/* Match Details */}
                 <div className="p-5 sm:p-8 overflow-y-auto">
+                    {/* Match counter for multiple */}
+                    {total > 1 && (
+                        <div className="flex items-center justify-between mb-4">
+                            <span className="text-xs font-black uppercase tracking-widest text-zinc-500">
+                                {currentIndex + 1}. Maç / {total}
+                            </span>
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={() => setCurrentIndex(i => Math.max(0, i - 1))}
+                                    disabled={currentIndex === 0}
+                                    className="w-8 h-8 rounded-lg bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center disabled:opacity-30 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
+                                >
+                                    <ChevronLeft className="w-4 h-4 text-zinc-600 dark:text-zinc-300" />
+                                </button>
+                                <button
+                                    onClick={() => setCurrentIndex(i => Math.min(total - 1, i + 1))}
+                                    disabled={currentIndex === total - 1}
+                                    className="w-8 h-8 rounded-lg bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center disabled:opacity-30 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
+                                >
+                                    <ChevronRight className="w-4 h-4 text-zinc-600 dark:text-zinc-300" />
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
                     <div className="bg-zinc-50 dark:bg-zinc-800/50 rounded-2xl p-4 sm:p-6 border border-zinc-100 dark:border-zinc-700/50 space-y-4 mb-5 sm:mb-8">
-                        
+
                         <div className="flex items-center gap-3 sm:gap-4 border-b border-zinc-200 dark:border-zinc-700/50 pb-4">
                             <div className="w-10 h-10 sm:w-12 sm:h-12 bg-indigo-100 dark:bg-indigo-900/30 rounded-xl flex items-center justify-center shrink-0">
                                 <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 text-indigo-600 dark:text-indigo-400" />
@@ -108,7 +154,7 @@ export function UpcomingMatchPopup() {
                                     <p className="font-bold text-zinc-900 dark:text-white text-xs sm:text-sm truncate">{match.tarih}</p>
                                 </div>
                             </div>
-                            
+
                             <div className="flex items-center gap-2 sm:gap-3">
                                 <div className="w-8 h-8 sm:w-10 sm:h-10 bg-zinc-100 dark:bg-zinc-800 rounded-lg flex items-center justify-center shrink-0 text-amber-600 dark:text-amber-500">
                                     <Clock className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -132,7 +178,15 @@ export function UpcomingMatchPopup() {
                     </div>
 
                     <div className="flex gap-3">
-                        <button 
+                        {total > 1 && currentIndex < total - 1 && (
+                            <button
+                                onClick={() => setCurrentIndex(i => i + 1)}
+                                className="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-4 rounded-xl transition-colors uppercase text-sm tracking-wider"
+                            >
+                                Sonraki Maç
+                            </button>
+                        )}
+                        <button
                             onClick={() => setIsOpen(false)}
                             className="flex-1 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 font-bold py-4 rounded-xl transition-colors uppercase text-sm tracking-wider"
                         >
@@ -140,7 +194,7 @@ export function UpcomingMatchPopup() {
                         </button>
                     </div>
                 </div>
-                
+
             </div>
         </div>
     );

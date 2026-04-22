@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition, useMemo } from "react";
-import { Search, Users, ShieldAlert, Loader2, Table, Shield, Activity, FileSpreadsheet, Briefcase } from "lucide-react";
+import { Search, Users, ShieldAlert, Loader2, Table, Shield, Activity, FileSpreadsheet, Briefcase, Download, X, CheckSquare, Square } from "lucide-react";
 import { OfficialRow } from "@/components/admin/OfficialRow";
 import { ProfileDetailModal } from "@/components/admin/ProfileDetailModal";
 import { getIstanbulSide } from "@/lib/region-utils";
@@ -37,6 +37,84 @@ export function OfficialListClient({ initialOfficials, refereeTypeMap, currentUs
     const [selectedOfficial, setSelectedOfficial] = useState<any>(null);
     const [isPending, startTransition] = useTransition();
     const router = useRouter();
+
+    // Export modal state
+    const [exportModalOpen, setExportModalOpen] = useState(false);
+    const [exportingExcel, setExportingExcel] = useState(false);
+    const EXPORT_FIELDS = [
+        { key: "name", label: "İsim Soyisim" },
+        { key: "iban", label: "IBAN No" },
+        { key: "email", label: "Mail Adresi" },
+        { key: "officialType", label: "Görevli Tipi" },
+        { key: "address", label: "Adres" },
+        { key: "phone", label: "Telefon Numarası" },
+    ];
+    const [selectedExportFields, setSelectedExportFields] = useState<string[]>(["name"]);
+
+    const toggleExportField = (key: string) => {
+        setSelectedExportFields(prev =>
+            prev.includes(key) ? prev.filter(f => f !== key) : [...prev, key]
+        );
+    };
+
+    const OFFICIAL_TYPE_MAP: Record<string, string> = {
+        "TABLE": "Masa Görevlisi", "OBSERVER": "Gözlemci",
+        "STATISTICIAN": "İstatistik Görevlisi", "HEALTH": "Sağlık Görevlisi",
+        "FIELD_COMMISSIONER": "Saha Komiseri", "TABLE_HEALTH": "Masa & Sağlık",
+        "TABLE_STATISTICIAN": "Masa & İstatistik"
+    };
+
+    const handleExportExcel = async () => {
+        if (selectedExportFields.length === 0) return;
+        setExportingExcel(true);
+        try {
+            const ExcelJS = await import("exceljs");
+            const workbook = new ExcelJS.Workbook();
+            const sheet = workbook.addWorksheet("Görevliler");
+
+            const cols: any[] = [];
+            if (selectedExportFields.includes("name")) cols.push({ header: "İsim Soyisim", key: "name", width: 30 });
+            if (selectedExportFields.includes("iban")) cols.push({ header: "IBAN No", key: "iban", width: 35 });
+            if (selectedExportFields.includes("email")) cols.push({ header: "Mail Adresi", key: "email", width: 35 });
+            if (selectedExportFields.includes("officialType")) cols.push({ header: "Görevli Tipi", key: "officialType", width: 25 });
+            if (selectedExportFields.includes("address")) cols.push({ header: "Adres", key: "address", width: 50 });
+            if (selectedExportFields.includes("phone")) cols.push({ header: "Telefon", key: "phone", width: 20 });
+            sheet.columns = cols;
+
+            sheet.getRow(1).font = { bold: true, color: { argb: "FFFFFFFF" } };
+            sheet.getRow(1).fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFDC2626" } };
+
+            initialOfficials.forEach((off, i) => {
+                if (off.email === 'talat.mustafa.ozdemir50@gmail.com' || off.tcNo === '5555555555') return;
+                const row: any = {};
+                if (selectedExportFields.includes("name")) row.name = `${off.firstName || ""} ${off.lastName || ""}`.trim();
+                if (selectedExportFields.includes("iban")) row.iban = off.iban || "-";
+                if (selectedExportFields.includes("email")) row.email = off.email || "-";
+                if (selectedExportFields.includes("officialType")) row.officialType = OFFICIAL_TYPE_MAP[refereeTypeMap[off.id]] || refereeTypeMap[off.id] || "-";
+                if (selectedExportFields.includes("address")) row.address = off.address || "-";
+                if (selectedExportFields.includes("phone")) row.phone = off.phone || "-";
+                const addedRow = sheet.addRow(row);
+                if (i % 2 === 1) {
+                    addedRow.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFF3F4F6" } };
+                }
+            });
+
+            const buffer = await workbook.xlsx.writeBuffer();
+            const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `gorevliler_${new Date().toISOString().slice(0, 10)}.xlsx`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+            setExportModalOpen(false);
+        } catch (e) {
+            console.error("Excel export error:", e);
+            alert("Excel oluşturulurken bir hata oluştu.");
+        } finally {
+            setExportingExcel(false);
+        }
+    };
 
     const filtered = useMemo(() => {
         const query = searchQuery.toLowerCase();
@@ -223,15 +301,26 @@ export function OfficialListClient({ initialOfficials, refereeTypeMap, currentUs
                     </button>
                 </div>
 
-                <div className="relative flex-1 max-w-md w-full">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400" />
-                    <input
-                        type="text"
-                        placeholder="İsim ile ara..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full pl-12 pr-6 py-3.5 bg-zinc-50 dark:bg-zinc-950 border-2 border-zinc-100 dark:border-zinc-800 rounded-2xl focus:border-red-600 outline-none transition-all font-medium text-zinc-900 dark:text-white"
-                    />
+                <div className="flex items-center gap-3 flex-1 max-w-md w-full">
+                    <div className="relative flex-1">
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400" />
+                        <input
+                            type="text"
+                            placeholder="İsim ile ara..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="w-full pl-12 pr-6 py-3.5 bg-zinc-50 dark:bg-zinc-950 border-2 border-zinc-100 dark:border-zinc-800 rounded-2xl focus:border-red-600 outline-none transition-all font-medium text-zinc-900 dark:text-white"
+                        />
+                    </div>
+                    {currentUserRole === "SUPER_ADMIN" && (
+                        <button
+                            onClick={() => setExportModalOpen(true)}
+                            className="flex items-center gap-2 px-4 py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl text-sm font-black shadow-lg shadow-emerald-600/20 transition-all hover:scale-[1.02] active:scale-[0.98] whitespace-nowrap"
+                        >
+                            <Download className="w-4 h-4" />
+                            <span className="hidden sm:inline">Veri Al</span>
+                        </button>
+                    )}
                 </div>
             </div>
 
@@ -274,6 +363,72 @@ export function OfficialListClient({ initialOfficials, refereeTypeMap, currentUs
                     onPromote={() => handlePromote(selectedOfficial.user?.id)}
                     onDemote={() => handleDemote(selectedOfficial.user?.id)}
                 />
+            )}
+
+            {/* Export Modal */}
+            {exportModalOpen && (
+                <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-zinc-950/60 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="bg-white dark:bg-zinc-900 rounded-[2rem] w-full max-w-md shadow-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-4 duration-300">
+                        {/* Modal Header */}
+                        <div className="bg-gradient-to-br from-emerald-600 to-emerald-800 p-6 text-white relative overflow-hidden">
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2" />
+                            <button onClick={() => setExportModalOpen(false)} className="absolute top-4 right-4 w-8 h-8 bg-white/20 hover:bg-white/30 rounded-xl flex items-center justify-center transition-colors">
+                                <X className="w-4 h-4 text-white" />
+                            </button>
+                            <div className="flex items-center gap-3 relative z-10">
+                                <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
+                                    <FileSpreadsheet className="w-5 h-5 text-white" />
+                                </div>
+                                <div>
+                                    <h2 className="text-lg font-black uppercase italic tracking-tight">Görevli Verisi Al</h2>
+                                    <p className="text-emerald-100 text-xs">{initialOfficials.length} görevli • İndirmek istediğiniz alanları seçin</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Field Selection */}
+                        <div className="p-6 space-y-3">
+                            <p className="text-xs font-black uppercase tracking-widest text-zinc-500 mb-4">Alan Seçimi</p>
+                            {EXPORT_FIELDS.map(field => (
+                                <button
+                                    key={field.key}
+                                    onClick={() => toggleExportField(field.key)}
+                                    className={`w-full flex items-center gap-3 p-4 rounded-xl border-2 transition-all text-left ${
+                                        selectedExportFields.includes(field.key)
+                                            ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20"
+                                            : "border-zinc-100 dark:border-zinc-800 hover:border-zinc-200 dark:hover:border-zinc-700"
+                                    }`}
+                                >
+                                    {selectedExportFields.includes(field.key)
+                                        ? <CheckSquare className="w-5 h-5 text-emerald-600 shrink-0" />
+                                        : <Square className="w-5 h-5 text-zinc-400 shrink-0" />
+                                    }
+                                    <span className={`font-bold text-sm ${selectedExportFields.includes(field.key) ? "text-emerald-700 dark:text-emerald-400" : "text-zinc-700 dark:text-zinc-300"}`}>
+                                        {field.label}
+                                    </span>
+                                </button>
+                            ))}
+                        </div>
+
+                        {/* Actions */}
+                        <div className="p-6 pt-0 flex gap-3">
+                            <button
+                                onClick={() => setExportModalOpen(false)}
+                                className="flex-1 py-3.5 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 font-black rounded-xl text-sm uppercase tracking-wider transition-colors"
+                            >
+                                İptal
+                            </button>
+                            <button
+                                onClick={handleExportExcel}
+                                disabled={selectedExportFields.length === 0 || exportingExcel}
+                                className="flex-1 py-3.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white font-black rounded-xl text-sm uppercase tracking-wider transition-colors flex items-center justify-center gap-2"
+                            >
+                                {exportingExcel ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+                                {exportingExcel ? "İndiriliyor..." : "Excel İndir"}
+                            </button>
+                        </div>
+                    </div>
+                </div>
             )}
 
             {isPending && (

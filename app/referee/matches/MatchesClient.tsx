@@ -90,6 +90,7 @@ export function MatchesClient({ firstName, lastName, initialMatches = [], initia
     const [personnelPhones, setPersonnelPhones] = useState<Record<string, string>>(initialPersonnelPhones);
     const [loading, setLoading] = useState(initialMatches.length === 0);
     const [refreshing, setRefreshing] = useState(false);
+    const [refreshSuccess, setRefreshSuccess] = useState(false);
     const [error, setError] = useState("");
     const [filterMode, setFilterMode] = useState<FilterMode>("all");
     const [selectedHafta, setSelectedHafta] = useState<number | null>(null);
@@ -173,6 +174,8 @@ export function MatchesClient({ firstName, lastName, initialMatches = [], initia
             }
             if (forceRefresh) {
                 setRefreshing(false);
+                setRefreshSuccess(true);
+                setTimeout(() => setRefreshSuccess(false), 3500);
             }
         }
     }, []);
@@ -738,6 +741,20 @@ export function MatchesClient({ firstName, lastName, initialMatches = [], initia
     // ============================================================
     return (
         <div className="space-y-5">
+            {/* Refresh Success Toast */}
+            {refreshSuccess && (
+                <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-bottom-4 fade-in duration-300">
+                    <div className="flex items-center gap-3 bg-emerald-600 text-white px-6 py-4 rounded-2xl shadow-2xl shadow-emerald-600/30 border border-emerald-500/50">
+                        <div className="w-8 h-8 bg-white/20 rounded-xl flex items-center justify-center shrink-0">
+                            <CheckCircle2 className="w-5 h-5 text-white" />
+                        </div>
+                        <div>
+                            <p className="font-black text-sm uppercase tracking-tight">Yükleme Başarıyla Tamamlandı</p>
+                            <p className="text-emerald-100 text-xs">Maç verileri güncellendi.</p>
+                        </div>
+                    </div>
+                </div>
+            )}
             {/* Header + Search/Export */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-white dark:bg-zinc-900 p-4 border border-zinc-200 dark:border-zinc-800 rounded-2xl">
                 <div className="flex items-center gap-3">
