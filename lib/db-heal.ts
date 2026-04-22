@@ -182,6 +182,35 @@ export async function ensureSchemaColumns() {
         `);
 
 
+        // 8. Game Assignments Table
+        await runQuery(`
+            CREATE TABLE IF NOT EXISTS "game_assignments" (
+                "id" SERIAL PRIMARY KEY,
+                "tarih" TIMESTAMP NOT NULL,
+                "saat" TEXT,
+                "salon" TEXT,
+                "aTeam" TEXT NOT NULL DEFAULT '',
+                "bTeam" TEXT NOT NULL DEFAULT '',
+                "ligTuru" TEXT,
+                "hafta" INTEGER,
+                "kategori" TEXT,
+                "grup" TEXT,
+                "hakem1" TEXT,
+                "hakem2" TEXT,
+                "sayiGorevlisi" TEXT,
+                "saatGorevlisi" TEXT,
+                "sutSaatiGorevlisi" TEXT,
+                "gozlemci" TEXT,
+                "sahaKomiseri" TEXT,
+                "saglikci" TEXT,
+                "istatistikci1" TEXT,
+                "istatistikci2" TEXT,
+                "createdAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                "updatedAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+        await runQuery(`CREATE INDEX IF NOT EXISTS "game_assignments_tarih_idx" ON "game_assignments"("tarih")`);
+
         console.log("[DB-HEAL] Schema check completed.");
     } catch (e: any) {
         console.error("[DB-HEAL] Critical failure:", e.message);

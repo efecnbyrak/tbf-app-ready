@@ -3,7 +3,7 @@
 import { useState, useTransition, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { createAssignment, updateAssignment, deleteAssignment } from "@/app/actions/atamalar";
-import { ClipboardList, Plus, X, Pencil, Trash2, Search, ChevronDown, Download } from "lucide-react";
+import { ClipboardList, Plus, X, Pencil, Trash2, Search, ChevronDown, Download, RefreshCw, CheckCircle2, AlertCircle } from "lucide-react";
 
 const LIG_TURU_OPTIONS = ["Yerel Ligler", "Özel Lig ve Üniversite"];
 
@@ -190,15 +190,20 @@ export function AtamalarClient({
     const [filterHafta, setFilterHafta] = useState("");
     const [exportModalOpen, setExportModalOpen] = useState(false);
     const [exportLig, setExportLig] = useState("");
+    const [importModalOpen, setImportModalOpen] = useState(false);
+    const [importSource, setImportSource] = useState<"local" | "drive" | "both">("both");
+    const [replaceExisting, setReplaceExisting] = useState(false);
+    const [importLoading, setImportLoading] = useState(false);
+    const [importResult, setImportResult] = useState<{ imported: number; updated: number; skipped: number; errors: string[]; total: number } | null>(null);
 
     const teamOptions = teamNames.map(t => ({ name: t }));
     const categoryOptions = categories.map(c => ({ name: c }));
     const groupOptions = groups.map(g => ({ name: g }));
     const salonOptions = salons.map(s => ({ name: s }));
 
-    // Week number options: current week ± 10
-    const haftaOptions = Array.from({ length: 21 }, (_, i) => currentWeek - 5 + i)
-        .filter(w => w > 0)
+    // Week number options: from week 1 up to current week + 2
+    const maxHafta = currentWeek + 2;
+    const haftaOptions = Array.from({ length: maxHafta }, (_, i) => i + 1)
         .map(w => ({ name: String(w), label: `${w}. Hafta (${getWeekLabel(w)})` }));
 
     function openCreate() {
@@ -338,6 +343,13 @@ const isYerelLigler = form.ligTuru === "Yerel Ligler";
                     </p>
                 </div>
                 <div className="flex items-center gap-2">
+                    <button
+                        onClick={() => { setImportResult(null); setImportModalOpen(true); }}
+                        className="flex items-center gap-2 px-4 py-2.5 bg-blue-700 hover:bg-blue-600 text-white font-bold rounded-xl transition-colors shadow-md text-sm"
+                    >
+                        <RefreshCw className="w-4 h-4" />
+                        Arşivden Aktar
+                    </button>
                     <button
                         onClick={() => setExportModalOpen(true)}
                         className="flex items-center gap-2 px-4 py-2.5 bg-emerald-700 hover:bg-emerald-600 text-white font-bold rounded-xl transition-colors shadow-md text-sm"
@@ -485,6 +497,109 @@ const isYerelLigler = form.ligTuru === "Yerel Ligler";
                                 })}
                             </tbody>
                         </table>
+                    </div>
+                </div>
+            )}
+
+            {/* Import Modal */}
+            {importModalOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+                    <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl p-6 max-w-md w-full border border-zinc-200 dark:border-zinc-700">
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className="text-lg font-bold text-zinc-900 dark:text-white">Arşivden Aktar</h3>
+                            <button onClick={() => setImportModalOpen(false)} disabled={importLoading} className="p-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg transition-colors">
+                                <X className="w-4 h-4 text-zinc-500" />
+                            </button>
+                        </div>
+
+                        {importResult ? (
+                            <div className="space-y-3">
+                                <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-bold">
+                                    <CheckCircle2 className="w-5 h-5" />
+                                    İçe aktarma tamamlandı
+                                </div>
+                                <div className="bg-zinc-50 dark:bg-zinc-800 rounded-xl p-4 space-y-1 text-sm">
+                                    <div className="flex justify-between"><span className="text-zinc-500">Toplam bulunan:</span><span className="font-bold">{importResult.total}</span></div>
+                                    <div className="flex justify-between"><span className="text-zinc-500">Yeni eklenen:</span><span className="font-bold text-emerald-600">{importResult.imported}</span></div>
+                                    <div className="flex justify-between"><span className="text-zinc-500">Güncellenen:</span><span className="font-bold text-blue-600">{importResult.updated}</span></div>
+                                    <div className="flex justify-between"><span className="text-zinc-500">Atlanan (mevcut):</span><span className="font-bold text-zinc-400">{importResult.skipped}</span></div>
+                                </div>
+                                {importResult.errors.length > 0 && (
+                                    <div className="bg-red-50 dark:bg-red-900/20 rounded-xl p-3 space-y-1">
+                                        <div className="flex items-center gap-1 text-red-600 text-xs font-bold mb-1">
+                                            <AlertCircle className="w-3.5 h-3.5" /> {importResult.errors.length} hata
+                                        </div>
+                                        {importResult.errors.slice(0, 5).map((e, i) => (
+                                            <p key={i} className="text-xs text-red-500 truncate">{e}</p>
+                                        ))}
+                                    </div>
+                                )}
+                                <div className="flex gap-3 pt-2">
+                                    <button onClick={() => setImportModalOpen(false)} className="flex-1 px-4 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm font-semibold hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors">
+                                        Kapat
+                                    </button>
+                                    <button onClick={() => router.refresh()} className="flex-1 px-4 py-2 bg-red-700 hover:bg-red-600 text-white rounded-xl text-sm font-bold transition-colors">
+                                        Sayfayı Yenile
+                                    </button>
+                                </div>
+                            </div>
+                        ) : (
+                            <>
+                                <p className="text-zinc-500 text-sm mb-4">Arşiv dosyalarındaki maç atamalarını sisteme aktarır. Mevcut kayıtlar korunur.</p>
+
+                                <div className="space-y-3 mb-4">
+                                    <div>
+                                        <p className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-2">Kaynak</p>
+                                        <div className="flex flex-col gap-2">
+                                            {([["both", "Yerel Arşiv + Google Drive"], ["local", "Sadece Yerel Arşiv"], ["drive", "Sadece Google Drive"]] as const).map(([val, label]) => (
+                                                <button key={val} onClick={() => setImportSource(val)}
+                                                    className={`px-3 py-2.5 rounded-xl text-sm font-semibold border text-left transition-all ${importSource === val ? "bg-blue-700 text-white border-blue-700" : "bg-zinc-50 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-zinc-700 hover:border-blue-400"}`}>
+                                                    {label}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    <label className="flex items-center gap-3 cursor-pointer p-3 rounded-xl border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors">
+                                        <input type="checkbox" checked={replaceExisting} onChange={e => setReplaceExisting(e.target.checked)}
+                                            className="w-4 h-4 accent-blue-600" />
+                                        <div>
+                                            <p className="text-sm font-semibold text-zinc-900 dark:text-white">Mevcut kayıtları güncelle</p>
+                                            <p className="text-xs text-zinc-400">Aynı maç zaten varsa üzerine yaz</p>
+                                        </div>
+                                    </label>
+                                </div>
+
+                                <div className="flex gap-3">
+                                    <button onClick={() => setImportModalOpen(false)} className="flex-1 px-4 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm font-semibold hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors">
+                                        Vazgeç
+                                    </button>
+                                    <button
+                                        disabled={importLoading}
+                                        onClick={async () => {
+                                            setImportLoading(true);
+                                            try {
+                                                const res = await fetch("/api/atamalar/import", {
+                                                    method: "POST",
+                                                    headers: { "Content-Type": "application/json" },
+                                                    body: JSON.stringify({ source: importSource, replaceExisting }),
+                                                });
+                                                const data = await res.json();
+                                                if (data.success) setImportResult(data);
+                                                else setImportResult({ imported: 0, updated: 0, skipped: 0, total: 0, errors: [data.error || "Hata"] });
+                                            } catch (e: any) {
+                                                setImportResult({ imported: 0, updated: 0, skipped: 0, total: 0, errors: [e.message] });
+                                            } finally {
+                                                setImportLoading(false);
+                                            }
+                                        }}
+                                        className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-blue-700 hover:bg-blue-600 text-white rounded-xl text-sm font-bold transition-colors disabled:opacity-60"
+                                    >
+                                        {importLoading ? <><RefreshCw className="w-4 h-4 animate-spin" /> Aktarılıyor...</> : <><RefreshCw className="w-4 h-4" /> Başlat</>}
+                                    </button>
+                                </div>
+                            </>
+                        )}
                     </div>
                 </div>
             )}
