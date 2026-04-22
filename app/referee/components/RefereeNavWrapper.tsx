@@ -10,10 +10,10 @@ export async function RefereeNavWrapper({ userId, role, basePath }: { userId: nu
     const resolvedRole = role ?? (await verifySession()).role;
     const isAdmin = ADMIN_ROLES.includes(resolvedRole);
 
-    // Run both queries in parallel — saves one full DB round-trip for GeneralOfficials
+    // Run both queries in parallel — only fetch needed fields
     const [referee, official] = await Promise.all([
-        db.referee.findUnique({ where: { userId } }),
-        db.generalOfficial.findUnique({ where: { userId } }),
+        db.referee.findUnique({ where: { userId }, select: { firstName: true, imageUrl: true } }),
+        db.generalOfficial.findUnique({ where: { userId }, select: { firstName: true, officialType: true, imageUrl: true } }),
     ]);
 
     const isObserver = official?.officialType === "OBSERVER";

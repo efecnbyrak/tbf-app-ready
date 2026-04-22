@@ -1,10 +1,8 @@
-
 import { ResponsiveNav } from "@/app/referee/ResponsiveNav";
 
-// In server components, layouts can fetch data too.
-// We'll get the session to show the name or TBF header.
 import { verifySession } from "@/lib/session";
 import { db } from "@/lib/db";
+import { getSetting } from "@/lib/settings-cache";
 
 import { IBANRequirementModal } from "@/components/IBANRequirementModal";
 import { MandatoryAnnouncementModal } from "@/components/announcements/MandatoryAnnouncementModal";
@@ -17,16 +15,15 @@ export default async function OfficialLayout({
 }) {
     const session = await verifySession();
 
-    // Fetch details (Name etc.) and IBAN setting
-    const [user, ibanSetting] = await Promise.all([
+    const [user, ibanValue] = await Promise.all([
         db.user.findUnique({
             where: { id: session.userId },
-            include: {
-                referee: true,
-                official: true
+            select: {
+                referee: { select: { firstName: true, lastName: true, imageUrl: true, iban: true } },
+                official: { select: { firstName: true, lastName: true, imageUrl: true, officialType: true, iban: true } },
             }
         }),
-        db.systemSetting.findUnique({ where: { key: "IBAN_COLLECTION_ENABLED" } })
+        getSetting("IBAN_COLLECTION_ENABLED")
     ]);
 
     const currentUserName = user?.referee
@@ -35,7 +32,7 @@ export default async function OfficialLayout({
             ? `${user.official.firstName} ${user.official.lastName}`
             : session.userId.toString();
 
-    const ibanRequired = ibanSetting?.value === "true";
+    const ibanRequired = ibanValue === "true";
     const userIban = user?.referee?.iban || user?.official?.iban;
     const showIbanModal = ibanRequired && !userIban;
 

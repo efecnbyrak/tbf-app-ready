@@ -79,12 +79,12 @@ export default async function AvailabilityAdminPage({ searchParams }: PageProps)
         },
         include: {
             referee: {
-                include: { regions: true }
+                select: { id: true, firstName: true, lastName: true, phone: true, classification: true, regions: { select: { id: true, name: true } } }
             },
             official: {
-                include: { regions: true }
+                select: { id: true, firstName: true, lastName: true, phone: true, officialType: true, regions: { select: { id: true, name: true } } }
             },
-            days: true
+            days: { select: { id: true, date: true, slots: true } }
         },
         orderBy: { updatedAt: 'desc' }
     });

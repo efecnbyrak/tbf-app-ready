@@ -18,7 +18,10 @@ export default async function GeneralMatchesPage() {
 
     const user = await db.user.findUnique({
         where: { id: session.userId },
-        include: { referee: true, official: true },
+        select: {
+            referee: { select: { firstName: true, lastName: true } },
+            official: { select: { firstName: true, lastName: true } }
+        },
     });
 
     const firstName = user?.referee?.firstName || user?.official?.firstName || "";

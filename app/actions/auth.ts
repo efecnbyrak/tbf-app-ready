@@ -12,7 +12,6 @@ import { logAction, ensureAuditLogTable } from "@/lib/logger";
 import { LoginSchema, RegisterSchema, PasswordResetRequestSchema } from "@/lib/schemas";
 import { validatePhone, formatPhone } from "@/lib/validation-utils";
 import { z } from "zod";
-import { ensureSchemaColumns } from "@/lib/db-heal";
 
 // Cache to prevent redundant admin checks in the same execution context
 let isAdminUserChecked = false;
@@ -178,7 +177,7 @@ export async function login(prevState: ActionState, formData: FormData): Promise
         console.warn("[LOGIN] Rate limit DB check failed, skipping:", (rateLimitError as any)?.message);
     }
 
-    await ensureSchemaColumns();
+
     await ensureAdminUser();
     await ensureAuditLogTable();
 
@@ -388,7 +387,7 @@ export async function register(prevState: ActionState, formData: FormData): Prom
 
     const { firstName, lastName, email, phone, password, roleType, job, address, iban, securityQuestion, securityAnswer } = validatedFields.data;
 
-    await ensureSchemaColumns();
+
 
     const { formatEmail } = await import('@/lib/format-utils');
     const sanitizedEmail = formatEmail(email);
@@ -752,7 +751,7 @@ export async function requestPasswordReset(prevState: ActionState, formData: For
     if (!identifier) return { error: "Lütfen E-posta adresinizi giriniz.", success: false };
 
     // Ensure database columns exist before proceeding
-    await ensureSchemaColumns();
+
 
     try {
         const user = await db.user.findFirst({
@@ -826,7 +825,7 @@ export async function resetPassword(prevState: ActionState, formData: FormData):
     if (password !== passwordConfirm) return { error: "Şifreler eşleşmiyor.", success: false };
 
     // Ensure database columns exist before proceeding
-    await ensureSchemaColumns();
+
 
     try {
         const user = await db.user.findFirst({

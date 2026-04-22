@@ -1,6 +1,5 @@
 import { db } from "@/lib/db";
 import { OfficialListClient } from "./OfficialListClient";
-import { ensureSchemaColumns } from "@/lib/db-heal";
 import { verifySession } from "@/lib/session";
 
 export const dynamic = 'force-dynamic';
@@ -10,21 +9,16 @@ interface PageProps {
 }
 
 export default async function OfficialsPage({ searchParams }: PageProps) {
-    await ensureSchemaColumns();
     const session = await verifySession();
     const params = await searchParams;
     const selectedType = params.type;
     const selectedStatus = params.status;
 
-    // Get current user details for tracking who is making changes
-    const currentUser = await db.user.findUnique({
-        where: { id: session.userId },
-        select: { username: true, id: true }
-    });
-    // We will use username as the email equivalent if that's what's stored, or query referee/official email.
+    // Single query for current user email
     const currentUserWithEmail = await db.user.findUnique({
         where: { id: session.userId },
-        include: {
+        select: {
+            username: true,
             referee: { select: { email: true } },
             official: { select: { email: true } }
         }
@@ -33,7 +27,7 @@ export default async function OfficialsPage({ searchParams }: PageProps) {
     const currentUserEmail = currentUserWithEmail?.referee?.email || currentUserWithEmail?.official?.email || currentUserWithEmail?.username || "";
 
 
-    // Fetch all records from the new dedicated table
+    // Fetch all records — optimized with select to reduce data transfer
     const allOfficials = await db.generalOfficial.findMany({
         include: {
             user: {
@@ -44,27 +38,12 @@ export default async function OfficialsPage({ searchParams }: PageProps) {
                     isApproved: true,
                     createdAt: true,
                     lastLoginAt: true,
-                    role: {
-                        select: { name: true }
-                    },
-                    penalties: true
+                    role: { select: { name: true } },
+                    penalties: { select: { id: true, type: true, reason: true, isActive: true, startDate: true, endDate: true } }
                 }
             },
-            regions: true,
-            assignments: {
-                include: {
-                    match: true
-                },
-                orderBy: {
-                    match: {
-                        date: 'desc'
-                    }
-                },
-                take: 5
-            },
-            _count: {
-                select: { assignments: true }
-            }
+            regions: { select: { id: true, name: true } },
+            _count: { select: { assignments: true } }
         },
         orderBy: { createdAt: 'desc' }
     });

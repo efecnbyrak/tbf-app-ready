@@ -30,8 +30,6 @@ export async function sendAnnouncement(subject: string, content: string, target:
     }
 
     try {
-        await ensureAnnouncementTable();
-
         // 1. Find target users
         let recipients: Array<{ email: string }> = [];
 

@@ -1,6 +1,7 @@
 import { getDay } from "date-fns";
 import { cache } from "react";
 import { db } from "@/lib/db";
+import { getAllSettings } from "@/lib/settings-cache";
 
 // Helper to get window
 // `cache()` deduplicates calls within a single server render tree —
@@ -10,7 +11,7 @@ export const getAvailabilityWindow = cache(async function getAvailabilityWindow(
     const trtDateStr = new Date().toLocaleString("en-US", { timeZone: "Europe/Istanbul" });
     const today = new Date(trtDateStr);
 
-    // 1. Get settings from DB
+    // 1. Get settings from DB — single batched query via settings-cache
     let storedTargetDate: Date | null = null;
     let storedWeekNumber = 1;
     let setting = "AUTO";
@@ -19,19 +20,19 @@ export const getAvailabilityWindow = cache(async function getAvailabilityWindow(
     let lastWeekRolloverKey = "";
 
     try {
-        const [targetS, weekS, modeS, manualS, rolloverS] = await Promise.all([
-            db.systemSetting.findUnique({ where: { key: "AVAILABILITY_TARGET_DATE" } }),
-            db.systemSetting.findUnique({ where: { key: "CURRENT_WEEK_NUMBER" } }),
-            db.systemSetting.findUnique({ where: { key: "AVAILABILITY_MODE" } }),
-            db.systemSetting.findUnique({ where: { key: "AVAILABILITY_TARGET_MANUAL" } }),
-            db.systemSetting.findUnique({ where: { key: "LAST_WEEK_ROLLOVER_DATE" } }),
-        ]);
+        const settings = await getAllSettings();
 
-        if (targetS?.value) storedTargetDate = new Date(targetS.value);
-        if (weekS?.value) storedWeekNumber = parseInt(weekS.value);
-        if (modeS?.value) setting = modeS.value;
-        if (manualS?.value === "true") isManualOverride = true;
-        lastWeekRolloverKey = rolloverS?.value || "";
+        const targetVal = settings.get("AVAILABILITY_TARGET_DATE");
+        const weekVal = settings.get("CURRENT_WEEK_NUMBER");
+        const modeVal = settings.get("AVAILABILITY_MODE");
+        const manualVal = settings.get("AVAILABILITY_TARGET_MANUAL");
+        const rolloverVal = settings.get("LAST_WEEK_ROLLOVER_DATE");
+
+        if (targetVal) storedTargetDate = new Date(targetVal);
+        if (weekVal) storedWeekNumber = parseInt(weekVal);
+        if (modeVal) setting = modeVal;
+        if (manualVal === "true") isManualOverride = true;
+        lastWeekRolloverKey = rolloverVal || "";
     } catch (e) {
         console.error("[AVAILABILITY] Error fetching settings:", e);
     }

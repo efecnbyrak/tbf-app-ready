@@ -7,9 +7,14 @@ export const dynamic = 'force-dynamic';
 export default async function ApprovalsPage() {
     const pendingUsers = await db.user.findMany({
         where: { isApproved: false },
-        include: {
-            referee: true,
-            official: true
+        select: {
+            id: true,
+            username: true,
+            isApproved: true,
+            isActive: true,
+            createdAt: true,
+            referee: { select: { id: true, firstName: true, lastName: true, email: true, phone: true, classification: true } },
+            official: { select: { id: true, firstName: true, lastName: true, email: true, phone: true, officialType: true } }
         },
         orderBy: { createdAt: 'desc' }
     });

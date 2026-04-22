@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import bcrypt from "bcryptjs";
-import { ensureSchemaColumns } from "@/lib/db-heal";
 import { RegisterSchema } from "@/lib/schemas";
 import { formatPhone } from "@/lib/validation-utils";
 
@@ -44,8 +43,6 @@ export async function POST(request: NextRequest) {
         }
 
         const { firstName, lastName, email, phone, password, roleType, job, address, securityQuestion, securityAnswer } = validatedFields.data;
-
-        await ensureSchemaColumns();
 
         // Hash password
         const hashedPassword = await bcrypt.hash(password, 10);

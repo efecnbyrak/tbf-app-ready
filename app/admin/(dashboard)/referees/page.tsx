@@ -20,17 +20,18 @@ export default async function RefereesPage() {
         db.referee.findMany({
             include: {
                 user: {
-                    include: {
-                        penalties: true,
-                        role: true
+                    select: {
+                        id: true,
+                        username: true,
+                        isActive: true,
+                        isApproved: true,
+                        createdAt: true,
+                        lastLoginAt: true,
+                        role: { select: { name: true } },
+                        penalties: { select: { id: true, type: true, reason: true, isActive: true, startDate: true, endDate: true } }
                     }
                 },
-                regions: true,
-                assignments: {
-                    include: { match: true },
-                    orderBy: { match: { date: 'desc' } },
-                    take: 5
-                },
+                regions: { select: { id: true, name: true } },
                 _count: { select: { assignments: true } }
             },
             orderBy: { createdAt: 'desc' }

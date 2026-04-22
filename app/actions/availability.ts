@@ -5,7 +5,6 @@ import { verifySession } from "@/lib/session";
 import { revalidatePath } from "next/cache";
 import { getAvailabilityWindow } from "@/lib/availability-utils";
 import { sendAvailabilityConfirmationEmail } from "@/lib/email";
-import { ensureSchemaColumns } from "@/lib/db-heal";
 
 export interface ActionState {
     error?: string;
@@ -15,8 +14,6 @@ export interface ActionState {
 export async function saveAvailability(prevState: ActionState, formData: FormData): Promise<ActionState> {
     const session = await verifySession();
     const userId = session.userId;
-
-    await ensureSchemaColumns();
 
     let profile: any = await db.referee.findUnique({
         where: { userId },

@@ -21,7 +21,10 @@ export default async function MatchesPage() {
     const [user, cachedStore, allReferees, allOfficials] = await Promise.all([
         db.user.findUnique({
             where: { id: session.userId },
-            include: { referee: true, official: true },
+            select: {
+                referee: { select: { firstName: true, lastName: true } },
+                official: { select: { firstName: true, lastName: true } }
+            },
         }),
         getUserMatchesStore(session.userId).catch(() => null),
         db.referee.findMany({ select: { firstName: true, lastName: true, phone: true } }),

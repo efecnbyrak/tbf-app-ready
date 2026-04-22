@@ -54,6 +54,7 @@ model User {
 
   @@index([id])
   @@index([username])
+  @@index([roleId])
   @@index([isActive])
   @@index([isApproved])
   @@map("users")
@@ -278,7 +279,10 @@ model ExamAttempt {
   assignmentId   Int?
 
   createdAt      DateTime @default(now())
-  
+
+  @@index([refereeId])
+  @@index([officialId])
+  @@index([assignmentId])
   @@map("exam_attempts")
 }
 
@@ -312,7 +316,8 @@ model UserAnswer {
   selectedAnswer String       // "A", "B", "C", or "D"
   correctAnswer  String       // Snapshot of correct answer
   isCorrect      Boolean
-  
+
+  @@index([attemptId])
   @@map("user_answers")
 }
 
@@ -361,6 +366,7 @@ model VideoProgress {
   updatedAt      DateTime @updatedAt
 
   @@unique([userId, videoId])
+  @@index([userId])
   @@map("video_progress")
 }
 
@@ -373,6 +379,7 @@ model ChatSession {
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 
+  @@index([userId])
   @@map("chat_sessions")
 }
 

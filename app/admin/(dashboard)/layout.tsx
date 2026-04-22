@@ -23,7 +23,7 @@ export default async function AdminLayout({
 
     const userDetails = await db.user.findUnique({
         where: { id: session.userId },
-        include: {
+        select: {
             referee: { select: { firstName: true, lastName: true, classification: true, imageUrl: true } },
             official: { select: { firstName: true, lastName: true, officialType: true, imageUrl: true } }
         }

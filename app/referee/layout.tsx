@@ -4,6 +4,7 @@ import { RefereeNavWrapper } from "./components/RefereeNavWrapper";
 import Link from "next/link";
 import { ResponsiveNav } from "./ResponsiveNav";
 import { db } from "@/lib/db";
+import { getSetting } from "@/lib/settings-cache";
 
 import { IBANRequirementModal } from "@/components/IBANRequirementModal";
 import { MandatoryAnnouncementModal } from "@/components/announcements/MandatoryAnnouncementModal";
@@ -16,7 +17,7 @@ export default async function RefereeLayout({
 }) {
     const session = await verifySession();
 
-    const [user, ibanSetting] = await Promise.all([
+    const [user, ibanValue] = await Promise.all([
         db.user.findUnique({
             where: { id: session.userId },
             select: {
@@ -24,7 +25,7 @@ export default async function RefereeLayout({
                 official: { select: { firstName: true, lastName: true, imageUrl: true, iban: true } },
             }
         }),
-        db.systemSetting.findUnique({ where: { key: "IBAN_COLLECTION_ENABLED" } })
+        getSetting("IBAN_COLLECTION_ENABLED")
     ]);
 
     const currentUserName = user?.referee
@@ -33,7 +34,7 @@ export default async function RefereeLayout({
             ? `${user.official.firstName} ${user.official.lastName}`
             : session.userId.toString();
 
-    const ibanRequired = ibanSetting?.value === "true";
+    const ibanRequired = ibanValue === "true";
     const userIban = user?.referee?.iban || user?.official?.iban;
     const showIbanModal = ibanRequired && !userIban;
 

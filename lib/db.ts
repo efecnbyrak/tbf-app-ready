@@ -1,11 +1,10 @@
 import { PrismaClient } from "@prisma/client";
-import { ensureSchemaColumns } from "./db-heal";
 
 const createPrismaClient = () => {
   return new PrismaClient({
     log: process.env.NODE_ENV === "production" ? ["error"] : ["warn"],
     datasourceUrl: process.env.DATABASE_URL
-      ? `${process.env.DATABASE_URL}${process.env.DATABASE_URL.includes("?") ? "&" : "?"}connection_limit=10&pool_timeout=20`
+      ? `${process.env.DATABASE_URL}${process.env.DATABASE_URL.includes("?") ? "&" : "?"}connection_limit=5&pool_timeout=15`
       : undefined,
   }).$extends({
     result: {
@@ -46,12 +45,3 @@ const globalForPrisma = global as unknown as { prisma: ReturnType<typeof createP
 export const db = globalForPrisma.prisma || createPrismaClient();
 
 if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = db;
-
-// Trigger self-healing in the background (delayed to break circular dependency)
-setTimeout(() => {
-  ensureSchemaColumns().catch(err => {
-    console.error("[DB] Background schema healing failed:", err);
-  });
-}, 0);
-
-// 10/10 Tip: Prisma handles connections lazily, so this won't throw until the first query.

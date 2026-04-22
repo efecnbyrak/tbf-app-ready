@@ -10,7 +10,11 @@ export default async function AdminMatchesPage() {
 
     const user = await db.user.findUnique({
         where: { id: session.userId },
-        include: { referee: true, official: true },
+        select: {
+            id: true,
+            referee: { select: { firstName: true, lastName: true } },
+            official: { select: { firstName: true, lastName: true } }
+        },
     });
 
     if (!user) {

@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import bcrypt from "bcryptjs";
 import { SignJWT } from "jose";
-import { ensureSchemaColumns } from "@/lib/db-heal";
 
 /**
  * POST /api/auth/login
@@ -46,8 +45,6 @@ export async function POST(request: NextRequest) {
                 { status: 400 }
             );
         }
-
-        await ensureSchemaColumns();
 
         // Rate limiting check by IP
         const ip = request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || "127.0.0.1";

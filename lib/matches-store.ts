@@ -72,13 +72,27 @@ export async function saveUserMatchesStore(userId: number, matches: MatchData[],
 }
 
 /**
- * Clears the "new matches" notification flag
+ * Clears the "new matches" notification flag — single direct update, no read needed
  */
 export async function clearMatchNotification(userId: number) {
-    const storage = await getUserMatchesStore(userId);
-    if (!storage || !storage.hasNew) return;
+    try {
+        const user = await db.user.findUnique({
+            where: { id: userId },
+            select: { matchStore: true }
+        });
+        if (!user?.matchStore) return;
 
-    await saveUserMatchesStore(userId, storage.matches, false, storage.scannedSeasons);
+        const storage = user.matchStore as unknown as UserStorage;
+        if (!storage.hasNew) return;
+
+        storage.hasNew = false;
+        await db.user.update({
+            where: { id: userId },
+            data: { matchStore: storage as any }
+        });
+    } catch (e) {
+        console.error(`[STORAGE] clearMatchNotification error for user ${userId}:`, e);
+    }
 }
 
 /**
