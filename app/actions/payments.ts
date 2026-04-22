@@ -4,37 +4,47 @@ import { db } from "@/lib/db";
 import { verifySession } from "@/lib/session";
 import { revalidatePath } from "next/cache";
 
-export interface MatchPaymentRate {
+export interface PaymentRate {
     basHakem: number;
     yardimciHakem: number;
+    gozlemci: number;
+    masaGorevlisi: number;
+    istatistikci: number;
+    saglikci: number;
+    sahaKomiseri: number;
 }
 
-export interface SpecialLeagueRate {
+export interface CategoryRate {
     id: string;
     name: string;
-    basHakem: number;
-    yardimciHakem: number;
+    rates: PaymentRate;
 }
 
 export interface PaymentConfig {
-    standardMatches: {
-        okul: MatchPaymentRate;
-        il: MatchPaymentRate;
-        ilce: MatchPaymentRate;
-        bolge: MatchPaymentRate;
-    };
-    specialLeagues: SpecialLeagueRate[];
+    okulMaclari: PaymentRate;
+    bolgeMaclari: PaymentRate;
+    kategoriler: CategoryRate[];
 }
 
-const DEFAULT_CONFIG: PaymentConfig = {
-    standardMatches: {
-        okul: { basHakem: 0, yardimciHakem: 0 },
-        il: { basHakem: 0, yardimciHakem: 0 },
-        ilce: { basHakem: 0, yardimciHakem: 0 },
-        bolge: { basHakem: 0, yardimciHakem: 0 },
-    },
-    specialLeagues: [],
+export const EMPTY_RATE: PaymentRate = {
+    basHakem: 0,
+    yardimciHakem: 0,
+    gozlemci: 0,
+    masaGorevlisi: 0,
+    istatistikci: 0,
+    saglikci: 0,
+    sahaKomiseri: 0,
 };
+
+const DEFAULT_CONFIG: PaymentConfig = {
+    okulMaclari: { ...EMPTY_RATE },
+    bolgeMaclari: { ...EMPTY_RATE },
+    kategoriler: [],
+};
+
+function mergeRate(saved: Partial<PaymentRate> | undefined): PaymentRate {
+    return { ...EMPTY_RATE, ...saved };
+}
 
 export async function getPaymentConfig(): Promise<PaymentConfig> {
     try {
@@ -42,13 +52,13 @@ export async function getPaymentConfig(): Promise<PaymentConfig> {
         if (!setting?.value) return DEFAULT_CONFIG;
         const parsed = JSON.parse(setting.value) as PaymentConfig;
         return {
-            standardMatches: {
-                okul: { basHakem: 0, yardimciHakem: 0, ...parsed.standardMatches?.okul },
-                il: { basHakem: 0, yardimciHakem: 0, ...parsed.standardMatches?.il },
-                ilce: { basHakem: 0, yardimciHakem: 0, ...parsed.standardMatches?.ilce },
-                bolge: { basHakem: 0, yardimciHakem: 0, ...parsed.standardMatches?.bolge },
-            },
-            specialLeagues: parsed.specialLeagues || [],
+            okulMaclari: mergeRate(parsed.okulMaclari),
+            bolgeMaclari: mergeRate(parsed.bolgeMaclari),
+            kategoriler: (parsed.kategoriler || []).map((k) => ({
+                id: k.id,
+                name: k.name,
+                rates: mergeRate(k.rates),
+            })),
         };
     } catch {
         return DEFAULT_CONFIG;
@@ -73,8 +83,8 @@ export async function savePaymentConfig(config: PaymentConfig) {
     }
 }
 
-/** Drive'daki ÖZEL LİG dosyalarından benzersiz kategorileri çeker */
-export async function getSpecialLeagueCategories(): Promise<string[]> {
+/** Sistemdeki tüm benzersiz kategorileri çeker */
+export async function getAllMatchCategories(): Promise<string[]> {
     try {
         const setting = await db.systemSetting.findUnique({ where: { key: "GLOBAL_MATCH_REGISTRY" } });
         if (!setting?.value) return [];
@@ -82,15 +92,11 @@ export async function getSpecialLeagueCategories(): Promise<string[]> {
         const matches: any[] = registry.allMatches || [];
         const cats = new Set<string>();
         for (const m of matches) {
-            if (
-                m.ligTuru === "ÖZEL LİG VE ÜNİVERSİTE" &&
-                m.kategori &&
-                m.kategori.trim().length > 0
-            ) {
+            if (m.kategori && m.kategori.trim().length > 0) {
                 cats.add(m.kategori.trim());
             }
         }
-        return Array.from(cats).sort();
+        return Array.from(cats).sort((a, b) => a.localeCompare(b, "tr"));
     } catch {
         return [];
     }

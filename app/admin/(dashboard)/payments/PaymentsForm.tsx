@@ -1,32 +1,54 @@
 "use client";
 
 import { useState } from "react";
-import { savePaymentConfig, PaymentConfig, MatchPaymentRate, SpecialLeagueRate } from "@/app/actions/payments";
-import { Loader2, Banknote, Trophy, School, MapPin } from "lucide-react";
+import {
+    savePaymentConfig,
+    PaymentConfig,
+    PaymentRate,
+    CategoryRate,
+    EMPTY_RATE,
+} from "@/app/actions/payments";
+import { Loader2, School, MapPin, Trophy, ChevronDown, ChevronUp } from "lucide-react";
 
 interface Props {
     initialConfig: PaymentConfig;
-    driveCategories: string[];
+    allCategories: string[];
 }
+
+const ROLE_LABELS: { key: keyof PaymentRate; label: string }[] = [
+    { key: "basHakem", label: "Baş Hakem" },
+    { key: "yardimciHakem", label: "Yardımcı Hakem" },
+    { key: "gozlemci", label: "Gözlemci" },
+    { key: "masaGorevlisi", label: "Masa Görevlisi" },
+    { key: "istatistikci", label: "İstatistikçi" },
+    { key: "saglikci", label: "Sağlıkçı" },
+    { key: "sahaKomiseri", label: "Saha Komiseri" },
+];
 
 function CurrencyInput({
     label,
     value,
     onChange,
+    accent = "red",
 }: {
     label: string;
     value: number;
     onChange: (v: number) => void;
+    accent?: "red" | "amber" | "blue";
 }) {
+    const ringColor = accent === "amber"
+        ? "focus:ring-amber-400"
+        : accent === "blue"
+        ? "focus:ring-blue-400"
+        : "focus:ring-red-500";
+
     return (
         <div className="flex flex-col gap-1.5">
-            <label className="text-[10px] font-black text-zinc-500 dark:text-zinc-400 uppercase tracking-[0.15em]">
+            <label className="text-[10px] font-black text-zinc-500 dark:text-zinc-400 uppercase tracking-[0.12em]">
                 {label}
             </label>
             <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-black text-zinc-400 dark:text-zinc-500 select-none">
-                    ₺
-                </span>
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-black text-zinc-400 select-none">₺</span>
                 <input
                     type="number"
                     min={0}
@@ -37,86 +59,135 @@ function CurrencyInput({
                         const raw = e.target.value.replace(/[^0-9]/g, "");
                         onChange(raw === "" ? 0 : parseInt(raw, 10));
                     }}
-                    className="w-full pl-8 pr-3 py-3 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm font-black text-zinc-900 dark:text-white focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none transition-all"
+                    className={`w-full pl-7 pr-3 py-2.5 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm font-black text-zinc-900 dark:text-white focus:ring-2 ${ringColor} focus:border-transparent outline-none transition-all`}
                 />
             </div>
         </div>
     );
 }
 
-function StandardMatchCard({
-    title,
-    badge,
+function RatesGrid({
     rate,
     onChange,
+    accent = "red",
 }: {
-    title: string;
-    badge: string;
-    rate: MatchPaymentRate;
-    onChange: (r: MatchPaymentRate) => void;
+    rate: PaymentRate;
+    onChange: (r: PaymentRate) => void;
+    accent?: "red" | "amber" | "blue";
 }) {
     return (
-        <div className="bg-zinc-50 dark:bg-zinc-800/50 rounded-2xl border border-zinc-200 dark:border-zinc-700 p-5">
-            <div className="flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 rounded-xl bg-red-600 flex items-center justify-center shrink-0">
-                    <span className="text-[10px] font-black text-white">{badge}</span>
-                </div>
-                <h3 className="text-sm font-black uppercase italic tracking-tight text-zinc-900 dark:text-white">
-                    {title}
-                </h3>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+            {ROLE_LABELS.map(({ key, label }) => (
+                <CurrencyInput
+                    key={key}
+                    label={label}
+                    value={rate[key]}
+                    accent={accent}
+                    onChange={(v) => onChange({ ...rate, [key]: v })}
+                />
+            ))}
+        </div>
+    );
+}
+
+function SectionHeader({
+    icon,
+    color,
+    title,
+    subtitle,
+}: {
+    icon: React.ReactNode;
+    color: string;
+    title: string;
+    subtitle: string;
+}) {
+    return (
+        <div className="flex items-center gap-3 mb-6 pb-4 border-b border-zinc-100 dark:border-zinc-800">
+            <div className={`w-10 h-10 rounded-xl ${color} flex items-center justify-center shrink-0`}>
+                {icon}
             </div>
-            <div className="space-y-3">
-                <CurrencyInput
-                    label="Baş Hakem"
-                    value={rate.basHakem}
-                    onChange={(v) => onChange({ ...rate, basHakem: v })}
-                />
-                <CurrencyInput
-                    label="Yardımcı Hakem"
-                    value={rate.yardimciHakem}
-                    onChange={(v) => onChange({ ...rate, yardimciHakem: v })}
-                />
+            <div>
+                <h2 className="text-base font-black uppercase italic tracking-tight text-zinc-900 dark:text-white">
+                    {title}
+                </h2>
+                <p className="text-[11px] text-zinc-400 font-medium mt-0.5">{subtitle}</p>
             </div>
         </div>
     );
 }
 
-export function PaymentsForm({ initialConfig, driveCategories }: Props) {
-    const [standardMatches, setStandardMatches] = useState(initialConfig.standardMatches);
+function CategoryCard({
+    category,
+    onChange,
+}: {
+    category: CategoryRate;
+    onChange: (r: PaymentRate) => void;
+}) {
+    const [open, setOpen] = useState(false);
+    const hasAnyRate = Object.values(category.rates).some((v) => v > 0);
 
-    // Merge drive categories with saved config — no duplicates
-    const mergedLeagues: SpecialLeagueRate[] = driveCategories.map((cat) => {
-        const existing = initialConfig.specialLeagues.find((l) => l.name === cat);
-        return existing ?? { id: cat, name: cat, basHakem: 0, yardimciHakem: 0 };
-    });
-    // Also include any saved leagues that are no longer in drive (preserve data)
-    const savedOnly = initialConfig.specialLeagues.filter(
-        (l) => !driveCategories.includes(l.name)
+    return (
+        <div className="bg-zinc-50 dark:bg-zinc-800/50 rounded-2xl border border-zinc-200 dark:border-zinc-700 overflow-hidden">
+            <button
+                type="button"
+                onClick={() => setOpen((o) => !o)}
+                className="w-full flex items-center justify-between p-4 text-left hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+            >
+                <div className="flex items-center gap-2.5">
+                    <div className={`w-2 h-2 rounded-full shrink-0 ${hasAnyRate ? "bg-amber-500" : "bg-zinc-300 dark:bg-zinc-600"}`} />
+                    <span className="text-sm font-black uppercase italic tracking-tight text-zinc-900 dark:text-white">
+                        {category.name}
+                    </span>
+                    {hasAnyRate && (
+                        <span className="text-[10px] font-black text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 px-2 py-0.5 rounded-full">
+                            Fiyat girildi
+                        </span>
+                    )}
+                </div>
+                {open ? (
+                    <ChevronUp className="w-4 h-4 text-zinc-400 shrink-0" />
+                ) : (
+                    <ChevronDown className="w-4 h-4 text-zinc-400 shrink-0" />
+                )}
+            </button>
+            {open && (
+                <div className="px-4 pb-4 border-t border-zinc-200 dark:border-zinc-700 pt-4">
+                    <RatesGrid rate={category.rates} onChange={onChange} accent="amber" />
+                </div>
+            )}
+        </div>
     );
-    const [specialLeagues, setSpecialLeagues] = useState<SpecialLeagueRate[]>([
-        ...mergedLeagues,
-        ...savedOnly,
-    ]);
+}
 
+export function PaymentsForm({ initialConfig, allCategories }: Props) {
+    const [okulMaclari, setOkulMaclari] = useState<PaymentRate>(initialConfig.okulMaclari);
+    const [bolgeMaclari, setBolgeMaclari] = useState<PaymentRate>(initialConfig.bolgeMaclari);
+
+    // Merge drive categories with saved config
+    const buildKategoriler = (): CategoryRate[] => {
+        const saved = initialConfig.kategoriler;
+        const merged: CategoryRate[] = allCategories.map((cat) => {
+            const existing = saved.find((k) => k.name === cat);
+            return existing ?? { id: cat, name: cat, rates: { ...EMPTY_RATE } };
+        });
+        // Keep saved categories not in drive anymore
+        const extra = saved.filter((k) => !allCategories.includes(k.name));
+        return [...merged, ...extra];
+    };
+
+    const [kategoriler, setKategoriler] = useState<CategoryRate[]>(buildKategoriler);
     const [loading, setLoading] = useState(false);
     const [saved, setSaved] = useState(false);
 
-    const updateStandard = (key: keyof typeof standardMatches, rate: MatchPaymentRate) => {
+    const updateCategory = (id: string, rates: PaymentRate) => {
         setSaved(false);
-        setStandardMatches((prev) => ({ ...prev, [key]: rate }));
-    };
-
-    const updateLeague = (id: string, updates: Partial<SpecialLeagueRate>) => {
-        setSaved(false);
-        setSpecialLeagues((prev) =>
-            prev.map((l) => (l.id === id ? { ...l, ...updates } : l))
-        );
+        setKategoriler((prev) => prev.map((k) => (k.id === id ? { ...k, rates } : k)));
     };
 
     const handleSave = async () => {
         setLoading(true);
         setSaved(false);
-        const config: PaymentConfig = { standardMatches, specialLeagues };
+        const config: PaymentConfig = { okulMaclari, bolgeMaclari, kategoriler };
         const result = await savePaymentConfig(config);
         setLoading(false);
         if (result.success) {
@@ -130,98 +201,43 @@ export function PaymentsForm({ initialConfig, driveCategories }: Props) {
     return (
         <div className="space-y-8 max-w-4xl">
 
-            {/* ── 1. OKUL / İL / İLÇE ── */}
+            {/* ── 1. OKUL MAÇLARI ── */}
             <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-6 shadow-sm">
-                <div className="flex items-center gap-3 mb-6 pb-4 border-b border-zinc-100 dark:border-zinc-800">
-                    <div className="w-10 h-10 rounded-xl bg-red-600 flex items-center justify-center shadow-lg shadow-red-600/20 shrink-0">
-                        <School className="w-5 h-5 text-white" />
-                    </div>
-                    <div>
-                        <h2 className="text-base font-black uppercase italic tracking-tight text-zinc-900 dark:text-white">
-                            Okul / İl / İlçe Maçları
-                        </h2>
-                        <p className="text-[11px] text-zinc-400 font-medium mt-0.5">
-                            Yerel lig maçları için standart ücret tablosu
-                        </p>
-                    </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <StandardMatchCard
-                        title="Okul Maçları"
-                        badge="OKL"
-                        rate={standardMatches.okul}
-                        onChange={(r) => updateStandard("okul", r)}
-                    />
-                    <StandardMatchCard
-                        title="İl Maçları"
-                        badge="İL"
-                        rate={standardMatches.il}
-                        onChange={(r) => updateStandard("il", r)}
-                    />
-                    <StandardMatchCard
-                        title="İlçe Maçları"
-                        badge="İLÇ"
-                        rate={standardMatches.ilce}
-                        onChange={(r) => updateStandard("ilce", r)}
-                    />
-                </div>
+                <SectionHeader
+                    icon={<School className="w-5 h-5 text-white" />}
+                    color="bg-red-600 shadow-lg shadow-red-600/20"
+                    title="Okul Maçları"
+                    subtitle="Okul, İl ve İlçe maçları için standart ücret tablosu"
+                />
+                <RatesGrid rate={okulMaclari} onChange={(r) => { setSaved(false); setOkulMaclari(r); }} accent="red" />
             </div>
 
-            {/* ── 2. ÖZEL LİG ── */}
+            {/* ── 2. ÖZEL LİG KATEGORİLERİ ── */}
             <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-6 shadow-sm">
-                <div className="flex items-center gap-3 mb-6 pb-4 border-b border-zinc-100 dark:border-zinc-800">
-                    <div className="w-10 h-10 rounded-xl bg-amber-500 flex items-center justify-center shadow-lg shadow-amber-500/20 shrink-0">
-                        <Trophy className="w-5 h-5 text-white" />
-                    </div>
-                    <div>
-                        <h2 className="text-base font-black uppercase italic tracking-tight text-zinc-900 dark:text-white">
-                            Özel Lig
-                        </h2>
-                        <p className="text-[11px] text-zinc-400 font-medium mt-0.5">
-                            Drive&apos;daki Özel Lig &amp; Üniversite dosyalarından otomatik çekilir
-                        </p>
-                    </div>
-                </div>
+                <SectionHeader
+                    icon={<Trophy className="w-5 h-5 text-white" />}
+                    color="bg-amber-500 shadow-lg shadow-amber-500/20"
+                    title="Özel Lig"
+                    subtitle={`Sistemdeki tüm kategoriler — ${kategoriler.length} kategori`}
+                />
 
-                {specialLeagues.length === 0 ? (
+                {kategoriler.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-10 text-center">
-                        <div className="w-12 h-12 rounded-2xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center mb-3">
-                            <Banknote className="w-6 h-6 text-zinc-300 dark:text-zinc-600" />
-                        </div>
                         <p className="text-sm font-black text-zinc-400 uppercase italic">
-                            Henüz özel lig verisi yok
+                            Henüz kategori verisi yok
                         </p>
                         <p className="text-xs text-zinc-400 mt-1">
                             Drive senkronizasyonu yapıldıktan sonra kategoriler burada görünür.
                         </p>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {specialLeagues.map((league) => (
-                            <div
-                                key={league.id}
-                                className="bg-zinc-50 dark:bg-zinc-800/50 rounded-2xl border border-zinc-200 dark:border-zinc-700 p-5"
-                            >
-                                <div className="flex items-center gap-2 mb-4">
-                                    <div className="w-2 h-2 rounded-full bg-amber-500 shrink-0" />
-                                    <h3 className="text-sm font-black uppercase italic tracking-tight text-zinc-900 dark:text-white truncate">
-                                        {league.name}
-                                    </h3>
-                                </div>
-                                <div className="space-y-3">
-                                    <CurrencyInput
-                                        label="Baş Hakem"
-                                        value={league.basHakem}
-                                        onChange={(v) => updateLeague(league.id, { basHakem: v })}
-                                    />
-                                    <CurrencyInput
-                                        label="Yardımcı Hakem"
-                                        value={league.yardimciHakem}
-                                        onChange={(v) => updateLeague(league.id, { yardimciHakem: v })}
-                                    />
-                                </div>
-                            </div>
+                    <div className="space-y-2">
+                        {kategoriler.map((cat) => (
+                            <CategoryCard
+                                key={cat.id}
+                                category={cat}
+                                onChange={(r) => updateCategory(cat.id, r)}
+                            />
                         ))}
                     </div>
                 )}
@@ -229,44 +245,13 @@ export function PaymentsForm({ initialConfig, driveCategories }: Props) {
 
             {/* ── 3. BÖLGE MAÇLARI ── */}
             <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-6 shadow-sm">
-                <div className="flex items-center gap-3 mb-6 pb-4 border-b border-zinc-100 dark:border-zinc-800">
-                    <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center shadow-lg shadow-blue-600/20 shrink-0">
-                        <MapPin className="w-5 h-5 text-white" />
-                    </div>
-                    <div>
-                        <h2 className="text-base font-black uppercase italic tracking-tight text-zinc-900 dark:text-white">
-                            Bölge Maçları
-                        </h2>
-                        <p className="text-[11px] text-zinc-400 font-medium mt-0.5">
-                            Bölge haftaları maçları için standart ücret tablosu
-                        </p>
-                    </div>
-                </div>
-
-                <div className="max-w-sm">
-                    <div className="bg-zinc-50 dark:bg-zinc-800/50 rounded-2xl border border-zinc-200 dark:border-zinc-700 p-5">
-                        <div className="flex items-center gap-2 mb-4">
-                            <div className="w-8 h-8 rounded-xl bg-blue-600 flex items-center justify-center shrink-0">
-                                <span className="text-[10px] font-black text-white">BLG</span>
-                            </div>
-                            <h3 className="text-sm font-black uppercase italic tracking-tight text-zinc-900 dark:text-white">
-                                Bölge Maçı
-                            </h3>
-                        </div>
-                        <div className="space-y-3">
-                            <CurrencyInput
-                                label="Baş Hakem"
-                                value={standardMatches.bolge.basHakem}
-                                onChange={(v) => updateStandard("bolge", { ...standardMatches.bolge, basHakem: v })}
-                            />
-                            <CurrencyInput
-                                label="Yardımcı Hakem"
-                                value={standardMatches.bolge.yardimciHakem}
-                                onChange={(v) => updateStandard("bolge", { ...standardMatches.bolge, yardimciHakem: v })}
-                            />
-                        </div>
-                    </div>
-                </div>
+                <SectionHeader
+                    icon={<MapPin className="w-5 h-5 text-white" />}
+                    color="bg-blue-600 shadow-lg shadow-blue-600/20"
+                    title="Bölge Maçları"
+                    subtitle="Bölge haftaları maçları için standart ücret tablosu"
+                />
+                <RatesGrid rate={bolgeMaclari} onChange={(r) => { setSaved(false); setBolgeMaclari(r); }} accent="blue" />
             </div>
 
             {/* ── Kaydet ── */}

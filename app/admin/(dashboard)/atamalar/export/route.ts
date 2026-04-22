@@ -22,12 +22,14 @@ function formatTurkishDate(d: Date): string {
     return `${String(d.getDate()).padStart(2, "0")}.${String(d.getMonth() + 1).padStart(2, "0")}.${d.getFullYear()}`;
 }
 
+import { PaymentRate, EMPTY_RATE } from "@/app/actions/payments";
+
 // Detect which payment category applies to an assignment
 function detectPaymentCategory(
     kategori: string | null | undefined,
     ligTuru: string | null | undefined,
     config: PaymentConfig
-): { type: "okul" | "il" | "ilce" | "special" | null; leagueName: string; leagueRate: { basHakem: number; yardimciHakem: number } | null } {
+): { type: "okul" | "bolge" | "kategori" | null; leagueName: string; leagueRate: PaymentRate | null } {
     const k = (kategori || "").toUpperCase().replace(/\s+/g, " ").trim();
     const lt = (ligTuru || "").toUpperCase().replace(/\s+/g, " ").trim();
 
@@ -38,34 +40,21 @@ function detectPaymentCategory(
         lt.includes("YEREL");
 
     if (isYerel) {
-        if (k.includes("İLÇE") || k.includes("ILCE")) {
-            return { type: "ilce", leagueName: "İlçe Maçları", leagueRate: config.standardMatches.ilce };
-        }
-        if (k.includes("OKUL")) {
-            return { type: "okul", leagueName: "Okul Maçları", leagueRate: config.standardMatches.okul };
-        }
-        // Default: İl
-        return { type: "il", leagueName: "İl Maçları", leagueRate: config.standardMatches.il };
+        return { type: "okul", leagueName: "Okul Maçları", leagueRate: config.okulMaclari ?? { ...EMPTY_RATE } };
     }
 
-    const isOzel =
-        lt.includes("ÖZEL") ||
-        lt.includes("OZEL") ||
-        lt.includes("ÜNİVERSİTE") ||
-        lt.includes("UNIVERSITE") ||
-        lt.includes("ÖZEL LİG");
-
-    if (isOzel) {
-        // Match kategori against configured special league names
-        for (const league of config.specialLeagues) {
-            const lName = league.name.toUpperCase().replace(/\s+/g, " ").trim();
-            if (!lName) continue;
-            if (k === lName || k.includes(lName) || lName.includes(k)) {
-                return { type: "special", leagueName: league.name, leagueRate: { basHakem: league.basHakem, yardimciHakem: league.yardimciHakem } };
-            }
+    // Match kategori against configured categories
+    const kats = config.kategoriler || [];
+    for (const cat of kats) {
+        const catName = cat.name.toUpperCase().replace(/\s+/g, " ").trim();
+        if (!catName) continue;
+        if (k === catName || k.includes(catName) || catName.includes(k)) {
+            return { type: "kategori", leagueName: cat.name, leagueRate: cat.rates ?? { ...EMPTY_RATE } };
         }
-        // No match found — show kategori as category name without rate
-        return { type: "special", leagueName: kategori || "Özel Lig", leagueRate: null };
+    }
+
+    if (k) {
+        return { type: "kategori", leagueName: kategori || "", leagueRate: null };
     }
 
     return { type: null, leagueName: kategori || ligTuru || "", leagueRate: null };
@@ -97,14 +86,11 @@ export async function GET(req: NextRequest) {
             db.systemSetting.findUnique({ where: { key: "PAYMENT_CONFIG" } }),
         ]);
 
+        const EMPTY_RATE = { basHakem: 0, yardimciHakem: 0, gozlemci: 0, masaGorevlisi: 0, istatistikci: 0, saglikci: 0, sahaKomiseri: 0 };
         let paymentConfig: PaymentConfig = {
-            standardMatches: {
-                okul: { basHakem: 0, yardimciHakem: 0 },
-                il: { basHakem: 0, yardimciHakem: 0 },
-                ilce: { basHakem: 0, yardimciHakem: 0 },
-                bolge: { basHakem: 0, yardimciHakem: 0 },
-            },
-            specialLeagues: [],
+            okulMaclari: { ...EMPTY_RATE },
+            bolgeMaclari: { ...EMPTY_RATE },
+            kategoriler: [],
         };
         if (paymentSetting?.value) {
             try {
