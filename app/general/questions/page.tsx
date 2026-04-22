@@ -28,6 +28,7 @@ interface Question {
     optionC: string;
     optionD: string;
     correctAnswer: string;
+    questionType?: string;
     category?: string;
     difficulty: string;
 }
@@ -246,28 +247,40 @@ export default function GeneralQuestionsPage() {
                                         <span className="text-zinc-400 mr-2">{((currentPage - 1) * ITEMS_PER_PAGE) + index + 1}.</span>
                                         {question.questionText}
                                     </h3>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pl-2">
-                                        {(['A', 'B', 'C', 'D'] as const).map((key) => {
-                                            const val = question[`option${key}` as keyof Question] as string;
-                                            const isCorrect = question.correctAnswer === key;
-                                            return (
-                                                <div
-                                                    key={key}
-                                                    className={`flex items-center gap-3 p-4 rounded-xl border transition-all ${isCorrect
-                                                        ? 'bg-green-50/50 border-green-200 dark:bg-green-900/10 dark:border-green-800'
-                                                        : 'bg-zinc-50/50 border-zinc-100 dark:bg-zinc-800/30 dark:border-zinc-800'
-                                                        }`}
-                                                >
-                                                    <span className={`flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center font-black ${isCorrect ? 'bg-green-600 text-white' : 'bg-zinc-200 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400'}`}>
-                                                        {key}
-                                                    </span>
-                                                    <span className={`text-sm font-medium ${isCorrect ? 'text-green-700 dark:text-green-400' : 'text-zinc-700 dark:text-zinc-300'}`}>
-                                                        {val}
-                                                    </span>
-                                                    {isCorrect && <CheckCircle className="ml-auto w-5 h-5 text-green-500" />}
-                                                </div>
-                                            );
-                                        })}
+                                    <div className="pl-2">
+                                        {question.questionType === "FILL_IN_BLANK" ? (
+                                            <div className="flex items-center gap-3 p-4 rounded-xl border bg-teal-50/50 border-teal-200 dark:bg-teal-900/10 dark:border-teal-800">
+                                                <CheckCircle className="w-5 h-5 text-teal-600 flex-shrink-0" />
+                                                <span className="text-sm font-bold text-teal-700 dark:text-teal-400">
+                                                    Doğru Cevap: <span className="font-black">{question.correctAnswer}</span>
+                                                </span>
+                                            </div>
+                                        ) : (
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                {(['A', 'B', 'C', 'D'] as const).map((key) => {
+                                                    const val = question[`option${key}` as keyof Question] as string;
+                                                    if (!val) return null;
+                                                    const isCorrect = question.correctAnswer === key;
+                                                    return (
+                                                        <div
+                                                            key={key}
+                                                            className={`flex items-center gap-3 p-4 rounded-xl border transition-all ${isCorrect
+                                                                ? 'bg-green-50/50 border-green-200 dark:bg-green-900/10 dark:border-green-800'
+                                                                : 'bg-zinc-50/50 border-zinc-100 dark:bg-zinc-800/30 dark:border-zinc-800'
+                                                                }`}
+                                                        >
+                                                            <span className={`flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center font-black ${isCorrect ? 'bg-green-600 text-white' : 'bg-zinc-200 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400'}`}>
+                                                                {key}
+                                                            </span>
+                                                            <span className={`text-sm font-medium ${isCorrect ? 'text-green-700 dark:text-green-400' : 'text-zinc-700 dark:text-zinc-300'}`}>
+                                                                {val}
+                                                            </span>
+                                                            {isCorrect && <CheckCircle className="ml-auto w-5 h-5 text-green-500" />}
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             ))

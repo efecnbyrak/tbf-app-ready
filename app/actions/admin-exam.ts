@@ -11,6 +11,7 @@ export async function createQuestion(data: {
     optionC: string;
     optionD: string;
     correctAnswer: string;
+    questionType?: string;
     category?: string;
     difficulty: string;
 }) {
@@ -46,6 +47,7 @@ export async function updateQuestion(
         optionC: string;
         optionD: string;
         correctAnswer: string;
+        questionType?: string;
         category?: string;
         difficulty: string;
     }

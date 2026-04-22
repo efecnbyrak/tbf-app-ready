@@ -253,12 +253,13 @@ model Question {
   optionB       String
   optionC       String
   optionD       String
-  correctAnswer String   // "A", "B", "C", or "D"
+  correctAnswer String   // "A", "B", "C", "D", or free text for FILL_IN_BLANK
+  questionType  String   @default("MULTIPLE_CHOICE") // "MULTIPLE_CHOICE", "TRUE_FALSE", "FILL_IN_BLANK"
   category      String?  // Optional categorization
   difficulty    String   @default("Orta") // "Kolay", "Orta", "Zor"
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
-  
+
   @@map("questions")
 }
 

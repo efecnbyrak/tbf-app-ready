@@ -1,4 +1,4 @@
-import { PlayCircle, Trophy, BookOpen, ArrowRight, Briefcase, Sparkles } from "lucide-react";
+import { PlayCircle, Trophy, ArrowRight, Briefcase, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { verifySession } from "@/lib/session";
 import { db } from "@/lib/db";
@@ -15,7 +15,7 @@ export default async function AdminBagPage() {
     const canSeeSoruHavuzu = isSuperAdmin || isObserverAdmin;
 
     const managementItems = [
-        {
+        ...(isSuperAdmin ? [{
             title: "Eğitim Videoları",
             description: "Hakemler için eğitim videoları ekleyin, kategorize edin ve düzenleyin.",
             href: "/admin/videos",
@@ -23,7 +23,7 @@ export default async function AdminBagPage() {
             color: "text-red-500",
             bgColor: "bg-red-500/10",
             borderColor: "hover:border-red-500/50"
-        },
+        }] : []),
         ...(canSeeSoruHavuzu ? [{
             title: "Soru Havuzu",
             description: "Sınavlar için soru bankasını yönetin, zorluk seviyelerini ve kategorileri ayarlayın.",
@@ -33,15 +33,6 @@ export default async function AdminBagPage() {
             bgColor: "bg-orange-500/10",
             borderColor: "hover:border-orange-500/50"
         }] : []),
-        {
-            title: "Kural Kitabı",
-            description: "Güncel kural kitapçıklarını ve PDF dökümanları yönetin.",
-            href: "/admin/rules",
-            icon: BookOpen,
-            color: "text-blue-500",
-            bgColor: "bg-blue-500/10",
-            borderColor: "hover:border-blue-500/50"
-        },
     ];
 
     return (

@@ -32,15 +32,6 @@ interface HubCard {
 
 const ADMIN_HUB_CARDS: HubCard[] = [
     {
-        title: "Profilim",
-        description: "Kişisel bilgilerinizi ve yönetici profilinizi güncelleyin.",
-        href: "/admin/profile",
-        icon: User,
-        color: "bg-zinc-800",
-        badge: "KİŞİSEL"
-    },
-
-    {
         title: "Hakem Yönetimi",
         description: "Klasmanları düzenle, aktiflik durumlarını yönet ve detaylı ara.",
         href: "/admin/referees",

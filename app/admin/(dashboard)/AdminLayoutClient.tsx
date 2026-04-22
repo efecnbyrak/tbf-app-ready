@@ -89,19 +89,6 @@ export function AdminLayoutClient({ children, role, imageUrl }: AdminLayoutClien
                             Genel Bakış
                         </Link>
 
-                        <Link
-                            href="/admin/profile"
-                            onClick={() => setIsOpen(false)}
-                            prefetch={false}
-                            className={`flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium transition-all text-[16px] ${isActive("/admin/profile")
-                                ? "bg-red-700 text-white shadow-md border-l-4 border-red-900"
-                                : "hover:bg-zinc-800/50 text-zinc-400 hover:text-white"
-                                }`}
-                        >
-                            <User className="w-4 h-4" />
-                            Profilim & Ayarlar
-                        </Link>
-
                         <div className="pt-3 pb-1 px-4">
                             <span className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em]">Yönetim</span>
                         </div>

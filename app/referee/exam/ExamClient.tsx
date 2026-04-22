@@ -17,6 +17,7 @@ interface Question {
     optionC: string;
     optionD: string;
     correctAnswer: string;
+    questionType?: string;
 }
 
 export default function ExamClient({
@@ -87,6 +88,7 @@ export default function ExamClient({
             questionText: q.questionText,
             selectedAnswer: answers[q.id],
             correctAnswer: q.correctAnswer,
+            questionType: q.questionType,
         }));
 
         const result = await submitExam(refereeId, examAnswers, selectedDifficulty, assignmentId);
@@ -254,6 +256,7 @@ export default function ExamClient({
                         optionB={question.optionB}
                         optionC={question.optionC}
                         optionD={question.optionD}
+                        questionType={question.questionType}
                         selectedAnswer={answers[question.id]}
                         onAnswerSelect={(answer) => handleAnswerSelect(question.id, answer)}
                     />

@@ -161,13 +161,18 @@ export async function getAssignmentQuestions(assignmentId: number, profileId?: n
 // Submit exam answers
 export async function submitExam(
     profileId: number,
-    answers: Array<{ questionId: number; questionText: string; selectedAnswer: string; correctAnswer: string }>,
+    answers: Array<{ questionId: number; questionText: string; selectedAnswer: string; correctAnswer: string; questionType?: string }>,
     difficulty: string = "Orta",
     assignmentId?: number
 ) {
     try {
-        // Calculate score
-        const correctCount = answers.filter(a => a.selectedAnswer === a.correctAnswer).length;
+        // Calculate score — fill-in-blank uses case-insensitive comparison
+        const correctCount = answers.filter(a => {
+            if (a.questionType === "FILL_IN_BLANK") {
+                return a.selectedAnswer.trim().toLowerCase() === a.correctAnswer.trim().toLowerCase();
+            }
+            return a.selectedAnswer === a.correctAnswer;
+        }).length;
 
         // Create exam attempt with answers
         const attempt = await db.examAttempt.create({
@@ -190,7 +195,9 @@ export async function submitExam(
                         questionText: a.questionText,
                         selectedAnswer: a.selectedAnswer,
                         correctAnswer: a.correctAnswer,
-                        isCorrect: a.selectedAnswer === a.correctAnswer,
+                        isCorrect: a.questionType === "FILL_IN_BLANK"
+                            ? a.selectedAnswer.trim().toLowerCase() === a.correctAnswer.trim().toLowerCase()
+                            : a.selectedAnswer === a.correctAnswer,
                     })),
                 },
             },

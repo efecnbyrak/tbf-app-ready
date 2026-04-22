@@ -31,6 +31,7 @@ interface Question {
     optionC: string;
     optionD: string;
     correctAnswer: string;
+    questionType?: string;
     category?: string;
     difficulty: string;
 }
@@ -42,6 +43,7 @@ const emptyForm = {
     optionC: "",
     optionD: "",
     correctAnswer: "A",
+    questionType: "MULTIPLE_CHOICE",
     category: CATEGORIES[0],
     difficulty: "Orta",
 };
@@ -86,12 +88,13 @@ export default function QuestionsPage() {
                 optionC: question.optionC,
                 optionD: question.optionD,
                 correctAnswer: question.correctAnswer,
+                questionType: question.questionType || "MULTIPLE_CHOICE",
                 category: question.category || CATEGORIES[0],
                 difficulty: question.difficulty || "Orta",
             });
         } else {
             setEditingQuestion(null);
-            setFormData({ ...emptyForm, optionC: "Seçenek C", optionD: "Seçenek D" });
+            setFormData({ ...emptyForm, optionA: "Seçenek A", optionB: "Seçenek B", optionC: "Seçenek C", optionD: "Seçenek D" });
         }
         setShowModal(true);
     };
@@ -277,6 +280,12 @@ export default function QuestionsPage() {
                                         <span className={`px-3 py-1 rounded-full text-[10px] font-black tracking-widest uppercase ${getDifficultyColor(question.difficulty)}`}>
                                             {question.difficulty}
                                         </span>
+                                        {question.questionType === "TRUE_FALSE" && (
+                                            <span className="bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 px-3 py-1 rounded-full text-[10px] font-black tracking-widest uppercase">D/Y</span>
+                                        )}
+                                        {question.questionType === "FILL_IN_BLANK" && (
+                                            <span className="bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400 px-3 py-1 rounded-full text-[10px] font-black tracking-widest uppercase">BOŞLUK</span>
+                                        )}
                                         {question.category && (
                                             <span className="bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 px-3 py-1 rounded-full text-[10px] font-black tracking-widest uppercase truncate max-w-[120px]" title={question.category}>
                                                 {question.category}
@@ -292,37 +301,46 @@ export default function QuestionsPage() {
                                 </h3>
                                 
                                 <div className="space-y-3 mt-auto">
-                                    {(['A', 'B', 'C', 'D'] as const).map((key) => {
-                                        const val = question[`option${key}` as keyof Question] as string;
-                                        if (!val && (key === 'C' || key === 'D')) return null;
-                                        
-                                        const isCorrect = question.correctAnswer === key;
-                                        return (
-                                            <div
-                                                key={key}
-                                                className={`flex items-center gap-3 p-2.5 rounded-xl border transition-all ${isCorrect
-                                                    ? 'bg-green-50/50 border-green-200 dark:bg-green-900/10 dark:border-green-800/50'
-                                                    : 'bg-zinc-50/50 border-transparent dark:bg-zinc-800/20 dark:border-transparent'
-                                                    }`}
-                                            >
-                                                <span className={`flex-shrink-0 w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-black ${isCorrect
-                                                    ? 'bg-green-600 text-white shadow-sm shadow-green-200'
-                                                    : 'bg-zinc-200 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400'
-                                                    }`}>
-                                                    {key}
-                                                </span>
-                                                <span className={`text-xs font-bold line-clamp-2 ${isCorrect
-                                                    ? 'text-green-700 dark:text-green-400'
-                                                    : 'text-zinc-600 dark:text-zinc-400'
-                                                    }`} title={val}>
-                                                    {val}
-                                                </span>
-                                                {isCorrect && (
-                                                    <CheckCircle className="w-4 h-4 text-green-600 ml-auto flex-shrink-0" />
-                                                )}
-                                            </div>
-                                        );
-                                    })}
+                                    {question.questionType === "FILL_IN_BLANK" ? (
+                                        <div className="flex items-center gap-3 p-2.5 rounded-xl border bg-teal-50/50 border-teal-200 dark:bg-teal-900/10 dark:border-teal-800/50">
+                                            <CheckCircle className="w-4 h-4 text-teal-600 flex-shrink-0" />
+                                            <span className="text-xs font-bold text-teal-700 dark:text-teal-400">
+                                                Cevap: {question.correctAnswer}
+                                            </span>
+                                        </div>
+                                    ) : (
+                                        (['A', 'B', 'C', 'D'] as const).map((key) => {
+                                            const val = question[`option${key}` as keyof Question] as string;
+                                            if (!val && (key === 'C' || key === 'D')) return null;
+
+                                            const isCorrect = question.correctAnswer === key;
+                                            return (
+                                                <div
+                                                    key={key}
+                                                    className={`flex items-center gap-3 p-2.5 rounded-xl border transition-all ${isCorrect
+                                                        ? 'bg-green-50/50 border-green-200 dark:bg-green-900/10 dark:border-green-800/50'
+                                                        : 'bg-zinc-50/50 border-transparent dark:bg-zinc-800/20 dark:border-transparent'
+                                                        }`}
+                                                >
+                                                    <span className={`flex-shrink-0 w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-black ${isCorrect
+                                                        ? 'bg-green-600 text-white shadow-sm shadow-green-200'
+                                                        : 'bg-zinc-200 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400'
+                                                        }`}>
+                                                        {key}
+                                                    </span>
+                                                    <span className={`text-xs font-bold line-clamp-2 ${isCorrect
+                                                        ? 'text-green-700 dark:text-green-400'
+                                                        : 'text-zinc-600 dark:text-zinc-400'
+                                                        }`} title={val}>
+                                                        {val}
+                                                    </span>
+                                                    {isCorrect && (
+                                                        <CheckCircle className="w-4 h-4 text-green-600 ml-auto flex-shrink-0" />
+                                                    )}
+                                                </div>
+                                            );
+                                        })
+                                    )}
                                 </div>
                                 
                                 {/* Hover Actions Overlay */}
@@ -438,63 +456,88 @@ export default function QuestionsPage() {
 
                             <div className="space-y-4">
                                 <label className="text-sm font-bold text-zinc-500 uppercase tracking-widest pl-1">Soru Tipi</label>
-                                <div className="flex bg-zinc-100 dark:bg-zinc-800 p-1.5 rounded-2xl shadow-inner overflow-hidden max-w-sm">
+                                <div className="flex bg-zinc-100 dark:bg-zinc-800 p-1.5 rounded-2xl shadow-inner overflow-hidden">
                                     <button
                                         type="button"
-                                        onClick={() => setFormData({ ...formData, optionA: formData.optionA || "Seçenek A", optionB: formData.optionB || "Seçenek B", optionC: "Seçenek C", optionD: "Seçenek D" })}
-                                        className={`flex-1 flex justify-center items-center py-3 text-xs font-black rounded-xl transition-all ${formData.optionC !== "" || formData.optionD !== "" ? "bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white shadow-sm" : "text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200"}`}
+                                        onClick={() => setFormData({ ...formData, questionType: "MULTIPLE_CHOICE", optionA: formData.optionA || "Seçenek A", optionB: formData.optionB || "Seçenek B", optionC: formData.optionC || "Seçenek C", optionD: formData.optionD || "Seçenek D", correctAnswer: ["A","B","C","D"].includes(formData.correctAnswer) ? formData.correctAnswer : "A" })}
+                                        className={`flex-1 flex justify-center items-center py-3 text-xs font-black rounded-xl transition-all ${formData.questionType === "MULTIPLE_CHOICE" ? "bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white shadow-sm" : "text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200"}`}
                                     >
                                         4 ŞIKLI
                                     </button>
                                     <button
                                         type="button"
-                                        onClick={() => setFormData({ ...formData, optionA: "Doğru", optionB: "Yanlış", optionC: "", optionD: "", correctAnswer: formData.correctAnswer === "A" || formData.correctAnswer === "B" ? formData.correctAnswer : "A" })}
-                                        className={`flex-1 flex justify-center items-center py-3 text-xs font-black rounded-xl transition-all ${formData.optionC === "" && formData.optionD === "" ? "bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white shadow-sm" : "text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200"}`}
+                                        onClick={() => setFormData({ ...formData, questionType: "TRUE_FALSE", optionA: "Doğru", optionB: "Yanlış", optionC: "", optionD: "", correctAnswer: formData.correctAnswer === "B" ? "B" : "A" })}
+                                        className={`flex-1 flex justify-center items-center py-3 text-xs font-black rounded-xl transition-all ${formData.questionType === "TRUE_FALSE" ? "bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white shadow-sm" : "text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200"}`}
                                     >
-                                        DOĞRU / YANLIŞ
+                                        D / Y
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setFormData({ ...formData, questionType: "FILL_IN_BLANK", optionA: "", optionB: "", optionC: "", optionD: "", correctAnswer: "" })}
+                                        className={`flex-1 flex justify-center items-center py-3 text-xs font-black rounded-xl transition-all ${formData.questionType === "FILL_IN_BLANK" ? "bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white shadow-sm" : "text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200"}`}
+                                    >
+                                        BOŞLUK
                                     </button>
                                 </div>
                             </div>
 
-                            {/* Options */}
-                            <div className="space-y-2">
-                                <label className="text-sm font-bold text-zinc-500 uppercase tracking-widest pl-1">
-                                    Seçenekler <span className="text-xs normal-case text-zinc-400">(doğru cevap için harfe tıklayın)</span>
-                                </label>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    {(['A', 'B', 'C', 'D'] as const).map(key => {
-                                        const isTF = formData.optionC === "" && formData.optionD === "";
-                                        if (isTF && (key === 'C' || key === 'D')) return null;
-
-                                        return (
-                                        <div key={key} className="flex gap-2">
-                                            <div className="flex-1">
-                                                <input
-                                                    required
-                                                    type="text"
-                                                    value={formData[`option${key}` as keyof typeof formData] as string}
-                                                    onChange={(e) => setFormData({ ...formData, [`option${key}`]: e.target.value })}
-                                                    className="w-full px-4 py-3 border-2 border-zinc-100 dark:border-zinc-800 rounded-xl bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-white focus:border-red-600 outline-none transition-all"
-                                                    placeholder={`Seçenek ${key}`}
-                                                />
-                                            </div>
-                                            <button
-                                                type="button"
-                                                onClick={() => setFormData({ ...formData, correctAnswer: key })}
-                                                className={`w-12 h-12 rounded-xl border-2 flex items-center justify-center font-black transition-all ${formData.correctAnswer === key
-                                                    ? "bg-green-600 border-green-600 text-white shadow-lg shadow-green-200"
-                                                    : "bg-zinc-100 border-zinc-200 text-zinc-400 dark:bg-zinc-800 dark:border-zinc-700 hover:border-green-300"
-                                                    }`}
-                                            >
-                                                {key}
-                                            </button>
-                                        </div>
-                                    )})}
+                            {/* Options / Answer */}
+                            {formData.questionType === "FILL_IN_BLANK" ? (
+                                <div className="space-y-2">
+                                    <label className="text-sm font-bold text-zinc-500 uppercase tracking-widest pl-1">
+                                        Doğru Cevap
+                                    </label>
+                                    <input
+                                        required
+                                        type="text"
+                                        value={formData.correctAnswer}
+                                        onChange={(e) => setFormData({ ...formData, correctAnswer: e.target.value })}
+                                        className="w-full px-5 py-4 border-2 border-zinc-100 dark:border-zinc-800 rounded-2xl bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-white focus:border-green-600 outline-none transition-all"
+                                        placeholder="Boşluğa girilmesi gereken doğru cevabı yazın..."
+                                    />
+                                    <p className="text-xs text-zinc-400 pl-1">Kullanıcılar bu soruya yazılı yanıt verecektir.</p>
                                 </div>
-                                <p className="text-xs text-zinc-400 pl-1">
-                                    Seçilen doğru cevap: <strong className="text-green-600">{formData.correctAnswer}</strong>
-                                </p>
-                            </div>
+                            ) : (
+                                <div className="space-y-2">
+                                    <label className="text-sm font-bold text-zinc-500 uppercase tracking-widest pl-1">
+                                        Seçenekler <span className="text-xs normal-case text-zinc-400">(doğru cevap için harfe tıklayın)</span>
+                                    </label>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        {(['A', 'B', 'C', 'D'] as const).map(key => {
+                                            const isTF = formData.questionType === "TRUE_FALSE";
+                                            if (isTF && (key === 'C' || key === 'D')) return null;
+
+                                            return (
+                                            <div key={key} className="flex gap-2">
+                                                <div className="flex-1">
+                                                    <input
+                                                        required
+                                                        type="text"
+                                                        value={formData[`option${key}` as keyof typeof formData] as string}
+                                                        onChange={(e) => setFormData({ ...formData, [`option${key}`]: e.target.value })}
+                                                        readOnly={isTF}
+                                                        className={`w-full px-4 py-3 border-2 border-zinc-100 dark:border-zinc-800 rounded-xl bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-white focus:border-red-600 outline-none transition-all ${isTF ? "opacity-70 cursor-not-allowed" : ""}`}
+                                                        placeholder={`Seçenek ${key}`}
+                                                    />
+                                                </div>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setFormData({ ...formData, correctAnswer: key })}
+                                                    className={`w-12 h-12 rounded-xl border-2 flex items-center justify-center font-black transition-all ${formData.correctAnswer === key
+                                                        ? "bg-green-600 border-green-600 text-white shadow-lg shadow-green-200"
+                                                        : "bg-zinc-100 border-zinc-200 text-zinc-400 dark:bg-zinc-800 dark:border-zinc-700 hover:border-green-300"
+                                                        }`}
+                                                >
+                                                    {key}
+                                                </button>
+                                            </div>
+                                        )})}
+                                    </div>
+                                    <p className="text-xs text-zinc-400 pl-1">
+                                        Seçilen doğru cevap: <strong className="text-green-600">{formData.correctAnswer}</strong>
+                                    </p>
+                                </div>
+                            )}
 
                             <div className="flex gap-4 pt-4">
                                 <button

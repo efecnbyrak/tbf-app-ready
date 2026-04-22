@@ -324,7 +324,7 @@ export function ResponsiveNav({ refereeName, roleType, basePath = "/referee", ti
                                             }`}
                                     >
                                         <Briefcase className="w-4 h-4 text-red-500" />
-                                        Hakem Çantası
+                                        {basePath === "/general" ? "Görevli Çantası" : "Hakem Çantası"}
                                     </Link>
                                 )}
 

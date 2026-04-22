@@ -33,18 +33,11 @@ const OFFICIAL_HUB_CARDS = [
         badge: "HAFTALIK"
     },
     {
-        title: "Kural & Mevzuat",
-        description: "Görevli el kitapları ve resmi dökümanlar.",
-        href: "/general/rules",
+        title: "Görevli Çantası",
+        description: "Eğitim videoları, soru havuzu ve kural kitaplarına buradan ulaşın.",
+        href: "/general/bag",
         icon: BookOpen,
-        color: "bg-zinc-700"
-    },
-    {
-        title: "Soru Havuzu",
-        description: "Kuralları pekiştirmek için örnek soruları inceleyin ve doğru cevapları öğrenin.",
-        href: "/general/questions",
-        icon: Trophy,
-        color: "bg-amber-500",
+        color: "bg-red-600",
         badge: "EĞİTİM"
     }
 ];
