@@ -1,6 +1,7 @@
 
 import { db } from "@/lib/db";
 import { getAvailabilityWindow } from "@/lib/availability-utils";
+import { verifySession } from "@/lib/session";
 import { ExportButton } from "./ExportButton";
 import { CleanupButton } from "@/components/admin/CleanupButton";
 import { AvailabilityList } from "./AvailabilityList";
@@ -17,6 +18,8 @@ interface PageProps {
 
 export default async function AvailabilityAdminPage({ searchParams }: PageProps) {
     const params = await searchParams;
+    const session = await verifySession();
+    const isSuperAdmin = session?.role === "SUPER_ADMIN";
     const { startDate: currentStartDate, endDate: currentEndDate, weekNumber } = await getAvailabilityWindow();
 
     const isLastWeek = params.week === "last";
@@ -141,7 +144,7 @@ export default async function AvailabilityAdminPage({ searchParams }: PageProps)
 
                 {/* Action buttons row */}
                 <div className="flex flex-wrap items-center gap-2">
-                    <CleanupButton />
+                    <CleanupButton isSuperAdmin={isSuperAdmin} />
                     <ExportButton group={activeGroup} type={activeType} week={params.week} />
                 </div>
             </div>

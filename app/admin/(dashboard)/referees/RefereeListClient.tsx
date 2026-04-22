@@ -426,14 +426,25 @@ export function RefereeListClient({ initialReferees, refereeTypeMap, currentUser
 
             {/* Export Modal */}
             {exportModalOpen && (
-                <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-zinc-950/60 backdrop-blur-sm animate-in fade-in duration-200">
-                    <div className="bg-white dark:bg-zinc-900 rounded-[2rem] w-full max-w-md shadow-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-4 duration-300">
+                <div
+                    className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-zinc-950/60 backdrop-blur-sm animate-in fade-in duration-200"
+                    onClick={() => setExportModalOpen(false)}
+                >
+                    <div
+                        className="relative bg-white dark:bg-zinc-900 rounded-[2rem] w-full max-w-md shadow-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-4 duration-300"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        {/* Close button on modal container */}
+                        <button
+                            type="button"
+                            onClick={() => setExportModalOpen(false)}
+                            className="absolute top-4 right-4 z-20 w-8 h-8 bg-white/20 hover:bg-white/30 rounded-xl flex items-center justify-center transition-colors"
+                        >
+                            <X className="w-4 h-4 text-white" />
+                        </button>
                         {/* Modal Header */}
                         <div className="bg-gradient-to-br from-emerald-600 to-emerald-800 p-6 text-white relative overflow-hidden">
                             <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
-                            <button onClick={() => setExportModalOpen(false)} className="absolute top-4 right-4 z-10 w-8 h-8 bg-white/20 hover:bg-white/30 rounded-xl flex items-center justify-center transition-colors">
-                                <X className="w-4 h-4 text-white" />
-                            </button>
                             <div className="flex items-center gap-3 relative z-10">
                                 <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
                                     <FileSpreadsheet className="w-5 h-5 text-white" />

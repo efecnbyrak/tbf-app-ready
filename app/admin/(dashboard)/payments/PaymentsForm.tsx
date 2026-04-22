@@ -4,16 +4,39 @@ import { useState } from "react";
 import { savePaymentConfig } from "@/app/actions/payments";
 import type { PaymentConfig, PaymentRate, CategoryRate } from "@/lib/payment-types";
 import { EMPTY_RATE } from "@/lib/payment-types";
-import { Loader2, School, MapPin, Trophy, ChevronDown, ChevronUp } from "lucide-react";
+import { Loader2, School, MapPin, Trophy, ChevronDown, ChevronUp, Plus, Trash2, Banknote } from "lucide-react";
+
+interface EkOdeme {
+    id: string;
+    aciklama: string;
+    tutar: number;
+}
+
+interface ExtendedPaymentConfig extends PaymentConfig {
+    ekOdemeler?: EkOdeme[];
+}
 
 interface Props {
-    initialConfig: PaymentConfig;
+    initialConfig: ExtendedPaymentConfig;
     allCategories: string[];
 }
 
-const ROLE_LABELS: { key: keyof PaymentRate; label: string }[] = [
+// Standard roles for Özel Lig categories
+const OZEL_LIG_LABELS: { key: keyof PaymentRate; label: string }[] = [
     { key: "basHakem", label: "Baş Hakem" },
     { key: "yardimciHakem", label: "Yardımcı Hakem" },
+    { key: "gozlemci", label: "Gözlemci" },
+    { key: "masaGorevlisi", label: "Masa Görevlisi" },
+    { key: "istatistikci", label: "İstatistikçi" },
+    { key: "saglikci", label: "Sağlıkçı" },
+    { key: "sahaKomiseri", label: "Saha Komiseri" },
+];
+
+// Bölge & Okul include 2. Yardımcı Hakem (for 3-referee finals)
+const BOLGE_OKUL_LABELS: { key: keyof PaymentRate; label: string }[] = [
+    { key: "basHakem", label: "Baş Hakem" },
+    { key: "yardimciHakem", label: "1. Yardımcı Hakem" },
+    { key: "ikinciYardimciHakem", label: "2. Yardımcı Hakem" },
     { key: "gozlemci", label: "Gözlemci" },
     { key: "masaGorevlisi", label: "Masa Görevlisi" },
     { key: "istatistikci", label: "İstatistikçi" },
@@ -30,13 +53,13 @@ function CurrencyInput({
     label: string;
     value: number;
     onChange: (v: number) => void;
-    accent?: "red" | "amber" | "blue";
+    accent?: "red" | "amber" | "blue" | "emerald";
 }) {
-    const ringColor = accent === "amber"
-        ? "focus:ring-amber-400"
-        : accent === "blue"
-        ? "focus:ring-blue-400"
-        : "focus:ring-red-500";
+    const ringColor =
+        accent === "amber" ? "focus:ring-amber-400" :
+        accent === "blue" ? "focus:ring-blue-400" :
+        accent === "emerald" ? "focus:ring-emerald-400" :
+        "focus:ring-red-500";
 
     return (
         <div className="flex flex-col gap-1.5">
@@ -66,14 +89,16 @@ function RatesGrid({
     rate,
     onChange,
     accent = "red",
+    labels,
 }: {
     rate: PaymentRate;
     onChange: (r: PaymentRate) => void;
-    accent?: "red" | "amber" | "blue";
+    accent?: "red" | "amber" | "blue" | "emerald";
+    labels: { key: keyof PaymentRate; label: string }[];
 }) {
     return (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-            {ROLE_LABELS.map(({ key, label }) => (
+            {labels.map(({ key, label }) => (
                 <CurrencyInput
                     key={key}
                     label={label}
@@ -148,7 +173,7 @@ function CategoryCard({
             </button>
             {open && (
                 <div className="px-4 pb-4 border-t border-zinc-200 dark:border-zinc-700 pt-4">
-                    <RatesGrid rate={category.rates} onChange={onChange} accent="amber" />
+                    <RatesGrid rate={category.rates} onChange={onChange} accent="amber" labels={OZEL_LIG_LABELS} />
                 </div>
             )}
         </div>
@@ -166,12 +191,14 @@ export function PaymentsForm({ initialConfig, allCategories }: Props) {
             const existing = saved.find((k) => k.name === cat);
             return existing ?? { id: cat, name: cat, rates: { ...EMPTY_RATE } };
         });
-        // Keep saved categories not in drive anymore
         const extra = saved.filter((k) => !allCategories.includes(k.name));
         return [...merged, ...extra];
     };
 
     const [kategoriler, setKategoriler] = useState<CategoryRate[]>(buildKategoriler);
+    const [ekOdemeler, setEkOdemeler] = useState<EkOdeme[]>(
+        (initialConfig as ExtendedPaymentConfig).ekOdemeler || []
+    );
     const [loading, setLoading] = useState(false);
     const [saved, setSaved] = useState(false);
 
@@ -180,10 +207,26 @@ export function PaymentsForm({ initialConfig, allCategories }: Props) {
         setKategoriler((prev) => prev.map((k) => (k.id === id ? { ...k, rates } : k)));
     };
 
+    const addEkOdeme = () => {
+        const newId = `ek_${Date.now()}`;
+        setEkOdemeler((prev) => [...prev, { id: newId, aciklama: "", tutar: 0 }]);
+        setSaved(false);
+    };
+
+    const updateEkOdeme = (id: string, field: keyof EkOdeme, value: string | number) => {
+        setSaved(false);
+        setEkOdemeler((prev) => prev.map((e) => e.id === id ? { ...e, [field]: value } : e));
+    };
+
+    const removeEkOdeme = (id: string) => {
+        setSaved(false);
+        setEkOdemeler((prev) => prev.filter((e) => e.id !== id));
+    };
+
     const handleSave = async () => {
         setLoading(true);
         setSaved(false);
-        const config: PaymentConfig = { okulMaclari, bolgeMaclari, kategoriler };
+        const config: any = { okulMaclari, bolgeMaclari, kategoriler, ekOdemeler };
         const result = await savePaymentConfig(config);
         setLoading(false);
         if (result.success) {
@@ -203,9 +246,14 @@ export function PaymentsForm({ initialConfig, allCategories }: Props) {
                     icon={<School className="w-5 h-5 text-white" />}
                     color="bg-red-600 shadow-lg shadow-red-600/20"
                     title="Okul Maçları"
-                    subtitle="Okul, İl ve İlçe maçları için standart ücret tablosu"
+                    subtitle="Okul, İl ve İlçe maçları için standart ücret tablosu (Final maçlarında 2. Yardımcı Hakem dahil)"
                 />
-                <RatesGrid rate={okulMaclari} onChange={(r) => { setSaved(false); setOkulMaclari(r); }} accent="red" />
+                <RatesGrid
+                    rate={okulMaclari}
+                    onChange={(r) => { setSaved(false); setOkulMaclari(r); }}
+                    accent="red"
+                    labels={BOLGE_OKUL_LABELS}
+                />
             </div>
 
             {/* ── 2. ÖZEL LİG KATEGORİLERİ ── */}
@@ -245,9 +293,70 @@ export function PaymentsForm({ initialConfig, allCategories }: Props) {
                     icon={<MapPin className="w-5 h-5 text-white" />}
                     color="bg-blue-600 shadow-lg shadow-blue-600/20"
                     title="Bölge Maçları"
-                    subtitle="Bölge haftaları maçları için standart ücret tablosu"
+                    subtitle="Bölge haftaları maçları için standart ücret tablosu (Final maçlarında 2. Yardımcı Hakem dahil)"
                 />
-                <RatesGrid rate={bolgeMaclari} onChange={(r) => { setSaved(false); setBolgeMaclari(r); }} accent="blue" />
+                <RatesGrid
+                    rate={bolgeMaclari}
+                    onChange={(r) => { setSaved(false); setBolgeMaclari(r); }}
+                    accent="blue"
+                    labels={BOLGE_OKUL_LABELS}
+                />
+            </div>
+
+            {/* ── 4. EK ÖDEMELER ── */}
+            <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-6 shadow-sm">
+                <SectionHeader
+                    icon={<Banknote className="w-5 h-5 text-white" />}
+                    color="bg-emerald-600 shadow-lg shadow-emerald-600/20"
+                    title="Ek Ödemeler"
+                    subtitle="Özel durumlar, ulaşım veya diğer ek ücretler"
+                />
+
+                <div className="space-y-3">
+                    {ekOdemeler.map((ek) => (
+                        <div key={ek.id} className="flex items-center gap-3 bg-zinc-50 dark:bg-zinc-800/50 rounded-xl p-3 border border-zinc-200 dark:border-zinc-700">
+                            <input
+                                type="text"
+                                value={ek.aciklama}
+                                onChange={(e) => updateEkOdeme(ek.id, "aciklama", e.target.value)}
+                                placeholder="Açıklama (örn: Ulaşım, Konaklama...)"
+                                className="flex-1 px-3 py-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg text-sm text-zinc-900 dark:text-white outline-none focus:ring-2 focus:ring-emerald-400 focus:border-transparent transition-all"
+                            />
+                            <div className="relative w-32 shrink-0">
+                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-black text-zinc-400 select-none">₺</span>
+                                <input
+                                    type="number"
+                                    min={0}
+                                    step={1}
+                                    value={ek.tutar === 0 ? "" : ek.tutar}
+                                    placeholder="0"
+                                    onChange={(e) => {
+                                        const raw = e.target.value.replace(/[^0-9]/g, "");
+                                        updateEkOdeme(ek.id, "tutar", raw === "" ? 0 : parseInt(raw, 10));
+                                    }}
+                                    className="w-full pl-7 pr-3 py-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg text-sm font-black text-zinc-900 dark:text-white focus:ring-2 focus:ring-emerald-400 focus:border-transparent outline-none transition-all"
+                                />
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => removeEkOdeme(ek.id)}
+                                className="p-2 text-zinc-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                                title="Kaldır"
+                            >
+                                <Trash2 className="w-4 h-4" />
+                            </button>
+                        </div>
+                    ))}
+
+                    <button
+                        type="button"
+                        onClick={addEkOdeme}
+                        className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-dashed border-zinc-200 dark:border-zinc-700 text-zinc-400 hover:border-emerald-500 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors text-sm font-semibold"
+                    >
+                        <Plus className="w-4 h-4" />
+                        Ek Ödeme Ekle
+                    </button>
+                </div>
             </div>
 
             {/* ── Kaydet ── */}

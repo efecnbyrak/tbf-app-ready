@@ -4,7 +4,7 @@ import { useState } from "react";
 import { cleanupOldAvailability, cleanupCurrentAvailability, moveFormsToLastWeek } from "@/app/actions/admin-users";
 import { Trash2, AlertTriangle, CalendarX, ArrowLeftCircle } from "lucide-react";
 
-export function CleanupButton() {
+export function CleanupButton({ isSuperAdmin }: { isSuperAdmin?: boolean }) {
     const [loading, setLoading] = useState(false);
     const [showConfirmOld, setShowConfirmOld] = useState(false);
     const [showConfirmCurrent, setShowConfirmCurrent] = useState(false);
@@ -61,6 +61,8 @@ export function CleanupButton() {
             setLoading(false);
         }
     };
+
+    if (!isSuperAdmin) return null;
 
     return (
         <div className="flex flex-wrap gap-2">

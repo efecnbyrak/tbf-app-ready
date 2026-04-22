@@ -271,7 +271,7 @@ export function OfficialListClient({ initialOfficials, refereeTypeMap, currentUs
             </div>
 
             {/* Toolbar */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white dark:bg-zinc-900 p-6 rounded-[2rem] shadow-sm border border-zinc-200 dark:border-zinc-800">
+            <div className="flex flex-col gap-4 bg-white dark:bg-zinc-900 p-6 rounded-[2rem] shadow-sm border border-zinc-200 dark:border-zinc-800">
                 <div className="flex items-center gap-4">
                     <div className="w-12 h-12 bg-red-50 dark:bg-red-900/20 rounded-2xl flex items-center justify-center">
                         <Briefcase className="w-6 h-6 text-red-600" />
@@ -285,29 +285,32 @@ export function OfficialListClient({ initialOfficials, refereeTypeMap, currentUs
                 </div>
 
                 {/* Sub-category Side Filter */}
-                <div className="flex bg-zinc-100 dark:bg-zinc-800 p-1.5 rounded-2xl gap-1">
+                <div className="flex overflow-x-auto bg-zinc-100 dark:bg-zinc-800 p-1.5 rounded-2xl gap-1">
                     <button
+                        type="button"
                         onClick={() => setSelectedSide(null)}
-                        className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${!selectedSide ? 'bg-white dark:bg-zinc-700 text-red-600 shadow-sm' : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'}`}
+                        className={`flex-1 sm:flex-none px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${!selectedSide ? 'bg-white dark:bg-zinc-700 text-red-600 shadow-sm' : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'}`}
                     >
                         TÜM YAKALAR
                     </button>
                     <button
+                        type="button"
                         onClick={() => setSelectedSide("Anadolu")}
-                        className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${selectedSide === "Anadolu" ? 'bg-red-600 text-white shadow-lg shadow-red-600/20' : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'}`}
+                        className={`flex-1 sm:flex-none px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${selectedSide === "Anadolu" ? 'bg-red-600 text-white shadow-lg shadow-red-600/20' : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'}`}
                     >
                         ANADOLU
                     </button>
                     <button
+                        type="button"
                         onClick={() => setSelectedSide("Avrupa")}
-                        className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${selectedSide === "Avrupa" ? 'bg-red-600 text-white shadow-lg shadow-red-600/20' : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'}`}
+                        className={`flex-1 sm:flex-none px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${selectedSide === "Avrupa" ? 'bg-red-600 text-white shadow-lg shadow-red-600/20' : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'}`}
                     >
                         AVRUPA
                     </button>
                 </div>
 
-                <div className="flex items-center gap-3 flex-1 max-w-md w-full">
-                    <div className="relative flex-1">
+                <div className="flex items-center gap-3 w-full">
+                    <div className="relative flex-1 min-w-0">
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400" />
                         <input
                             type="text"
@@ -372,14 +375,25 @@ export function OfficialListClient({ initialOfficials, refereeTypeMap, currentUs
 
             {/* Export Modal */}
             {exportModalOpen && (
-                <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-zinc-950/60 backdrop-blur-sm animate-in fade-in duration-200">
-                    <div className="bg-white dark:bg-zinc-900 rounded-[2rem] w-full max-w-md shadow-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-4 duration-300">
+                <div
+                    className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-zinc-950/60 backdrop-blur-sm animate-in fade-in duration-200"
+                    onClick={() => setExportModalOpen(false)}
+                >
+                    <div
+                        className="relative bg-white dark:bg-zinc-900 rounded-[2rem] w-full max-w-md max-h-[90vh] flex flex-col shadow-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-4 duration-300"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        {/* Close button on modal container */}
+                        <button
+                            type="button"
+                            onClick={() => setExportModalOpen(false)}
+                            className="absolute top-4 right-4 z-20 w-8 h-8 bg-white/20 hover:bg-white/30 rounded-xl flex items-center justify-center transition-colors"
+                        >
+                            <X className="w-4 h-4 text-white" />
+                        </button>
                         {/* Modal Header */}
-                        <div className="bg-gradient-to-br from-emerald-600 to-emerald-800 p-6 text-white relative overflow-hidden">
+                        <div className="bg-gradient-to-br from-emerald-600 to-emerald-800 p-6 text-white relative overflow-hidden flex-shrink-0">
                             <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
-                            <button onClick={() => setExportModalOpen(false)} className="absolute top-4 right-4 z-10 w-8 h-8 bg-white/20 hover:bg-white/30 rounded-xl flex items-center justify-center transition-colors">
-                                <X className="w-4 h-4 text-white" />
-                            </button>
                             <div className="flex items-center gap-3 relative z-10">
                                 <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
                                     <FileSpreadsheet className="w-5 h-5 text-white" />
@@ -396,61 +410,69 @@ export function OfficialListClient({ initialOfficials, refereeTypeMap, currentUs
                             </div>
                         </div>
 
-                        {/* Type Selection */}
-                        <div className="px-6 pt-6 space-y-2">
-                            <p className="text-xs font-black uppercase tracking-widest text-zinc-500 mb-3">Görevli Tipi Filtresi</p>
-                            <div className="flex flex-wrap gap-2">
-                                <button
-                                    onClick={() => setExportOfficialType("ALL")}
-                                    className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border-2 ${exportOfficialType === "ALL" ? "bg-emerald-600 border-emerald-600 text-white" : "bg-zinc-50 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300"}`}
-                                >
-                                    TÜMÜ
-                                </button>
-                                {TYPES.map(t => (
+                        {/* Scrollable body */}
+                        <div className="overflow-y-auto flex-1">
+                            {/* Type Selection */}
+                            <div className="px-6 pt-6 space-y-2">
+                                <p className="text-xs font-black uppercase tracking-widest text-zinc-500 mb-3">Görevli Tipi Filtresi</p>
+                                <div className="flex flex-wrap gap-2">
                                     <button
-                                        key={t.id}
-                                        onClick={() => setExportOfficialType(t.id)}
-                                        className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border-2 ${exportOfficialType === t.id ? "bg-emerald-600 border-emerald-600 text-white" : "bg-zinc-50 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300"}`}
+                                        type="button"
+                                        onClick={() => setExportOfficialType("ALL")}
+                                        className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border-2 ${exportOfficialType === "ALL" ? "bg-emerald-600 border-emerald-600 text-white" : "bg-zinc-50 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300"}`}
                                     >
-                                        {t.label}
+                                        TÜMÜ
+                                    </button>
+                                    {TYPES.map(t => (
+                                        <button
+                                            type="button"
+                                            key={t.id}
+                                            onClick={() => setExportOfficialType(t.id)}
+                                            className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border-2 ${exportOfficialType === t.id ? "bg-emerald-600 border-emerald-600 text-white" : "bg-zinc-50 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300"}`}
+                                        >
+                                            {t.label}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Field Selection */}
+                            <div className="p-6 space-y-3">
+                                <p className="text-xs font-black uppercase tracking-widest text-zinc-500 mb-4">Alan Seçimi</p>
+                                {EXPORT_FIELDS.map(field => (
+                                    <button
+                                        type="button"
+                                        key={field.key}
+                                        onClick={() => toggleExportField(field.key)}
+                                        className={`w-full flex items-center gap-3 p-4 rounded-xl border-2 transition-all text-left ${
+                                            selectedExportFields.includes(field.key)
+                                                ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20"
+                                                : "border-zinc-100 dark:border-zinc-800 hover:border-zinc-200 dark:hover:border-zinc-700"
+                                        }`}
+                                    >
+                                        {selectedExportFields.includes(field.key)
+                                            ? <CheckSquare className="w-5 h-5 text-emerald-600 shrink-0" />
+                                            : <Square className="w-5 h-5 text-zinc-400 shrink-0" />
+                                        }
+                                        <span className={`font-bold text-sm ${selectedExportFields.includes(field.key) ? "text-emerald-700 dark:text-emerald-400" : "text-zinc-700 dark:text-zinc-300"}`}>
+                                            {field.label}
+                                        </span>
                                     </button>
                                 ))}
                             </div>
                         </div>
 
-                        {/* Field Selection */}
-                        <div className="p-6 space-y-3">
-                            <p className="text-xs font-black uppercase tracking-widest text-zinc-500 mb-4">Alan Seçimi</p>
-                            {EXPORT_FIELDS.map(field => (
-                                <button
-                                    key={field.key}
-                                    onClick={() => toggleExportField(field.key)}
-                                    className={`w-full flex items-center gap-3 p-4 rounded-xl border-2 transition-all text-left ${
-                                        selectedExportFields.includes(field.key)
-                                            ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20"
-                                            : "border-zinc-100 dark:border-zinc-800 hover:border-zinc-200 dark:hover:border-zinc-700"
-                                    }`}
-                                >
-                                    {selectedExportFields.includes(field.key)
-                                        ? <CheckSquare className="w-5 h-5 text-emerald-600 shrink-0" />
-                                        : <Square className="w-5 h-5 text-zinc-400 shrink-0" />
-                                    }
-                                    <span className={`font-bold text-sm ${selectedExportFields.includes(field.key) ? "text-emerald-700 dark:text-emerald-400" : "text-zinc-700 dark:text-zinc-300"}`}>
-                                        {field.label}
-                                    </span>
-                                </button>
-                            ))}
-                        </div>
-
-                        {/* Actions */}
-                        <div className="p-6 pt-0 flex gap-3">
+                        {/* Actions - fixed at bottom */}
+                        <div className="p-6 border-t border-zinc-100 dark:border-zinc-800 flex gap-3 flex-shrink-0">
                             <button
+                                type="button"
                                 onClick={() => setExportModalOpen(false)}
                                 className="flex-1 py-3.5 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 font-black rounded-xl text-sm uppercase tracking-wider transition-colors"
                             >
                                 İptal
                             </button>
                             <button
+                                type="button"
                                 onClick={handleExportExcel}
                                 disabled={selectedExportFields.length === 0 || exportingExcel}
                                 className="flex-1 py-3.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white font-black rounded-xl text-sm uppercase tracking-wider transition-colors flex items-center justify-center gap-2"

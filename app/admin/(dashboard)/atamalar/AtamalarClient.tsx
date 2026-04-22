@@ -8,7 +8,7 @@ import {
     Download, RefreshCw, CheckCircle2, AlertCircle, Eye,
 } from "lucide-react";
 
-const LIG_TURU_OPTIONS = ["Yerel Ligler", "Özel Lig ve Üniversite"];
+const LIG_TURU_OPTIONS = ["Yerel Ligler", "Özel Lig ve Üniversite", "Okul İl ve İlçe"];
 const SEZON_OPTIONS = ["2021-2022", "2022-2023", "2023-2024", "2024-2025", "2025-2026"];
 
 function getCurrentSezon(): string {
@@ -669,17 +669,25 @@ export function AtamalarClient({
 
             {/* ===== Match Detail Modal ===== */}
             {selectedMatch && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 overflow-y-auto">
-                    <div className="bg-white dark:bg-zinc-900 rounded-3xl shadow-2xl w-full max-w-2xl border border-zinc-200 dark:border-zinc-700 my-8 overflow-hidden">
+                <div
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 overflow-y-auto"
+                    onClick={() => setSelectedMatch(null)}
+                >
+                    <div
+                        className="relative bg-white dark:bg-zinc-900 rounded-3xl shadow-2xl w-full max-w-2xl border border-zinc-200 dark:border-zinc-700 my-8 overflow-hidden"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        {/* Close button positioned on the modal container */}
+                        <button
+                            type="button"
+                            onClick={() => setSelectedMatch(null)}
+                            className="absolute top-4 right-4 z-20 w-8 h-8 bg-white/20 hover:bg-white/30 rounded-xl flex items-center justify-center transition-colors"
+                        >
+                            <X className="w-4 h-4 text-white" />
+                        </button>
                         {/* Hero Header */}
                         <div className="relative bg-gradient-to-br from-red-700 via-red-800 to-red-900 px-6 pt-6 pb-8 text-white">
                             <div className="absolute top-0 right-0 w-48 h-48 bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
-                            <button
-                                onClick={() => setSelectedMatch(null)}
-                                className="absolute top-4 right-4 z-10 w-8 h-8 bg-white/20 hover:bg-white/30 rounded-xl flex items-center justify-center transition-colors"
-                            >
-                                <X className="w-4 h-4 text-white" />
-                            </button>
                             <div className="relative z-10">
                                 <div className="flex items-center gap-2 mb-3">
                                     {selectedMatch.ligTuru && (
@@ -784,8 +792,29 @@ export function AtamalarClient({
                                 </div>
                             )}
 
+                            {/* Gözlemci - always visible */}
+                            <div className="bg-zinc-50 dark:bg-zinc-800/50 rounded-2xl p-4">
+                                <div className="flex items-center gap-2 mb-3">
+                                    <span className="text-base">👁️</span>
+                                    <span className="text-xs font-black text-zinc-500 dark:text-zinc-400 uppercase tracking-[0.15em]">Gözlemci</span>
+                                </div>
+                                <div className="grid grid-cols-1 gap-2">
+                                    {selectedMatch.gozlemci ? (
+                                        <div className="bg-white dark:bg-zinc-800 rounded-xl px-4 py-3 border border-zinc-100 dark:border-zinc-700">
+                                            <div className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider mb-1">Gözlemci / Temsilci</div>
+                                            <div className="text-sm font-bold text-zinc-900 dark:text-white">{selectedMatch.gozlemci}</div>
+                                        </div>
+                                    ) : (
+                                        <div className="bg-zinc-100/50 dark:bg-zinc-800/30 rounded-xl px-4 py-3 border border-dashed border-zinc-200 dark:border-zinc-700">
+                                            <div className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-1">Gözlemci / Temsilci</div>
+                                            <div className="text-xs text-zinc-400 italic">Atanmadı</div>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
                             {/* Diğer Görevliler */}
-                            {(selectedMatch.gozlemci || selectedMatch.sahaKomiseri || selectedMatch.saglikci || selectedMatch.istatistikci1 || selectedMatch.istatistikci2) && (
+                            {(selectedMatch.sahaKomiseri || selectedMatch.saglikci || selectedMatch.istatistikci1 || selectedMatch.istatistikci2) && (
                                 <div className="bg-zinc-50 dark:bg-zinc-800/50 rounded-2xl p-4">
                                     <div className="flex items-center gap-2 mb-3">
                                         <span className="text-base">👥</span>
@@ -793,7 +822,6 @@ export function AtamalarClient({
                                     </div>
                                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                                         {[
-                                            { label: "Gözlemci / Temsilci", value: selectedMatch.gozlemci },
                                             { label: "Saha Komiseri", value: selectedMatch.sahaKomiseri },
                                             { label: "Sağlıkçı", value: selectedMatch.saglikci },
                                             { label: "İstatistikçi 1", value: selectedMatch.istatistikci1 },

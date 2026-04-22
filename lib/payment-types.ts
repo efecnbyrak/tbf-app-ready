@@ -1,6 +1,7 @@
 export interface PaymentRate {
     basHakem: number;
     yardimciHakem: number;
+    ikinciYardimciHakem: number;
     gozlemci: number;
     masaGorevlisi: number;
     istatistikci: number;
@@ -23,6 +24,7 @@ export interface PaymentConfig {
 export const EMPTY_RATE: PaymentRate = {
     basHakem: 0,
     yardimciHakem: 0,
+    ikinciYardimciHakem: 0,
     gozlemci: 0,
     masaGorevlisi: 0,
     istatistikci: 0,

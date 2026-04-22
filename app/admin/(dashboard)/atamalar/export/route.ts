@@ -3,7 +3,7 @@ import { verifySession } from "@/lib/session";
 import { db } from "@/lib/db";
 import ExcelJS from "exceljs";
 import { getCurrentSeason } from "@/lib/season-utils";
-import type { PaymentConfig } from "@/lib/payment-types";
+import type { PaymentConfig, PaymentRate } from "@/lib/payment-types";
 
 export const dynamic = "force-dynamic";
 
@@ -258,9 +258,22 @@ export async function GET(req: NextRequest) {
             const macAdi = `${a.aTeam || "—"} - ${a.bTeam || "—"}`;
             const paymentCategory = detectPaymentCategory(a.kategori, a.ligTuru, paymentConfig);
 
-            const referees: { name: string; role: "basHakem" | "yardimciHakem"; label: string }[] = [];
+            const referees: { name: string; role: keyof PaymentRate; label: string }[] = [];
             if (a.hakem1) referees.push({ name: a.hakem1, role: "basHakem", label: "Baş Hakem" });
-            if (a.hakem2) referees.push({ name: a.hakem2, role: "yardimciHakem", label: "Yardımcı Hakem" });
+            if (a.hakem2) {
+                // Final matches may have two referees in hakem2 separated by "-"
+                if (a.hakem2.includes("-")) {
+                    const parts = a.hakem2.split("-").map((s: string) => s.trim()).filter(Boolean);
+                    if (parts.length >= 2) {
+                        referees.push({ name: parts[0], role: "yardimciHakem", label: "1. Yardımcı Hakem" });
+                        referees.push({ name: parts[1], role: "ikinciYardimciHakem", label: "2. Yardımcı Hakem" });
+                    } else {
+                        referees.push({ name: a.hakem2, role: "yardimciHakem", label: "Yardımcı Hakem" });
+                    }
+                } else {
+                    referees.push({ name: a.hakem2, role: "yardimciHakem", label: "Yardımcı Hakem" });
+                }
+            }
 
             for (const ref of referees) {
                 const amount = paymentCategory.leagueRate ? paymentCategory.leagueRate[ref.role] : null;

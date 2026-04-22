@@ -35,7 +35,7 @@ export async function getPaymentConfig(): Promise<PaymentConfig> {
     }
 }
 
-export async function savePaymentConfig(config: PaymentConfig) {
+export async function savePaymentConfig(config: PaymentConfig & { ekOdemeler?: any[] }) {
     const session = await verifySession();
     if (session?.role !== "SUPER_ADMIN") return { error: "Yetkisiz işlem." };
 
@@ -53,6 +53,23 @@ export async function savePaymentConfig(config: PaymentConfig) {
     }
 }
 
+// Categories that don't belong in the Özel Lig section (Drive data noise)
+const EXCLUDED_OZL_CATEGORIES = new Set([
+    "1", "1 Hafta", "Güncel", "Okul il ve İlçe (2025-2026)", "Okul İl ve İlçe (2025-2026)",
+    "Okul il ve İlçe", "Okul İl ve İlçe",
+]);
+
+function isValidOzelLigCategory(cat: string): boolean {
+    const trimmed = cat.trim();
+    if (EXCLUDED_OZL_CATEGORIES.has(trimmed)) return false;
+    // Filter bare numbers or patterns like "1 Hafta", "2 Hafta"
+    if (/^\d+$/.test(trimmed)) return false;
+    if (/^\d+\s+Hafta$/i.test(trimmed)) return false;
+    // Filter anything starting with "Okul" – those belong in the Okul section
+    if (/^okul/i.test(trimmed)) return false;
+    return true;
+}
+
 export async function getAllMatchCategories(): Promise<string[]> {
     try {
         const setting = await db.systemSetting.findUnique({ where: { key: "GLOBAL_MATCH_REGISTRY" } });
@@ -64,7 +81,8 @@ export async function getAllMatchCategories(): Promise<string[]> {
             if (
                 m.ligTuru === "ÖZEL LİG VE ÜNİVERSİTE" &&
                 m.kategori &&
-                m.kategori.trim().length > 0
+                m.kategori.trim().length > 0 &&
+                isValidOzelLigCategory(m.kategori)
             ) {
                 cats.add(m.kategori.trim());
             }
