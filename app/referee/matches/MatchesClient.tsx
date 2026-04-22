@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
-import { Trophy, Calendar, MapPin, Users, Briefcase, HeartPulse, BarChart3, Eye, Loader2, AlertCircle, ChevronDown, ChevronUp, RefreshCw, Clock, CheckCircle2, CalendarDays, Layers, Archive, Search, Download, FileSpreadsheet, PieChart } from "lucide-react";
+import { Trophy, Calendar, MapPin, Navigation, Users, Briefcase, HeartPulse, BarChart3, Eye, Loader2, AlertCircle, ChevronDown, ChevronUp, RefreshCw, Clock, CheckCircle2, CalendarDays, Layers, Archive, Search, Download, FileSpreadsheet, PieChart } from "lucide-react";
 import type * as ExcelJS from "exceljs";
 import { format } from "date-fns";
 import { tr } from "date-fns/locale";
@@ -14,6 +14,11 @@ interface MatchesClientProps {
     initialMatches?: MatchData[];
     initialLastSync?: string | null;
     initialPersonnelPhones?: Record<string, string>;
+}
+
+function getGoogleMapsUrl(salonName: string): string {
+    const query = encodeURIComponent(salonName + " İstanbul");
+    return `https://www.google.com/maps/search/?api=1&query=${query}`;
 }
 
 function normalizeTR(name: string): string {
@@ -954,7 +959,18 @@ export function MatchesClient({ firstName, lastName, initialMatches = [], initia
                                         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1">
                                             {match.tarih && <span className="flex items-center gap-1 text-xs text-zinc-400"><Calendar className="w-3 h-3" /> {formatDisplayDate(match.tarih)}</span>}
                                             {match.saat && <span className="flex items-center gap-1 text-xs text-zinc-400"><Clock className="w-3 h-3" /> {match.saat}</span>}
-                                            {match.salon && <span className="flex items-center gap-1 text-xs text-zinc-400"><MapPin className="w-3 h-3" /> {match.salon}</span>}
+                                            {match.salon && (
+                                                <a
+                                                    href={getGoogleMapsUrl(match.salon)}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    onClick={(e) => e.stopPropagation()}
+                                                    className="flex items-center gap-1 text-xs text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 hover:underline transition-colors"
+                                                    title="Google Maps'te Yol Tarifi Al"
+                                                >
+                                                    <MapPin className="w-3 h-3" /> {match.salon}
+                                                </a>
+                                            )}
                                         </div>
                                     </div>
                                     <div className="hidden sm:flex items-center gap-2 shrink-0">
@@ -995,9 +1011,20 @@ export function MatchesClient({ firstName, lastName, initialMatches = [], initia
                                             {match.istatistikciler.length > 0 && <PersonnelCard icon={<BarChart3 className="w-4 h-4 text-violet-500" />} title="İstatistikçiler" people={match.istatistikciler} firstName={firstName} lastName={lastName} highlight="text-violet-600" phones={personnelPhones} />}
                                             {match.gozlemciler.length > 0 && <PersonnelCard icon={<Eye className="w-4 h-4 text-amber-500" />} title="Gözlemciler" people={match.gozlemciler} firstName={firstName} lastName={lastName} highlight="text-amber-600" phones={personnelPhones} />}
                                         </div>
-                                        <div className="flex items-center gap-2 mt-3">
+                                        <div className="flex flex-wrap items-center gap-2 mt-3">
                                             <span className="px-2 py-0.5 bg-zinc-100 dark:bg-zinc-800 rounded text-[10px] text-zinc-400">{match.ligTuru}</span>
                                             <span className="text-[10px] text-zinc-400 italic">📄 {match.kaynak_dosya}</span>
+                                            {match.salon && (
+                                                <a
+                                                    href={getGoogleMapsUrl(match.salon)}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg text-xs font-bold text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors"
+                                                >
+                                                    <Navigation className="w-3 h-3" />
+                                                    Yol Tarifi Al
+                                                </a>
+                                            )}
                                         </div>
                                     </div>
                                 )}
