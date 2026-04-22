@@ -299,11 +299,16 @@ export async function cleanupCurrentAvailability() {
     const currentMonday = new Date(today.setDate(diff));
     currentMonday.setHours(0, 0, 0, 0);
 
-    // Delete forms where weekStartDate >= currentMonday (current week forms)
+    // Calculate next week's Monday
+    const nextMonday = new Date(currentMonday);
+    nextMonday.setDate(currentMonday.getDate() + 7);
+
+    // Delete forms where weekStartDate is exactly in the current week bounds
     const deleteCount = await db.availabilityForm.deleteMany({
         where: {
             weekStartDate: {
-                gte: currentMonday
+                gte: currentMonday,
+                lt: nextMonday
             }
         }
     });
