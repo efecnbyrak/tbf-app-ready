@@ -173,52 +173,17 @@ export async function login(prevState: ActionState, formData: FormData): Promise
         const rememberMe = formData.get("remember") === "on";
 
 
-        // 2FA Logic for Referees and Officials
-        // Skip 2FA for SUPER_ADMIN
-        if (roleName === "SUPER_ADMIN") {
-            await createSession(user.id, user.role.name, rememberMe);
-            return { success: true, redirectTo: "/admin" };
+        // Direct session creation for all users (2FA disabled)
+        await createSession(user.id, user.role.name, rememberMe);
+        let redirectTo = "/";
+        if (roleName === "ADMIN" || roleName === "SUPER_ADMIN" || roleName === "ADMIN_IHK") {
+            redirectTo = "/admin";
+        } else if (user.official) {
+            redirectTo = "/general";
+        } else if (user.referee) {
+            redirectTo = "/referee";
         }
-
-        // 2FA bypass for dev environment only
-        const is2FADisabled = process.env.NODE_ENV !== "production" && process.env.DISABLE_2FA === "true";
-
-        if (is2FADisabled) {
-            await createSession(user.id, user.role.name, rememberMe);
-            let redirectTo = "/";
-            if (roleName === "ADMIN" || roleName === "SUPER_ADMIN" || roleName === "ADMIN_IHK") {
-                redirectTo = "/admin";
-            } else if (user.official) {
-                redirectTo = "/general";
-            } else if (user.referee) {
-                redirectTo = "/referee";
-            }
-            return { success: true, redirectTo };
-        }
-
-        const code = randomInt(100000, 999999).toString();
-        const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 mins
-
-        await db.user.update({
-            where: { id: user.id },
-            data: {
-                verificationCode: code,
-                verificationCodeExpiresAt: expiresAt
-            }
-        });
-
-        // Send Email
-        const recipientEmail = user.referee?.email || (user as any).official?.email;
-        if (recipientEmail) {
-            try {
-                const { sendVerificationEmail } = await import("@/lib/email");
-                await sendVerificationEmail(recipientEmail, code);
-            } catch (emailError) {
-                console.error("2FA Email error:", emailError);
-            }
-        }
-
-        return { success: false, requireVerification: true, userId: user.id, error: undefined };
+        return { success: true, redirectTo };
 
     } catch (error: any) {
         console.error("Login system error:", error);
