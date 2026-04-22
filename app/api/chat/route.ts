@@ -3,9 +3,6 @@ import { db } from "@/lib/db";
 import { getSession } from "@/lib/session";
 import { NextRequest, NextResponse } from "next/server";
 
-const API_KEY = process.env.OPENAI_API_KEY;
-const openai = new OpenAI({ apiKey: API_KEY });
-
 const SYSTEM_PROMPT = `Sen Basketbol Koordinasyon Sistemi (BKS) ve genel basketbol kuralları konusunda uzmanlaşmış bir yapay zeka asistanısın. Adın "BKS Kural Asistanı". Görevin kullanıcılara yardımcı olmaktır. Sadece Türkçe cevap ver.`;
 
 export const maxDuration = 60; // Allow longer duration
@@ -41,6 +38,8 @@ export async function POST(req: NextRequest) {
             ...history,
             { role: "user", content: message }
         ];
+
+        const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
         // Fetch from OpenAI and await DB save in parallel to reduce overall latency
         const [completion] = await Promise.all([
