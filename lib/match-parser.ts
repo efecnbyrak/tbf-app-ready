@@ -15,6 +15,7 @@ export interface MatchData {
     saglikcilar: string[];
     istatistikciler: string[];
     gozlemciler: string[];
+    sahaKomiserleri: string[];
     kaynak_dosya: string;
 }
 
@@ -258,6 +259,9 @@ export function parseWorkbook(workbook: ExcelJS.Workbook, fileName: string): Mat
                 } else if (c.includes("gözlemci") || c.includes("gozlemci")) {
                     if (!colMap["gozlemci"]) colMap["gozlemci"] = []; colMap["gozlemci"].push(j);
                     lastColCategory = "gozlemci";
+                } else if (c.includes("komiseri") || c.includes("komiser") || (c.includes("saha") && c.includes("kom"))) {
+                    if (!colMap["sahaKomiseri"]) colMap["sahaKomiseri"] = []; colMap["sahaKomiseri"].push(j);
+                    lastColCategory = "sahaKomiseri";
                 } else if (
                     c.includes("masa") || c.includes("yazıcı") || c.includes("skor") || c.includes("24") ||
                     (c.includes("yardımcı") && !c.includes("hakem")) || c.includes("srm") || c.includes("sorumlu") ||
@@ -313,10 +317,11 @@ export function parseWorkbook(workbook: ExcelJS.Workbook, fileName: string): Mat
             const saglikcilar = (colMap["saglik"] || []).map(j => row[j] || "").filter(v => v.length > 2);
             const istatistikciler = (colMap["istatistik"] || []).map(j => row[j] || "").filter(v => v.length > 2);
             const gozlemciler = (colMap["gozlemci"] || []).map(j => row[j] || "").filter(v => v.length > 2);
+            const sahaKomiserleri = (colMap["sahaKomiseri"] || []).map(j => row[j] || "").filter(v => v.length > 2);
 
             if (hakemler.length === 0 && masaGorevlileri.length === 0 &&
                 saglikcilar.length === 0 && istatistikciler.length === 0 &&
-                gozlemciler.length === 0) continue;
+                gozlemciler.length === 0 && sahaKomiserleri.length === 0) continue;
 
             let macAdi = "";
             if (colMap["mac"]?.length) {
@@ -326,7 +331,8 @@ export function parseWorkbook(workbook: ExcelJS.Workbook, fileName: string): Mat
                 const usedCols = new Set([
                     ...(colMap["hakem"] || []), ...(colMap["masa"] || []),
                     ...(colMap["saglik"] || []), ...(colMap["istatistik"] || []),
-                    ...(colMap["gozlemci"] || []), ...(colMap["tarih"] || []),
+                    ...(colMap["gozlemci"] || []), ...(colMap["sahaKomiseri"] || []),
+                    ...(colMap["tarih"] || []),
                     ...(colMap["saat"] || []), ...(colMap["salon"] || []), ...(colMap["mac"] || []),
                 ]);
                 const extras = row.map((v, j) => ({ v, j })).filter(x => x.v.length > 2 && !usedCols.has(x.j)).map(x => x.v).slice(0, 3);
@@ -351,6 +357,7 @@ export function parseWorkbook(workbook: ExcelJS.Workbook, fileName: string): Mat
                 mac_adi: macAdi, tarih, saat, salon,
                 kategori: category, hafta: fileMeta.hafta, ligTuru: fileMeta.ligTuru,
                 hakemler, masa_gorevlileri: masaGorevlileri, saglikcilar, istatistikciler, gozlemciler,
+                sahaKomiserleri,
                 kaynak_dosya: `${fileName} → ${ws.name}`,
             });
         }

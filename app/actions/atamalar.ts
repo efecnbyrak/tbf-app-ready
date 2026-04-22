@@ -9,24 +9,30 @@ function requireSuperAdmin(role: string) {
     if (role !== "SUPER_ADMIN") throw new Error("Yetkisiz");
 }
 
-export async function getAssignments() {
+export async function getAssignments(sezon?: string) {
     try {
         const session = await verifySession();
         requireSuperAdmin(session.role);
 
-        const season = getCurrentSeason();
+        let where: any = {};
+        if (sezon) {
+            const parts = sezon.split("-");
+            if (parts.length === 2) {
+                const startYear = parseInt(parts[0]);
+                const endYear = parseInt(parts[1]);
+                where.tarih = {
+                    gte: new Date(`${startYear}-09-01T00:00:00.000Z`),
+                    lte: new Date(`${endYear}-08-31T23:59:59.999Z`),
+                };
+            }
+        }
 
         const assignments = await (db as any).gameAssignment.findMany({
-            where: {
-                tarih: {
-                    gte: season.startDate,
-                    lte: season.endDate,
-                },
-            },
+            where,
             orderBy: [{ tarih: "asc" }, { saat: "asc" }],
         });
 
-        return { success: true, assignments, season: season.label };
+        return { success: true, assignments };
     } catch (e: any) {
         return { success: false, assignments: [], error: e?.message };
     }

@@ -2,17 +2,19 @@ import { NextRequest, NextResponse } from "next/server";
 import { verifySession } from "@/lib/session";
 import { db } from "@/lib/db";
 import ExcelJS from "exceljs";
-import { redirect } from "next/navigation";
 import { getCurrentSeason } from "@/lib/season-utils";
 
 export const dynamic = "force-dynamic";
 
-function formatDate(d: Date | null): string {
-    if (!d) return "";
-    const dd = String(d.getDate()).padStart(2, "0");
-    const mm = String(d.getMonth() + 1).padStart(2, "0");
-    const yyyy = d.getFullYear();
-    return `${dd}.${mm}.${yyyy}`;
+function timeStringToExcelDate(timeStr: string | null): Date | null {
+    if (!timeStr) return null;
+    const parts = timeStr.split(":");
+    if (parts.length < 2) return null;
+    const h = parseInt(parts[0], 10);
+    const m = parseInt(parts[1], 10);
+    if (isNaN(h) || isNaN(m)) return null;
+    // Excel time base: 1899-12-30
+    return new Date(1899, 11, 30, h, m, 0, 0);
 }
 
 export async function GET(req: NextRequest) {
@@ -35,59 +37,89 @@ export async function GET(req: NextRequest) {
 
         const assignments = await (db as any).gameAssignment.findMany({
             where,
-            orderBy: [{ tarih: "asc" }, { saat: "asc" }],
+            orderBy: [{ tarih: "asc" }, { salon: "asc" }, { saat: "asc" }],
         });
 
         const wb = new ExcelJS.Workbook();
         wb.creator = "BKS";
 
-        const ws = wb.addWorksheet("Atamalar");
+        // Sheet name: date range of assignments
+        let sheetName = "Atamalar";
+        if (assignments.length > 0) {
+            const first = assignments[0].tarih as Date;
+            const last = assignments[assignments.length - 1].tarih as Date;
+            const fmt = (d: Date) =>
+                `${String(d.getDate()).padStart(2, "0")}.${String(d.getMonth() + 1).padStart(2, "0")}.${d.getFullYear()}`;
+            sheetName = `${fmt(first)} - ${fmt(last)}`;
+            if (sheetName.length > 31) sheetName = sheetName.substring(0, 31);
+        }
 
-        const HEADERS = [
-            "TARİH", "SAAT", "SALON / MEKAN",
-            "A TAKIMI", "B TAKIMI",
-            "ÜST KATEGORİ", "HAFTA", "KATEGORİ", "GRUP",
-            "1. HAKEM", "2. HAKEM",
-            "SAYI GÖREVLİSİ", "SAAT GÖREVLİSİ", "ŞUT SAATİ GÖREVLİSİ",
-            "GÖZLEMCİ", "SAHA KOMİSERİ", "SAĞLIKÇI",
-            "İSTATİSTİKÇİ 1", "İSTATİSTİKÇİ 2",
-        ];
+        const ws = wb.addWorksheet(sheetName);
 
-        const RED_FILL: ExcelJS.Fill = {
+        const BLUE_FILL: ExcelJS.Fill = {
             type: "pattern",
             pattern: "solid",
-            fgColor: { argb: "FFCC0000" },
+            fgColor: { argb: "FFDAEEF3" },
+        };
+        const GRAY_FILL: ExcelJS.Fill = {
+            type: "pattern",
+            pattern: "solid",
+            fgColor: { argb: "FFF2F2F2" },
+        };
+        const THIN_BLACK: Partial<ExcelJS.Borders> = {
+            top: { style: "thin", color: { argb: "FF000000" } },
+            left: { style: "thin", color: { argb: "FF000000" } },
+            bottom: { style: "thin", color: { argb: "FF000000" } },
+            right: { style: "thin", color: { argb: "FF000000" } },
         };
 
-        const headerRow = ws.addRow(HEADERS);
-        headerRow.eachCell(cell => {
-            cell.fill = RED_FILL;
-            cell.font = { bold: true, color: { argb: "FFFFFFFF" }, size: 10 };
-            cell.alignment = { vertical: "middle", horizontal: "center", wrapText: false };
-            cell.border = {
-                top: { style: "thin", color: { argb: "FFAAAAAA" } },
-                left: { style: "thin", color: { argb: "FFAAAAAA" } },
-                bottom: { style: "thin", color: { argb: "FFAAAAAA" } },
-                right: { style: "thin", color: { argb: "FFAAAAAA" } },
-            };
-        });
-        headerRow.height = 22;
+        // Headers — columns 4,5,6 intentionally blank (A Takımı, B Takımı, Kategori)
+        const HEADERS = [
+            "TARİH", "SPOR SALONU", "SAAT",
+            "", "", "",
+            "I. HAKEM", "II. HAKEM",
+            "SAYI GÖREVLİSİ", "SAAT GÖREVLİSİ", "ŞUT SAATİ GÖREVLİSİ",
+            "GÖZLEMCİ / TEMSİLCİ", "SAHA KOMİSERİ", "SAĞLIKÇI",
+            "İSTATİSTİK GÖREVLİSİ", "İSTATİSTİK GÖREVLİSİ",
+        ];
 
-        // Column widths
-        const colWidths = [12, 8, 30, 28, 28, 20, 8, 20, 10, 24, 24, 22, 22, 22, 22, 22, 18, 22, 22];
+        const headerRow = ws.addRow(HEADERS);
+        headerRow.height = 19.5;
+        for (let cn = 1; cn <= HEADERS.length; cn++) {
+            const cell = headerRow.getCell(cn);
+            cell.fill = BLUE_FILL;
+            cell.font = { bold: true, color: { argb: "FF000000" }, size: 9, name: "Calibri" };
+            cell.alignment = { vertical: "middle", horizontal: "center", wrapText: false };
+            cell.border = THIN_BLACK;
+        }
+
+        // Column widths matching 32.Hafta
+        const colWidths = [20.14, 20.43, 5.57, 24.14, 24.57, 19.86, 19.71, 19, 23.86, 23.86, 24, 18.43, 13.86, 8.14, 18.29, 18.29];
         colWidths.forEach((w, i) => { ws.getColumn(i + 1).width = w; });
 
+        let lastGroupKey = "";
+
         for (const a of assignments) {
+            const tarihDate: Date = a.tarih instanceof Date ? a.tarih : new Date(a.tarih);
+            const dateKey = tarihDate.toISOString().split("T")[0];
+            const groupKey = `${dateKey}_${a.salon || ""}`;
+
+            // Separator row between salon groups
+            if (lastGroupKey !== "" && groupKey !== lastGroupKey) {
+                const sepRow = ws.addRow([]);
+                sepRow.height = 3.75;
+            }
+            lastGroupKey = groupKey;
+
+            const saatDate = timeStringToExcelDate(a.saat);
+
             const row = ws.addRow([
-                formatDate(a.tarih),
-                a.saat || "",
+                tarihDate,
                 a.salon || "",
+                saatDate ?? (a.saat || ""),
                 a.aTeam || "",
                 a.bTeam || "",
-                a.ligTuru || "",
-                a.hafta || "",
                 a.kategori || "",
-                a.grup || "",
                 a.hakem1 || "",
                 a.hakem2 || "",
                 a.sayiGorevlisi || "",
@@ -99,17 +131,26 @@ export async function GET(req: NextRequest) {
                 a.istatistikci1 || "",
                 a.istatistikci2 || "",
             ]);
+            row.height = 19.5;
 
-            row.eachCell(cell => {
-                cell.font = { size: 9 };
+            for (let cn = 1; cn <= 16; cn++) {
+                const cell = row.getCell(cn);
+                cell.font = { size: 9, name: "Calibri" };
+                cell.border = THIN_BLACK;
                 cell.alignment = { vertical: "middle", horizontal: "left", wrapText: false };
-                cell.border = {
-                    top: { style: "hair", color: { argb: "FFDDDDDD" } },
-                    left: { style: "hair", color: { argb: "FFDDDDDD" } },
-                    bottom: { style: "hair", color: { argb: "FFDDDDDD" } },
-                    right: { style: "hair", color: { argb: "FFDDDDDD" } },
-                };
-            });
+
+                if (cn === 1) {
+                    // TARİH: light blue + Turkish long date format
+                    cell.fill = BLUE_FILL;
+                    cell.numFmt = 'd" "mmmm" "yyyy" "dddd';
+                } else {
+                    cell.fill = GRAY_FILL;
+                    if (cn === 3 && saatDate) {
+                        // SAAT: time format
+                        cell.numFmt = "h:mm";
+                    }
+                }
+            }
         }
 
         ws.views = [{ state: "frozen", ySplit: 1 }];
