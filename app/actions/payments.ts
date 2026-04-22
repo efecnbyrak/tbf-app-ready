@@ -3,48 +3,18 @@
 import { db } from "@/lib/db";
 import { verifySession } from "@/lib/session";
 import { revalidatePath } from "next/cache";
+import { EMPTY_RATE } from "@/lib/payment-types";
+import type { PaymentConfig, PaymentRate } from "@/lib/payment-types";
 
-export interface PaymentRate {
-    basHakem: number;
-    yardimciHakem: number;
-    gozlemci: number;
-    masaGorevlisi: number;
-    istatistikci: number;
-    saglikci: number;
-    sahaKomiseri: number;
+function mergeRate(saved: Partial<PaymentRate> | undefined): PaymentRate {
+    return { ...EMPTY_RATE, ...saved };
 }
-
-export interface CategoryRate {
-    id: string;
-    name: string;
-    rates: PaymentRate;
-}
-
-export interface PaymentConfig {
-    okulMaclari: PaymentRate;
-    bolgeMaclari: PaymentRate;
-    kategoriler: CategoryRate[];
-}
-
-export const EMPTY_RATE: PaymentRate = {
-    basHakem: 0,
-    yardimciHakem: 0,
-    gozlemci: 0,
-    masaGorevlisi: 0,
-    istatistikci: 0,
-    saglikci: 0,
-    sahaKomiseri: 0,
-};
 
 const DEFAULT_CONFIG: PaymentConfig = {
     okulMaclari: { ...EMPTY_RATE },
     bolgeMaclari: { ...EMPTY_RATE },
     kategoriler: [],
 };
-
-function mergeRate(saved: Partial<PaymentRate> | undefined): PaymentRate {
-    return { ...EMPTY_RATE, ...saved };
-}
 
 export async function getPaymentConfig(): Promise<PaymentConfig> {
     try {
@@ -83,7 +53,6 @@ export async function savePaymentConfig(config: PaymentConfig) {
     }
 }
 
-/** Sistemdeki tüm benzersiz kategorileri çeker */
 export async function getAllMatchCategories(): Promise<string[]> {
     try {
         const setting = await db.systemSetting.findUnique({ where: { key: "GLOBAL_MATCH_REGISTRY" } });

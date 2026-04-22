@@ -3,7 +3,7 @@ import { verifySession } from "@/lib/session";
 import { db } from "@/lib/db";
 import ExcelJS from "exceljs";
 import { getCurrentSeason } from "@/lib/season-utils";
-import { PaymentConfig } from "@/app/actions/payments";
+import type { PaymentConfig } from "@/lib/payment-types";
 
 export const dynamic = "force-dynamic";
 
@@ -22,7 +22,8 @@ function formatTurkishDate(d: Date): string {
     return `${String(d.getDate()).padStart(2, "0")}.${String(d.getMonth() + 1).padStart(2, "0")}.${d.getFullYear()}`;
 }
 
-import { PaymentRate, EMPTY_RATE } from "@/app/actions/payments";
+import type { PaymentRate } from "@/lib/payment-types";
+import { EMPTY_RATE } from "@/lib/payment-types";
 
 // Detect which payment category applies to an assignment
 function detectPaymentCategory(
@@ -86,7 +87,6 @@ export async function GET(req: NextRequest) {
             db.systemSetting.findUnique({ where: { key: "PAYMENT_CONFIG" } }),
         ]);
 
-        const EMPTY_RATE = { basHakem: 0, yardimciHakem: 0, gozlemci: 0, masaGorevlisi: 0, istatistikci: 0, saglikci: 0, sahaKomiseri: 0 };
         let paymentConfig: PaymentConfig = {
             okulMaclari: { ...EMPTY_RATE },
             bolgeMaclari: { ...EMPTY_RATE },

@@ -1,13 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import {
-    savePaymentConfig,
-    PaymentConfig,
-    PaymentRate,
-    CategoryRate,
-    EMPTY_RATE,
-} from "@/app/actions/payments";
+import { savePaymentConfig } from "@/app/actions/payments";
+import type { PaymentConfig, PaymentRate, CategoryRate } from "@/lib/payment-types";
+import { EMPTY_RATE } from "@/lib/payment-types";
 import { Loader2, School, MapPin, Trophy, ChevronDown, ChevronUp } from "lucide-react";
 
 interface Props {
