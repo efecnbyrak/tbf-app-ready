@@ -11,6 +11,7 @@ import { NextResponse } from "next/server";
 import { getSession } from "@/lib/session";
 import { db } from "@/lib/db";
 import { parseWorkbook } from "@/lib/match-parser";
+import { getCurrentSeason } from "@/lib/season-utils";
 import ExcelJS from "exceljs";
 import fs from "fs";
 import path from "path";
@@ -111,8 +112,12 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: `Arşiv klasörü okunamadı: ${e.message}` }, { status: 500 });
         }
 
-        // If already imported and not forcing replace, only scan for new files (don't skip)
-        // The duplicate check below will skip existing records automatically.
+        // If already imported: only scan the current season folder (fast path).
+        // First run: scan all seasons (slow, one-time).
+        if (alreadyImported) {
+            const currentSezon = getCurrentSeason().label;
+            seasonDirs = seasonDirs.filter(d => d.sezon === currentSezon);
+        }
 
         const errors: string[] = [];
         let imported = 0, updated = 0, skipped = 0, total = 0;

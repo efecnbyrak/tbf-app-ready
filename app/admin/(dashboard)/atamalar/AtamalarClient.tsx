@@ -227,9 +227,9 @@ export function AtamalarClient({
     // Auto-sync: only on mount
     useEffect(() => {
         fetch("/api/atamalar/sync")
-            .then(r => r.json())
+            .then(r => r.json().catch(() => null))
             .then(data => {
-                if (data.success && data.imported > 0) {
+                if (data?.success && data.imported > 0) {
                     setSyncStatus({ imported: data.imported });
                     router.refresh();
                 }
@@ -780,10 +780,10 @@ export function AtamalarClient({
                         ) : (
                             <>
                                 <p className="text-zinc-500 text-sm mb-1">
-                                    <strong>İlk çalıştırmada:</strong> 2021-2022'den 2024-2025'e kadar tüm sezonları yerel arşiv dosyalarından aktarır.
+                                    <strong>İlk çalıştırmada:</strong> Tüm arşiv sezonlarını tarar ve içe aktarır (uzun sürebilir).
                                 </p>
                                 <p className="text-zinc-400 text-xs mb-4">
-                                    Sonraki çalıştırmalarda zaten aktarılmış kayıtlar atlanır. Sadece eksik kayıtlar eklenir.
+                                    Sonraki çalıştırmalarda sadece <strong>güncel sezonu</strong> tarar — eski sezonlar tekrar işlenmez.
                                 </p>
 
                                 <label className="flex items-center gap-3 cursor-pointer p-3 rounded-xl border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors mb-4">
@@ -809,7 +809,12 @@ export function AtamalarClient({
                                                     headers: { "Content-Type": "application/json" },
                                                     body: JSON.stringify({ replaceExisting }),
                                                 });
-                                                const data = await res.json();
+                                                let data: any;
+                                                try {
+                                                    data = await res.json();
+                                                } catch {
+                                                    data = { error: `Sunucu yanıtı okunamadı (HTTP ${res.status})` };
+                                                }
                                                 if (data.success) setImportResult(data);
                                                 else setImportResult({ imported: 0, updated: 0, skipped: 0, total: 0, errors: [data.error || "Hata"] });
                                             } catch (e: any) {

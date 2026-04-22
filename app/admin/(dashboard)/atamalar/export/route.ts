@@ -69,7 +69,7 @@ export async function GET(req: NextRequest) {
         const HEADER_FILL: ExcelJS.Fill = {
             type: "pattern",
             pattern: "solid",
-            fgColor: { argb: "FFDAEEF3" },
+            fgColor: { argb: "FFC00000" }, // Kırmızı
         };
         const THIN_BLACK: Partial<ExcelJS.Borders> = {
             top: { style: "thin", color: { argb: "FF000000" } },
@@ -89,17 +89,17 @@ export async function GET(req: NextRequest) {
         ];
 
         const headerRow = ws.addRow(HEADERS);
-        headerRow.height = 19.5;
+        headerRow.height = 30; // Daha yüksek başlık satırı
         for (let cn = 1; cn <= HEADERS.length; cn++) {
             const cell = headerRow.getCell(cn);
             cell.fill = HEADER_FILL;
-            cell.font = { bold: true, color: { argb: "FF000000" }, size: 9, name: "Calibri" };
+            cell.font = { bold: true, color: { argb: "FFFFFFFF" }, size: 11, name: "Calibri" }; // Beyaz yazı, büyük font
             cell.alignment = { vertical: "middle", horizontal: "center", wrapText: false };
             cell.border = THIN_BLACK;
         }
 
-        // Column widths (17 columns)
-        const colWidths = [20.14, 20.43, 5.57, 24.14, 24.57, 14, 10, 19.71, 19, 23.86, 23.86, 24, 18.43, 13.86, 8.14, 18.29, 18.29];
+        // Column widths (17 columns) — genişletildi
+        const colWidths = [28, 38, 10, 35, 35, 20, 15, 28, 28, 30, 30, 32, 28, 22, 20, 26, 26];
         colWidths.forEach((w, i) => { ws.getColumn(i + 1).width = w; });
 
         // Build salon groups for alternating colors
@@ -140,11 +140,11 @@ export async function GET(req: NextRequest) {
                 a.istatistikci1 || "",
                 a.istatistikci2 || "",
             ]);
-            row.height = 19.5;
+            row.height = 22; // Daha yüksek veri satırları
 
             for (let cn = 1; cn <= 17; cn++) {
                 const cell = row.getCell(cn);
-                cell.font = { size: 9, name: "Calibri" };
+                cell.font = { size: 10, name: "Calibri" };
                 cell.border = THIN_BLACK;
                 cell.alignment = { vertical: "middle", horizontal: "left", wrapText: false };
                 cell.fill = rowFill;
