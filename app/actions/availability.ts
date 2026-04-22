@@ -126,35 +126,37 @@ export async function saveAvailability(prevState: ActionState, formData: FormDat
         // Collect day data for email summary
         const savedDays: { dayName: string; date: string; slots: string }[] = [];
 
-        await db.$transaction(async (tx: any) => {
-            await tx.availabilityDay.deleteMany({
-                where: { formId: form.id }
-            });
+        // Build batch operations (works with PgBouncer / connection poolers — no persistent connection needed)
+        const createOps: any[] = [];
+        for (let i = 0; i < 7; i++) {
+            const slot = formData.get(`day_${i}_slot`) as string;
 
-            for (let i = 0; i < 7; i++) {
-                const slot = formData.get(`day_${i}_slot`) as string;
+            if (slot && slot !== "Uygun Değil") {
+                const dayDate = new Date(startDate);
+                dayDate.setDate(startDate.getDate() + i);
 
-                if (slot && slot !== "Uygun Değil") {
-                    const dayDate = new Date(startDate);
-                    dayDate.setDate(startDate.getDate() + i);
-
-                    await tx.availabilityDay.create({
+                createOps.push(
+                    db.availabilityDay.create({
                         data: {
                             formId: form.id,
                             date: dayDate,
                             slots: slot as string
                         }
-                    });
+                    })
+                );
 
-                    // Collect for email
-                    savedDays.push({
-                        dayName: dayDate.toLocaleDateString('tr-TR', { weekday: 'long' }),
-                        date: dayDate.toLocaleDateString('tr-TR', { day: '2-digit', month: 'long', year: 'numeric' }),
-                        slots: slot
-                    });
-                }
+                savedDays.push({
+                    dayName: dayDate.toLocaleDateString('tr-TR', { weekday: 'long' }),
+                    date: dayDate.toLocaleDateString('tr-TR', { day: '2-digit', month: 'long', year: 'numeric' }),
+                    slots: slot
+                });
             }
-        });
+        }
+
+        await db.$transaction([
+            db.availabilityDay.deleteMany({ where: { formId: form.id } }),
+            ...createOps
+        ]);
 
         revalidatePath("/referee/availability");
 
