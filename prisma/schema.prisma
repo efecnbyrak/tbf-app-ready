@@ -493,8 +493,10 @@ model GameAssignment {
   tarih             DateTime
   saat              String?
   salon             String?
-  aTeam             String
-  bTeam             String
+  aTeam             String  @default("")
+  bTeam             String  @default("")
+  ligTuru           String?
+  hafta             Int?
   kategori          String?
   grup              String?
   hakem1            String?

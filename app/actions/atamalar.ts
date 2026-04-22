@@ -3,40 +3,9 @@
 import { verifySession } from "@/lib/session";
 import { db } from "@/lib/db";
 import { revalidatePath } from "next/cache";
-import { getGlobalMatchesStore } from "@/lib/matches-store";
 
 function requireSuperAdmin(role: string) {
     if (role !== "SUPER_ADMIN") throw new Error("Yetkisiz");
-}
-
-export async function getTeamNames(): Promise<{ success: boolean; teams: string[]; error?: string }> {
-    try {
-        const session = await verifySession();
-        requireSuperAdmin(session.role);
-
-        const store = await getGlobalMatchesStore();
-        if (!store?.allMatches) return { success: true, teams: [] };
-
-        const relevantMatches = store.allMatches.filter((m: any) =>
-            m.ligTuru === "Yerel Lig" || m.ligTuru === "ÖZEL LİG VE ÜNİVERSİTE"
-        );
-
-        const teamNames = new Set<string>();
-        for (const match of relevantMatches) {
-            const parts = (match.mac_adi || "").split(/\s*[-–—]\s*/);
-            for (const part of parts) {
-                const clean = part.trim();
-                // Skip pure numbers, very short strings, date-like strings
-                if (clean.length > 2 && !/^\d+$/.test(clean) && !/\d{1,2}\.\d{1,2}\.\d{4}/.test(clean)) {
-                    teamNames.add(clean);
-                }
-            }
-        }
-
-        return { success: true, teams: Array.from(teamNames).sort((a, b) => a.localeCompare(b, "tr")) };
-    } catch (e: any) {
-        return { success: false, teams: [], error: e?.message || "Takım adları alınamadı" };
-    }
 }
 
 export async function getAssignments() {
@@ -45,7 +14,7 @@ export async function getAssignments() {
         requireSuperAdmin(session.role);
 
         const assignments = await (db as any).gameAssignment.findMany({
-            orderBy: { tarih: "asc" },
+            orderBy: [{ tarih: "asc" }, { saat: "asc" }],
         });
 
         return { success: true, assignments };
@@ -55,11 +24,13 @@ export async function getAssignments() {
 }
 
 export interface AssignmentFormData {
-    tarih: string;   // "YYYY-MM-DD"
+    tarih: string;
     saat?: string;
     salon?: string;
-    aTeam: string;
-    bTeam: string;
+    ligTuru?: string;
+    hafta?: string;
+    aTeam?: string;
+    bTeam?: string;
     kategori?: string;
     grup?: string;
     hakem1?: string;
@@ -74,11 +45,38 @@ export interface AssignmentFormData {
     istatistikci2?: string;
 }
 
+function validate(data: AssignmentFormData): string | null {
+    // hakem1 ≠ hakem2
+    if (data.hakem1 && data.hakem2 && data.hakem1.trim() === data.hakem2.trim()) {
+        return "1. Hakem ve 2. Hakem aynı kişi olamaz.";
+    }
+    // aTeam ≠ bTeam
+    if (data.aTeam && data.bTeam && data.aTeam.trim() === data.bTeam.trim()) {
+        return "A Takımı ve B Takımı aynı olamaz.";
+    }
+    // Time: if today's date is selected, time must be in the future
+    if (data.tarih && data.saat) {
+        const today = new Date();
+        const todayStr = today.toISOString().split("T")[0];
+        if (data.tarih === todayStr) {
+            const [h, m] = data.saat.split(":").map(Number);
+            const nowMin = today.getHours() * 60 + today.getMinutes();
+            const inputMin = h * 60 + m;
+            if (inputMin <= nowMin) {
+                return "Bugünkü bir maç için geçmiş saat verilemez.";
+            }
+        }
+    }
+    return null;
+}
+
 function buildDbData(data: AssignmentFormData) {
     return {
         tarih: data.tarih ? new Date(data.tarih) : new Date(),
         saat: data.saat || null,
         salon: data.salon || null,
+        ligTuru: data.ligTuru || null,
+        hafta: data.hafta ? parseInt(data.hafta) : null,
         aTeam: data.aTeam || "",
         bTeam: data.bTeam || "",
         kategori: data.kategori || null,
@@ -101,6 +99,9 @@ export async function createAssignment(data: AssignmentFormData) {
         const session = await verifySession();
         requireSuperAdmin(session.role);
 
+        const err = validate(data);
+        if (err) return { success: false, error: err };
+
         await (db as any).gameAssignment.create({ data: buildDbData(data) });
         revalidatePath("/admin/atamalar");
         return { success: true };
@@ -113,6 +114,9 @@ export async function updateAssignment(id: number, data: AssignmentFormData) {
     try {
         const session = await verifySession();
         requireSuperAdmin(session.role);
+
+        const err = validate(data);
+        if (err) return { success: false, error: err };
 
         await (db as any).gameAssignment.update({
             where: { id },

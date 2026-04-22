@@ -3,13 +3,17 @@
 import { useState, useTransition, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { createAssignment, updateAssignment, deleteAssignment } from "@/app/actions/atamalar";
-import { ClipboardList, Plus, X, Pencil, Trash2, Search, ChevronDown } from "lucide-react";
+import { ClipboardList, Plus, X, Pencil, Trash2, Search, ChevronDown, Download } from "lucide-react";
+
+const LIG_TURU_OPTIONS = ["Yerel Ligler", "Özel Lig ve Üniversite"];
 
 interface GameAssignment {
     id: number;
     tarih: Date | string;
     saat?: string | null;
     salon?: string | null;
+    ligTuru?: string | null;
+    hafta?: number | null;
     aTeam: string;
     bTeam: string;
     kategori?: string | null;
@@ -26,9 +30,7 @@ interface GameAssignment {
     istatistikci2?: string | null;
 }
 
-interface PersonOption {
-    name: string;
-}
+interface PersonOption { name: string; }
 
 interface Props {
     initialAssignments: GameAssignment[];
@@ -42,12 +44,15 @@ interface Props {
     fieldCommissioners: PersonOption[];
     healthOfficials: PersonOption[];
     statisticians: PersonOption[];
+    currentWeek: number;
 }
 
 const EMPTY_FORM = {
     tarih: "",
     saat: "",
     salon: "",
+    ligTuru: "",
+    hafta: "",
     aTeam: "",
     bTeam: "",
     kategori: "",
@@ -81,20 +86,25 @@ function toInputDate(d: Date | string): string {
     return date.toISOString().split("T")[0];
 }
 
+// Hafta tarih aralığı hesaplama (client-side)
+const REFERENCE_WEEK = 31;
+const REFERENCE_MONDAY_MS = new Date("2026-04-06T00:00:00.000Z").getTime();
+function getWeekLabel(weekNumber: number): string {
+    const diffMs = (weekNumber - REFERENCE_WEEK) * 7 * 24 * 60 * 60 * 1000;
+    const start = new Date(REFERENCE_MONDAY_MS + diffMs);
+    const end = new Date(start.getTime() + 6 * 24 * 60 * 60 * 1000);
+    const fmt = (d: Date) => `${String(d.getUTCDate()).padStart(2, "0")}.${String(d.getUTCMonth() + 1).padStart(2, "0")}.${d.getUTCFullYear()}`;
+    return `${fmt(start)} - ${fmt(end)}`;
+}
+
 function SearchableSelect({
-    value,
-    onChange,
-    options,
-    placeholder,
-    label,
-    id,
+    value, onChange, options, placeholder, label,
 }: {
     value: string;
     onChange: (v: string) => void;
     options: PersonOption[];
     placeholder?: string;
     label?: string;
-    id?: string;
 }) {
     const [search, setSearch] = useState("");
     const [open, setOpen] = useState(false);
@@ -105,8 +115,6 @@ function SearchableSelect({
         return options.filter(o => o.name.toLowerCase().includes(s));
     }, [search, options]);
 
-    const selectedLabel = value || placeholder || "— Seçiniz —";
-
     return (
         <div className="relative">
             {label && <label className="block text-xs font-semibold text-zinc-500 dark:text-zinc-400 mb-1 uppercase tracking-wide">{label}</label>}
@@ -116,7 +124,7 @@ function SearchableSelect({
                 className="w-full flex items-center justify-between px-3 py-2 text-sm bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg text-left hover:border-red-400 transition-colors"
             >
                 <span className={value ? "text-zinc-900 dark:text-white" : "text-zinc-400"}>
-                    {selectedLabel}
+                    {value || placeholder || "— Seçiniz —"}
                 </span>
                 <ChevronDown className="w-3.5 h-3.5 text-zinc-400 shrink-0 ml-2" />
             </button>
@@ -143,7 +151,7 @@ function SearchableSelect({
                         >
                             — Boş —
                         </button>
-                        {filtered.slice(0, 80).map(o => (
+                        {filtered.slice(0, 100).map(o => (
                             <button
                                 key={o.name}
                                 type="button"
@@ -164,7 +172,11 @@ function SearchableSelect({
     );
 }
 
-export function AtamalarClient({ initialAssignments, teamNames, categories, groups, salons, referees, tableOfficials, observers, fieldCommissioners, healthOfficials, statisticians }: Props) {
+export function AtamalarClient({
+    initialAssignments, teamNames, categories, groups, salons,
+    referees, tableOfficials, observers, fieldCommissioners, healthOfficials, statisticians,
+    currentWeek,
+}: Props) {
     const router = useRouter();
     const [assignments, setAssignments] = useState<GameAssignment[]>(initialAssignments);
     const [modalOpen, setModalOpen] = useState(false);
@@ -174,14 +186,21 @@ export function AtamalarClient({ initialAssignments, teamNames, categories, grou
     const [isPending, startTransition] = useTransition();
     const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
     const [tableSearch, setTableSearch] = useState("");
+    const [filterLig, setFilterLig] = useState("");
+    const [filterHafta, setFilterHafta] = useState("");
 
     const teamOptions = teamNames.map(t => ({ name: t }));
     const categoryOptions = categories.map(c => ({ name: c }));
     const groupOptions = groups.map(g => ({ name: g }));
     const salonOptions = salons.map(s => ({ name: s }));
 
+    // Week number options: current week ± 10
+    const haftaOptions = Array.from({ length: 21 }, (_, i) => currentWeek - 5 + i)
+        .filter(w => w > 0)
+        .map(w => ({ name: String(w), label: `${w}. Hafta (${getWeekLabel(w)})` }));
+
     function openCreate() {
-        setForm({ ...EMPTY_FORM });
+        setForm({ ...EMPTY_FORM, hafta: String(currentWeek) });
         setEditingId(null);
         setError("");
         setModalOpen(true);
@@ -192,6 +211,8 @@ export function AtamalarClient({ initialAssignments, teamNames, categories, grou
             tarih: toInputDate(a.tarih),
             saat: a.saat || "",
             salon: a.salon || "",
+            ligTuru: a.ligTuru || "",
+            hafta: a.hafta ? String(a.hafta) : "",
             aTeam: a.aTeam || "",
             bTeam: a.bTeam || "",
             kategori: a.kategori || "",
@@ -216,8 +237,26 @@ export function AtamalarClient({ initialAssignments, teamNames, categories, grou
         setForm(prev => ({ ...prev, [key]: value }));
     }
 
+    // Client-side validation
+    function clientValidate(): string | null {
+        if (form.hakem1 && form.hakem2 && form.hakem1 === form.hakem2) return "1. Hakem ve 2. Hakem aynı kişi olamaz.";
+        if (form.aTeam && form.bTeam && form.aTeam === form.bTeam) return "A Takımı ve B Takımı aynı olamaz.";
+        if (form.tarih && form.saat) {
+            const today = new Date();
+            const todayStr = today.toISOString().split("T")[0];
+            if (form.tarih === todayStr) {
+                const [h, m] = form.saat.split(":").map(Number);
+                const nowMin = today.getHours() * 60 + today.getMinutes();
+                if (h * 60 + m <= nowMin) return "Bugünkü bir maç için geçmiş saat verilemez.";
+            }
+        }
+        return null;
+    }
+
     function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
+        const clientErr = clientValidate();
+        if (clientErr) { setError(clientErr); return; }
         setError("");
 
         startTransition(async () => {
@@ -225,11 +264,7 @@ export function AtamalarClient({ initialAssignments, teamNames, categories, grou
                 ? await updateAssignment(editingId, form as any)
                 : await createAssignment(form as any);
 
-            if (!result.success) {
-                setError(result.error || "Bir hata oluştu");
-                return;
-            }
-
+            if (!result.success) { setError(result.error || "Bir hata oluştu"); return; }
             setModalOpen(false);
             router.refresh();
         });
@@ -246,37 +281,49 @@ export function AtamalarClient({ initialAssignments, teamNames, categories, grou
     }
 
     const filtered = useMemo(() => {
-        if (!tableSearch) return assignments;
-        const s = tableSearch.toLowerCase();
-        return assignments.filter(a =>
-            a.aTeam?.toLowerCase().includes(s) ||
-            a.bTeam?.toLowerCase().includes(s) ||
-            a.salon?.toLowerCase().includes(s) ||
-            a.hakem1?.toLowerCase().includes(s) ||
-            a.hakem2?.toLowerCase().includes(s) ||
-            formatDate(a.tarih).includes(s)
-        );
-    }, [assignments, tableSearch]);
+        let list = assignments;
+        if (filterLig) list = list.filter(a => a.ligTuru === filterLig);
+        if (filterHafta) list = list.filter(a => String(a.hafta) === filterHafta);
+        if (tableSearch) {
+            const s = tableSearch.toLowerCase();
+            list = list.filter(a =>
+                a.aTeam?.toLowerCase().includes(s) ||
+                a.bTeam?.toLowerCase().includes(s) ||
+                a.salon?.toLowerCase().includes(s) ||
+                a.hakem1?.toLowerCase().includes(s) ||
+                a.hakem2?.toLowerCase().includes(s) ||
+                formatDate(a.tarih).includes(s) ||
+                a.ligTuru?.toLowerCase().includes(s)
+            );
+        }
+        return list;
+    }, [assignments, tableSearch, filterLig, filterHafta]);
 
     const COLS = [
-        { key: "tarih", label: "TARİH", width: "w-28" },
-        { key: "saat", label: "SAAT", width: "w-16" },
-        { key: "salon", label: "SALON", width: "w-40" },
-        { key: "aTeam", label: "A TAKIMI", width: "w-36" },
-        { key: "bTeam", label: "B TAKIMI", width: "w-36" },
-        { key: "kategori", label: "KATEGORİ", width: "w-28" },
-        { key: "grup", label: "GRUP", width: "w-20" },
-        { key: "hakem1", label: "1.HAKEM", width: "w-36" },
-        { key: "hakem2", label: "2.HAKEM", width: "w-36" },
-        { key: "sayiGorevlisi", label: "SAYI GÖR.", width: "w-36" },
-        { key: "saatGorevlisi", label: "SAAT GÖR.", width: "w-36" },
-        { key: "sutSaatiGorevlisi", label: "ŞUT SAATİ", width: "w-36" },
-        { key: "gozlemci", label: "GÖZLEMCİ", width: "w-36" },
-        { key: "sahaKomiseri", label: "SAHA KOM.", width: "w-36" },
-        { key: "saglikci", label: "SAĞLIKÇI", width: "w-36" },
-        { key: "istatistikci1", label: "İSTAT. 1", width: "w-36" },
-        { key: "istatistikci2", label: "İSTAT. 2", width: "w-36" },
+        { key: "ligTuru", label: "LİG TÜRÜ", width: "w-32" },
+        { key: "hafta", label: "HAFTA", width: "w-16" },
+        { key: "tarih", label: "TARİH", width: "w-24" },
+        { key: "saat", label: "SAAT", width: "w-14" },
+        { key: "salon", label: "SALON", width: "w-36" },
+        { key: "aTeam", label: "A TAKIMI", width: "w-32" },
+        { key: "bTeam", label: "B TAKIMI", width: "w-32" },
+        { key: "kategori", label: "KATEGORİ", width: "w-24" },
+        { key: "grup", label: "GRUP", width: "w-16" },
+        { key: "hakem1", label: "1.HAKEM", width: "w-32" },
+        { key: "hakem2", label: "2.HAKEM", width: "w-32" },
+        { key: "sayiGorevlisi", label: "SAYI GÖR.", width: "w-32" },
+        { key: "saatGorevlisi", label: "SAAT GÖR.", width: "w-32" },
+        { key: "sutSaatiGorevlisi", label: "ŞUT SAATİ", width: "w-32" },
+        { key: "gozlemci", label: "GÖZLEMCİ", width: "w-32" },
+        { key: "sahaKomiseri", label: "SAHA KOM.", width: "w-32" },
+        { key: "saglikci", label: "SAĞLIKÇI", width: "w-32" },
+        { key: "istatistikci1", label: "İSTAT. 1", width: "w-32" },
+        { key: "istatistikci2", label: "İSTAT. 2", width: "w-32" },
     ];
+
+    const exportUrl = `/admin/atamalar/export?${filterLig ? `ligTuru=${encodeURIComponent(filterLig)}&` : ""}${filterHafta ? `hafta=${filterHafta}` : ""}`;
+
+    const isYerelLigler = form.ligTuru === "Yerel Ligler";
 
     return (
         <div className="space-y-6">
@@ -290,25 +337,54 @@ export function AtamalarClient({ initialAssignments, teamNames, categories, grou
                         Maç atamaları ve görevli düzenlemeleri. Toplam {assignments.length} atama.
                     </p>
                 </div>
-                <button
-                    onClick={openCreate}
-                    className="flex items-center gap-2 px-5 py-2.5 bg-red-700 hover:bg-red-600 text-white font-bold rounded-xl transition-colors shadow-md text-sm"
-                >
-                    <Plus className="w-4 h-4" />
-                    Yeni Atama Ekle
-                </button>
+                <div className="flex items-center gap-2">
+                    <a
+                        href={exportUrl}
+                        className="flex items-center gap-2 px-4 py-2.5 bg-emerald-700 hover:bg-emerald-600 text-white font-bold rounded-xl transition-colors shadow-md text-sm"
+                    >
+                        <Download className="w-4 h-4" />
+                        Excel İndir
+                    </a>
+                    <button
+                        onClick={openCreate}
+                        className="flex items-center gap-2 px-5 py-2.5 bg-red-700 hover:bg-red-600 text-white font-bold rounded-xl transition-colors shadow-md text-sm"
+                    >
+                        <Plus className="w-4 h-4" />
+                        Yeni Atama
+                    </button>
+                </div>
             </header>
 
-            {/* Search */}
-            <div className="flex items-center gap-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-2.5 max-w-sm shadow-sm">
-                <Search className="w-4 h-4 text-zinc-400" />
-                <input
-                    type="text"
-                    placeholder="Takım, salon veya hakem ara..."
-                    value={tableSearch}
-                    onChange={e => setTableSearch(e.target.value)}
-                    className="flex-1 bg-transparent text-sm text-zinc-900 dark:text-white outline-none placeholder:text-zinc-400"
-                />
+            {/* Filters */}
+            <div className="flex flex-wrap items-center gap-3">
+                <div className="flex items-center gap-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-2.5 shadow-sm">
+                    <Search className="w-4 h-4 text-zinc-400" />
+                    <input
+                        type="text"
+                        placeholder="Takım, salon, hakem ara..."
+                        value={tableSearch}
+                        onChange={e => setTableSearch(e.target.value)}
+                        className="w-52 bg-transparent text-sm text-zinc-900 dark:text-white outline-none placeholder:text-zinc-400"
+                    />
+                </div>
+                <select
+                    value={filterLig}
+                    onChange={e => setFilterLig(e.target.value)}
+                    className="px-3 py-2.5 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-sm text-zinc-700 dark:text-zinc-300 outline-none shadow-sm"
+                >
+                    <option value="">Tüm Lig Türleri</option>
+                    {LIG_TURU_OPTIONS.map(l => <option key={l} value={l}>{l}</option>)}
+                </select>
+                {filterLig === "Yerel Ligler" && (
+                    <select
+                        value={filterHafta}
+                        onChange={e => setFilterHafta(e.target.value)}
+                        className="px-3 py-2.5 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-sm text-zinc-700 dark:text-zinc-300 outline-none shadow-sm"
+                    >
+                        <option value="">Tüm Haftalar</option>
+                        {haftaOptions.map(h => <option key={h.name} value={h.name}>{h.label}</option>)}
+                    </select>
+                )}
             </div>
 
             {/* Table */}
@@ -316,9 +392,9 @@ export function AtamalarClient({ initialAssignments, teamNames, categories, grou
                 <div className="flex flex-col items-center justify-center py-20 text-center">
                     <ClipboardList className="w-12 h-12 text-zinc-300 dark:text-zinc-600 mb-4" />
                     <p className="text-zinc-500 font-medium">
-                        {tableSearch ? "Arama sonucu bulunamadı." : "Henüz atama eklenmedi."}
+                        {tableSearch || filterLig ? "Arama sonucu bulunamadı." : "Henüz atama eklenmedi."}
                     </p>
-                    {!tableSearch && (
+                    {!tableSearch && !filterLig && (
                         <button onClick={openCreate} className="mt-4 text-sm text-red-600 hover:text-red-700 font-semibold">
                             İlk atamayı ekle →
                         </button>
@@ -329,9 +405,9 @@ export function AtamalarClient({ initialAssignments, teamNames, categories, grou
                     <div className="overflow-x-auto">
                         <table className="min-w-full text-xs">
                             <thead>
-                                <tr className="bg-zinc-900 dark:bg-zinc-950 text-white">
+                                <tr className="bg-red-700 text-white">
                                     {COLS.map(col => (
-                                        <th key={col.key} className={`${col.width} px-3 py-3 text-left font-black tracking-wider whitespace-nowrap border-r border-zinc-700 last:border-r-0`}>
+                                        <th key={col.key} className={`${col.width} px-3 py-3 text-left font-black tracking-wider whitespace-nowrap border-r border-red-600 last:border-r-0`}>
                                             {col.label}
                                         </th>
                                     ))}
@@ -339,40 +415,51 @@ export function AtamalarClient({ initialAssignments, teamNames, categories, grou
                                 </tr>
                             </thead>
                             <tbody>
-                                {filtered.map((a, i) => (
-                                    <tr
-                                        key={a.id}
-                                        className={`${i % 2 === 0 ? "bg-white dark:bg-zinc-900" : "bg-zinc-50 dark:bg-zinc-800/50"} hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors border-b border-zinc-100 dark:border-zinc-800 last:border-b-0`}
-                                    >
-                                        <td className="px-3 py-2.5 font-semibold text-zinc-800 dark:text-zinc-200 whitespace-nowrap border-r border-zinc-100 dark:border-zinc-800">{formatDate(a.tarih)}</td>
-                                        <td className="px-3 py-2.5 text-zinc-600 dark:text-zinc-400 whitespace-nowrap border-r border-zinc-100 dark:border-zinc-800">{a.saat || "-"}</td>
-                                        <td className="px-3 py-2.5 text-zinc-700 dark:text-zinc-300 border-r border-zinc-100 dark:border-zinc-800 max-w-[160px] truncate" title={a.salon || ""}>{a.salon || "-"}</td>
-                                        <td className="px-3 py-2.5 font-semibold text-red-700 dark:text-red-400 border-r border-zinc-100 dark:border-zinc-800 max-w-[144px] truncate" title={a.aTeam}>{a.aTeam}</td>
-                                        <td className="px-3 py-2.5 font-semibold text-blue-700 dark:text-blue-400 border-r border-zinc-100 dark:border-zinc-800 max-w-[144px] truncate" title={a.bTeam}>{a.bTeam}</td>
-                                        <td className="px-3 py-2.5 text-zinc-600 dark:text-zinc-400 border-r border-zinc-100 dark:border-zinc-800 whitespace-nowrap">{a.kategori || "-"}</td>
-                                        <td className="px-3 py-2.5 text-zinc-600 dark:text-zinc-400 border-r border-zinc-100 dark:border-zinc-800 whitespace-nowrap">{a.grup || "-"}</td>
-                                        <td className="px-3 py-2.5 text-zinc-700 dark:text-zinc-300 border-r border-zinc-100 dark:border-zinc-800 max-w-[144px] truncate" title={a.hakem1 || ""}>{a.hakem1 || <span className="text-zinc-300 dark:text-zinc-600">—</span>}</td>
-                                        <td className="px-3 py-2.5 text-zinc-700 dark:text-zinc-300 border-r border-zinc-100 dark:border-zinc-800 max-w-[144px] truncate" title={a.hakem2 || ""}>{a.hakem2 || <span className="text-zinc-300 dark:text-zinc-600">—</span>}</td>
-                                        <td className="px-3 py-2.5 text-zinc-700 dark:text-zinc-300 border-r border-zinc-100 dark:border-zinc-800 max-w-[144px] truncate">{a.sayiGorevlisi || <span className="text-zinc-300 dark:text-zinc-600">—</span>}</td>
-                                        <td className="px-3 py-2.5 text-zinc-700 dark:text-zinc-300 border-r border-zinc-100 dark:border-zinc-800 max-w-[144px] truncate">{a.saatGorevlisi || <span className="text-zinc-300 dark:text-zinc-600">—</span>}</td>
-                                        <td className="px-3 py-2.5 text-zinc-700 dark:text-zinc-300 border-r border-zinc-100 dark:border-zinc-800 max-w-[144px] truncate">{a.sutSaatiGorevlisi || <span className="text-zinc-300 dark:text-zinc-600">—</span>}</td>
-                                        <td className="px-3 py-2.5 text-zinc-700 dark:text-zinc-300 border-r border-zinc-100 dark:border-zinc-800 max-w-[144px] truncate">{a.gozlemci || <span className="text-zinc-300 dark:text-zinc-600">—</span>}</td>
-                                        <td className="px-3 py-2.5 text-zinc-700 dark:text-zinc-300 border-r border-zinc-100 dark:border-zinc-800 max-w-[144px] truncate">{a.sahaKomiseri || <span className="text-zinc-300 dark:text-zinc-600">—</span>}</td>
-                                        <td className="px-3 py-2.5 text-zinc-700 dark:text-zinc-300 border-r border-zinc-100 dark:border-zinc-800 max-w-[144px] truncate">{a.saglikci || <span className="text-zinc-300 dark:text-zinc-600">—</span>}</td>
-                                        <td className="px-3 py-2.5 text-zinc-700 dark:text-zinc-300 border-r border-zinc-100 dark:border-zinc-800 max-w-[144px] truncate">{a.istatistikci1 || <span className="text-zinc-300 dark:text-zinc-600">—</span>}</td>
-                                        <td className="px-3 py-2.5 text-zinc-700 dark:text-zinc-300 border-r border-zinc-100 dark:border-zinc-800 max-w-[144px] truncate">{a.istatistikci2 || <span className="text-zinc-300 dark:text-zinc-600">—</span>}</td>
-                                        <td className="px-3 py-2.5">
-                                            <div className="flex items-center gap-1.5 justify-center">
-                                                <button onClick={() => openEdit(a)} className="p-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-700 rounded-lg transition-colors" title="Düzenle">
-                                                    <Pencil className="w-3.5 h-3.5 text-zinc-500 hover:text-blue-600" />
-                                                </button>
-                                                <button onClick={() => setDeleteConfirmId(a.id)} className="p-1.5 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors" title="Sil">
-                                                    <Trash2 className="w-3.5 h-3.5 text-zinc-400 hover:text-red-600" />
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))}
+                                {filtered.map((a, i) => {
+                                    const vals: Record<string, any> = {
+                                        ligTuru: a.ligTuru,
+                                        hafta: a.hafta ? `${a.hafta}. Hafta` : null,
+                                        tarih: formatDate(a.tarih),
+                                        saat: a.saat,
+                                        salon: a.salon,
+                                        aTeam: a.aTeam,
+                                        bTeam: a.bTeam,
+                                        kategori: a.kategori,
+                                        grup: a.grup,
+                                        hakem1: a.hakem1,
+                                        hakem2: a.hakem2,
+                                        sayiGorevlisi: a.sayiGorevlisi,
+                                        saatGorevlisi: a.saatGorevlisi,
+                                        sutSaatiGorevlisi: a.sutSaatiGorevlisi,
+                                        gozlemci: a.gozlemci,
+                                        sahaKomiseri: a.sahaKomiseri,
+                                        saglikci: a.saglikci,
+                                        istatistikci1: a.istatistikci1,
+                                        istatistikci2: a.istatistikci2,
+                                    };
+                                    return (
+                                        <tr
+                                            key={a.id}
+                                            className={`${i % 2 === 0 ? "bg-white dark:bg-zinc-900" : "bg-zinc-50 dark:bg-zinc-800/50"} hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors border-b border-zinc-100 dark:border-zinc-800 last:border-b-0`}
+                                        >
+                                            {COLS.map(col => (
+                                                <td key={col.key} className="px-3 py-2.5 text-zinc-700 dark:text-zinc-300 border-r border-zinc-100 dark:border-zinc-800 max-w-[144px] truncate whitespace-nowrap" title={String(vals[col.key] || "")}>
+                                                    {vals[col.key] || <span className="text-zinc-300 dark:text-zinc-600">—</span>}
+                                                </td>
+                                            ))}
+                                            <td className="px-3 py-2.5">
+                                                <div className="flex items-center gap-1.5 justify-center">
+                                                    <button onClick={() => openEdit(a)} className="p-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-700 rounded-lg transition-colors">
+                                                        <Pencil className="w-3.5 h-3.5 text-zinc-500 hover:text-blue-600" />
+                                                    </button>
+                                                    <button onClick={() => setDeleteConfirmId(a.id)} className="p-1.5 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors">
+                                                        <Trash2 className="w-3.5 h-3.5 text-zinc-400 hover:text-red-600" />
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
                             </tbody>
                         </table>
                     </div>
@@ -386,17 +473,10 @@ export function AtamalarClient({ initialAssignments, teamNames, categories, grou
                         <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-2">Atamayı Sil</h3>
                         <p className="text-zinc-500 text-sm mb-6">Bu atama kaydı silinecek. Bu işlem geri alınamaz.</p>
                         <div className="flex gap-3">
-                            <button
-                                onClick={() => setDeleteConfirmId(null)}
-                                className="flex-1 px-4 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm font-semibold hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
-                            >
+                            <button onClick={() => setDeleteConfirmId(null)} className="flex-1 px-4 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm font-semibold hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors">
                                 Vazgeç
                             </button>
-                            <button
-                                onClick={() => handleDelete(deleteConfirmId)}
-                                disabled={isPending}
-                                className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl text-sm font-bold transition-colors disabled:opacity-50"
-                            >
+                            <button onClick={() => handleDelete(deleteConfirmId)} disabled={isPending} className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl text-sm font-bold transition-colors disabled:opacity-50">
                                 {isPending ? "Siliniyor..." : "Sil"}
                             </button>
                         </div>
@@ -419,6 +499,48 @@ export function AtamalarClient({ initialAssignments, teamNames, categories, grou
                         </div>
 
                         <form onSubmit={handleSubmit} className="p-6 space-y-6">
+
+                            {/* --- Lig & Hafta --- */}
+                            <div>
+                                <div className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] mb-3">Üst Kategori</div>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-xs font-semibold text-zinc-500 mb-1 uppercase tracking-wide">Lig Türü</label>
+                                        <select
+                                            value={form.ligTuru}
+                                            onChange={e => {
+                                                setField("ligTuru", e.target.value);
+                                                if (e.target.value !== "Yerel Ligler") setField("hafta", "");
+                                            }}
+                                            className="w-full px-3 py-2 text-sm bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg text-zinc-900 dark:text-white focus:outline-none focus:border-red-500"
+                                        >
+                                            <option value="">— Seçiniz —</option>
+                                            {LIG_TURU_OPTIONS.map(l => <option key={l} value={l}>{l}</option>)}
+                                        </select>
+                                    </div>
+                                    {isYerelLigler && (
+                                        <div>
+                                            <label className="block text-xs font-semibold text-zinc-500 mb-1 uppercase tracking-wide">Hafta</label>
+                                            <select
+                                                value={form.hafta}
+                                                onChange={e => setField("hafta", e.target.value)}
+                                                className="w-full px-3 py-2 text-sm bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg text-zinc-900 dark:text-white focus:outline-none focus:border-red-500"
+                                            >
+                                                <option value="">— Hafta Seçin —</option>
+                                                {haftaOptions.map(h => (
+                                                    <option key={h.name} value={h.name}>{h.label}</option>
+                                                ))}
+                                            </select>
+                                            {form.hafta && (
+                                                <p className="mt-1 text-xs text-zinc-400">
+                                                    {form.hafta}. Hafta: {getWeekLabel(parseInt(form.hafta))}
+                                                </p>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
                             {/* --- Maç Bilgileri --- */}
                             <div>
                                 <div className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] mb-3">Maç Bilgileri</div>
@@ -528,76 +650,35 @@ export function AtamalarClient({ initialAssignments, teamNames, categories, grou
                             <div>
                                 <div className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] mb-3">Görevliler</div>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    <SearchableSelect
-                                        label="1. Hakem"
-                                        value={form.hakem1}
-                                        onChange={v => setField("hakem1", v)}
-                                        options={referees}
-                                        placeholder="— 1. Hakem —"
-                                    />
-                                    <SearchableSelect
-                                        label="2. Hakem"
-                                        value={form.hakem2}
-                                        onChange={v => setField("hakem2", v)}
-                                        options={referees}
-                                        placeholder="— 2. Hakem —"
-                                    />
-                                    <SearchableSelect
-                                        label="Sayı Görevlisi"
-                                        value={form.sayiGorevlisi}
-                                        onChange={v => setField("sayiGorevlisi", v)}
-                                        options={tableOfficials}
-                                        placeholder="— Sayı Görevlisi —"
-                                    />
-                                    <SearchableSelect
-                                        label="Saat Görevlisi"
-                                        value={form.saatGorevlisi}
-                                        onChange={v => setField("saatGorevlisi", v)}
-                                        options={tableOfficials}
-                                        placeholder="— Saat Görevlisi —"
-                                    />
-                                    <SearchableSelect
-                                        label="Şut Saati Görevlisi"
-                                        value={form.sutSaatiGorevlisi}
-                                        onChange={v => setField("sutSaatiGorevlisi", v)}
-                                        options={tableOfficials}
-                                        placeholder="— Şut Saati Görevlisi —"
-                                    />
-                                    <SearchableSelect
-                                        label="Gözlemci"
-                                        value={form.gozlemci}
-                                        onChange={v => setField("gozlemci", v)}
-                                        options={observers}
-                                        placeholder="— Gözlemci —"
-                                    />
-                                    <SearchableSelect
-                                        label="Saha Komiseri"
-                                        value={form.sahaKomiseri}
-                                        onChange={v => setField("sahaKomiseri", v)}
-                                        options={fieldCommissioners}
-                                        placeholder="— Saha Komiseri —"
-                                    />
-                                    <SearchableSelect
-                                        label="Sağlıkçı"
-                                        value={form.saglikci}
-                                        onChange={v => setField("saglikci", v)}
-                                        options={healthOfficials}
-                                        placeholder="— Sağlıkçı —"
-                                    />
-                                    <SearchableSelect
-                                        label="İstatistikçi 1"
-                                        value={form.istatistikci1}
-                                        onChange={v => setField("istatistikci1", v)}
-                                        options={statisticians}
-                                        placeholder="— İstatistikçi 1 —"
-                                    />
-                                    <SearchableSelect
-                                        label="İstatistikçi 2"
-                                        value={form.istatistikci2}
-                                        onChange={v => setField("istatistikci2", v)}
-                                        options={statisticians}
-                                        placeholder="— İstatistikçi 2 —"
-                                    />
+                                    <div>
+                                        <SearchableSelect
+                                            label="1. Hakem"
+                                            value={form.hakem1}
+                                            onChange={v => setField("hakem1", v)}
+                                            options={referees}
+                                            placeholder="— 1. Hakem —"
+                                        />
+                                        {form.hakem1 && form.hakem2 && form.hakem1 === form.hakem2 && (
+                                            <p className="mt-1 text-xs text-red-500">1. ve 2. Hakem aynı olamaz</p>
+                                        )}
+                                    </div>
+                                    <div>
+                                        <SearchableSelect
+                                            label="2. Hakem"
+                                            value={form.hakem2}
+                                            onChange={v => setField("hakem2", v)}
+                                            options={referees.filter(r => r.name !== form.hakem1)}
+                                            placeholder="— 2. Hakem —"
+                                        />
+                                    </div>
+                                    <SearchableSelect label="Sayı Görevlisi" value={form.sayiGorevlisi} onChange={v => setField("sayiGorevlisi", v)} options={tableOfficials} placeholder="— Sayı Görevlisi —" />
+                                    <SearchableSelect label="Saat Görevlisi" value={form.saatGorevlisi} onChange={v => setField("saatGorevlisi", v)} options={tableOfficials} placeholder="— Saat Görevlisi —" />
+                                    <SearchableSelect label="Şut Saati Görevlisi" value={form.sutSaatiGorevlisi} onChange={v => setField("sutSaatiGorevlisi", v)} options={tableOfficials} placeholder="— Şut Saati Görevlisi —" />
+                                    <SearchableSelect label="Gözlemci" value={form.gozlemci} onChange={v => setField("gozlemci", v)} options={observers} placeholder="— Gözlemci —" />
+                                    <SearchableSelect label="Saha Komiseri" value={form.sahaKomiseri} onChange={v => setField("sahaKomiseri", v)} options={fieldCommissioners} placeholder="— Saha Komiseri —" />
+                                    <SearchableSelect label="Sağlıkçı" value={form.saglikci} onChange={v => setField("saglikci", v)} options={healthOfficials} placeholder="— Sağlıkçı —" />
+                                    <SearchableSelect label="İstatistikçi 1" value={form.istatistikci1} onChange={v => setField("istatistikci1", v)} options={statisticians} placeholder="— İstatistikçi 1 —" />
+                                    <SearchableSelect label="İstatistikçi 2" value={form.istatistikci2} onChange={v => setField("istatistikci2", v)} options={statisticians} placeholder="— İstatistikçi 2 —" />
                                 </div>
                             </div>
 
@@ -607,20 +688,11 @@ export function AtamalarClient({ initialAssignments, teamNames, categories, grou
                                 </div>
                             )}
 
-                            {/* Actions */}
                             <div className="flex gap-3 pt-2">
-                                <button
-                                    type="button"
-                                    onClick={() => setModalOpen(false)}
-                                    className="flex-1 px-4 py-2.5 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm font-semibold hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors text-zinc-700 dark:text-zinc-300"
-                                >
+                                <button type="button" onClick={() => setModalOpen(false)} className="flex-1 px-4 py-2.5 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm font-semibold hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors text-zinc-700 dark:text-zinc-300">
                                     Vazgeç
                                 </button>
-                                <button
-                                    type="submit"
-                                    disabled={isPending}
-                                    className="flex-1 px-4 py-2.5 bg-red-700 hover:bg-red-600 text-white rounded-xl text-sm font-bold transition-colors disabled:opacity-50 shadow-md"
-                                >
+                                <button type="submit" disabled={isPending} className="flex-1 px-4 py-2.5 bg-red-700 hover:bg-red-600 text-white rounded-xl text-sm font-bold transition-colors disabled:opacity-50 shadow-md">
                                     {isPending ? "Kaydediliyor..." : editingId !== null ? "Güncelle" : "Atama Ekle"}
                                 </button>
                             </div>
