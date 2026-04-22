@@ -282,6 +282,34 @@ export async function cleanupOldAvailability() {
     });
 
     revalidatePath("/admin/availability");
+    revalidatePath("/admin/all-availabilities");
+    return { success: true, count: deleteCount.count };
+}
+
+export async function cleanupCurrentAvailability() {
+    const session = await verifySession();
+    if (session.role !== "SUPER_ADMIN" && session.role !== "ADMIN_IHK" && session.role !== "ADMIN") {
+        throw new Error("Yetkisiz işlem.");
+    }
+
+    // Calculate current week's Monday
+    const today = new Date();
+    const day = today.getDay(); // 0 (Sun) to 6 (Sat)
+    const diff = today.getDate() - day + (day === 0 ? -6 : 1);
+    const currentMonday = new Date(today.setDate(diff));
+    currentMonday.setHours(0, 0, 0, 0);
+
+    // Delete forms where weekStartDate >= currentMonday (current week forms)
+    const deleteCount = await db.availabilityForm.deleteMany({
+        where: {
+            weekStartDate: {
+                gte: currentMonday
+            }
+        }
+    });
+
+    revalidatePath("/admin/availability");
+    revalidatePath("/admin/all-availabilities");
     return { success: true, count: deleteCount.count };
 }
 
