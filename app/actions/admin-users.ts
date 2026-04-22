@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { ensureSchemaColumns } from "@/lib/db-heal";
 import { isValidTurkishIBAN } from "@/lib/iban-validator";
 import { put } from "@vercel/blob";
+import { getAvailabilityWindow } from "@/lib/availability-utils";
 
 export async function approveUser(userId: number) {
     await ensureSchemaColumns();
@@ -258,25 +259,18 @@ export async function cleanupOldAvailability() {
         throw new Error("Yetkisiz işlem.");
     }
 
-    // Delete forms where weekStartDate is older than previous Monday
-    const today = new Date();
-    const day = today.getDay(); // 0 (Sun) to 6 (Sat)
-    const diff = today.getDate() - day + (day === 0 ? -6 : 1); // Monday of current week
-    const currentMonday = new Date(today.setDate(diff));
-    currentMonday.setHours(0, 0, 0, 0);
+    // Use availability window to get the current target Saturday
+    const { startDate: currentStartDate } = await getAvailabilityWindow();
 
-    const lastMonday = new Date(currentMonday);
-    lastMonday.setDate(currentMonday.getDate() - 7);
-
-    // Any form where weekStartDate < lastMonday is considered "passing week"
-    // User said: "diyeim 1. hafta attı geçti 2. hafta attı geçti ... 1. hafta atanlar silinsin"
-    // We'll delete anything older than the Current Week's Monday to be safe, 
-    // or specifically older than the Last Week's Monday.
+    // "Eski" = geçen haftadan da eski, yani currentStartDate - 7'den önce
+    const lastWeekStart = new Date(currentStartDate);
+    lastWeekStart.setDate(currentStartDate.getDate() - 7);
+    lastWeekStart.setHours(0, 0, 0, 0);
 
     const deleteCount = await db.availabilityForm.deleteMany({
         where: {
             weekStartDate: {
-                lt: lastMonday
+                lt: lastWeekStart
             }
         }
     });
@@ -292,23 +286,19 @@ export async function cleanupCurrentAvailability() {
         throw new Error("Yetkisiz işlem.");
     }
 
-    // Calculate current week's Monday
-    const today = new Date();
-    const day = today.getDay(); // 0 (Sun) to 6 (Sat)
-    const diff = today.getDate() - day + (day === 0 ? -6 : 1);
-    const currentMonday = new Date(today.setDate(diff));
-    currentMonday.setHours(0, 0, 0, 0);
+    // Use availability window to get the current target Saturday
+    const { startDate: currentStartDate } = await getAvailabilityWindow();
 
-    // Calculate next week's Monday
-    const nextMonday = new Date(currentMonday);
-    nextMonday.setDate(currentMonday.getDate() + 7);
+    const rangeStart = new Date(currentStartDate);
+    rangeStart.setHours(0, 0, 0, 0);
+    const rangeEnd = new Date(currentStartDate);
+    rangeEnd.setHours(23, 59, 59, 999);
 
-    // Delete forms where weekStartDate is exactly in the current week bounds
     const deleteCount = await db.availabilityForm.deleteMany({
         where: {
             weekStartDate: {
-                gte: currentMonday,
-                lt: nextMonday
+                gte: rangeStart,
+                lte: rangeEnd
             }
         }
     });
@@ -316,6 +306,61 @@ export async function cleanupCurrentAvailability() {
     revalidatePath("/admin/availability");
     revalidatePath("/admin/all-availabilities");
     return { success: true, count: deleteCount.count };
+}
+
+// Güncel haftanın formlarını geçen haftaya taşır (weekStartDate - 7 gün, günlük tarihleri de günceller)
+export async function moveFormsToLastWeek() {
+    const session = await verifySession();
+    if (session.role !== "SUPER_ADMIN" && session.role !== "ADMIN_IHK" && session.role !== "ADMIN") {
+        throw new Error("Yetkisiz işlem.");
+    }
+
+    const { startDate: currentStartDate } = await getAvailabilityWindow();
+
+    const rangeStart = new Date(currentStartDate);
+    rangeStart.setHours(0, 0, 0, 0);
+    const rangeEnd = new Date(currentStartDate);
+    rangeEnd.setHours(23, 59, 59, 999);
+
+    const lastWeekStart = new Date(currentStartDate);
+    lastWeekStart.setDate(currentStartDate.getDate() - 7);
+    lastWeekStart.setHours(0, 0, 0, 0);
+
+    const currentForms = await db.availabilityForm.findMany({
+        where: {
+            weekStartDate: {
+                gte: rangeStart,
+                lte: rangeEnd
+            }
+        },
+        include: { days: true }
+    });
+
+    if (currentForms.length === 0) {
+        return { success: true, count: 0 };
+    }
+
+    await db.$transaction(async (tx: any) => {
+        for (const form of currentForms) {
+            await tx.availabilityForm.update({
+                where: { id: form.id },
+                data: { weekStartDate: lastWeekStart }
+            });
+
+            for (const day of form.days) {
+                const newDate = new Date(day.date);
+                newDate.setDate(newDate.getDate() - 7);
+                await tx.availabilityDay.update({
+                    where: { id: day.id },
+                    data: { date: newDate }
+                });
+            }
+        }
+    });
+
+    revalidatePath("/admin/availability");
+    revalidatePath("/admin/all-availabilities");
+    return { success: true, count: currentForms.length };
 }
 
 export async function deleteUser(userId: number) {
