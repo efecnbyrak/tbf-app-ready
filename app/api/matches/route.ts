@@ -174,10 +174,11 @@ export async function GET(request: Request) {
         // Tag current season matches
         const taggedCurrentMatches = userResults.maclar.map(m => ({ ...m, sezon: "current" }));
 
-        // Merge with existing cache using dedup only (DON'T remove old current matches — 
-        // files can move between current/archive folders, so we must preserve matches 
-        // until archive scan picks them up in their new location)
-        const finalMerged = mergeMatches(existingMatches, taggedCurrentMatches);
+        // On force refresh, replace current-season matches entirely (fresh scan is authoritative).
+        // On normal load without cache, just merge. Either way, archive-tagged matches are preserved.
+        const finalMerged = forceRefresh
+            ? mergeMatches(existingMatches, taggedCurrentMatches, "current")
+            : mergeMatches(existingMatches, taggedCurrentMatches);
 
         // Save to user cache — preserve old season scan status even on force refresh
         const seasonsToSave = cached?.scannedSeasons || [];
