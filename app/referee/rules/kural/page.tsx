@@ -1,7 +1,8 @@
 import { db } from "@/lib/db";
-import { FileText, ExternalLink, Book, Search } from "lucide-react";
+import { ExternalLink, Book, Search } from "lucide-react";
 import Link from "next/link";
 import { PdfSearchBox } from "@/components/rules/PdfSearchBox";
+import { PdfViewer } from "@/components/rules/PdfViewer";
 
 export const revalidate = 3600;
 
@@ -67,26 +68,8 @@ export default async function KuralPage({
                         Yeni Pencerede Aç
                     </a>
                 </div>
-                <div className="bg-zinc-50 dark:bg-zinc-950/50">
-                    <div className="w-full h-[850px] relative">
-                        <iframe
-                            src="/api/rules/pdf-view?type=kural"
-                            className="w-full h-full border-none"
-                            title="Basketbol Oyun Kuralları 2022"
-                        >
-                            <div className="flex flex-col items-center justify-center h-full p-8 text-center">
-                                <FileText className="w-16 h-16 text-zinc-300 mb-4" />
-                                <p className="text-zinc-500 font-bold mb-4">Tarayıcınız PDF önizlemeyi desteklemiyor.</p>
-                                <a
-                                    href="/api/rules/pdf-view?type=kural"
-                                    download
-                                    className="px-6 py-3 bg-red-600 text-white rounded-xl font-black"
-                                >
-                                    DOSYAYI İNDİR
-                                </a>
-                            </div>
-                        </iframe>
-                    </div>
+                <div className="bg-zinc-50 dark:bg-zinc-950/50 p-2">
+                    <PdfViewer type="kural" />
                 </div>
             </div>
 
