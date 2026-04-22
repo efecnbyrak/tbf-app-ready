@@ -47,21 +47,22 @@ export function ReffAIChat() {
                 }),
             });
 
-            if (!response.ok) throw new Error("API Hatası");
-
-            // We are using LangChain streaming or standard response
             const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.details || data.error || "API Hatası");
+            }
 
             setMessages((prev) => [
                 ...prev,
-                { role: "assistant", content: data.text }
+                { role: "assistant", content: data.text || "Boş yanıt alındı." }
             ]);
 
-        } catch (error) {
+        } catch (error: any) {
             console.error("ReffAI Error:", error);
             setMessages((prev) => [
                 ...prev,
-                { role: "assistant", content: "Üzgünüm, şu anda yanıt veremiyorum. Lütfen daha sonra tekrar deneyin." }
+                { role: "assistant", content: `Hata: ${error?.message || "Bilinmeyen hata"}` }
             ]);
         } finally {
             setIsLoading(false);

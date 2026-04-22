@@ -21,8 +21,8 @@ export async function POST(req: Request) {
 
         return NextResponse.json(answer);
 
-    } catch (error) {
+    } catch (error: any) {
         console.error("ReffAI Chat API Error:", error);
-        return NextResponse.json({ error: "Sistem hatası" }, { status: 500 });
+        return NextResponse.json({ error: "Sistem hatası", details: error?.message }, { status: 500 });
     }
 }
