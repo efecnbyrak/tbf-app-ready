@@ -1,3 +1,7 @@
+/**
+ * Bulk import: scans Drive (current folder + 2025-2026 archive) and imports
+ * all game assignments from the current season into game_assignments table.
+ */
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/session";
 import { db } from "@/lib/db";
@@ -5,45 +9,62 @@ import { findAllSpreadsheets, downloadAsXlsx } from "@/lib/google-drive";
 import { parseWorkbook } from "@/lib/match-parser";
 import { getCurrentSeason } from "@/lib/season-utils";
 import ExcelJS from "exceljs";
-import fs from "fs";
-import path from "path";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 120;
+
+// Drive folder IDs (same as Maçlarım)
+const SEASON_FOLDERS: Record<string, string> = {
+    "current": "0ByPao_qBUjN-YXJZSG5Fancybmc?resourcekey=0-MKTgAd4XnpTp7S5flJBKuA",
+    "2025-2026": "1Tqtn2oN96UAyeARYtmYFGSfzkrSJOG9s",
+    "2024-2025": "12ugwc-i-fQEKbqfS-qbUtaYvz3ozTIsh",
+};
 
 function parseTarih(tarihStr: string): Date | null {
     if (!tarihStr) return null;
     const dmyMatch = tarihStr.match(/(\d{1,2})[.\/](\d{1,2})[.\/](\d{4})/);
     if (dmyMatch) {
         const [, d, m, y] = dmyMatch;
-        return new Date(`${y}-${m.padStart(2, "0")}-${d.padStart(2, "0")}T00:00:00.000Z`);
+        const date = new Date(`${y}-${m.padStart(2, "0")}-${d.padStart(2, "0")}T00:00:00.000Z`);
+        return isNaN(date.getTime()) ? null : date;
     }
     const iso = new Date(tarihStr);
     return isNaN(iso.getTime()) ? null : iso;
 }
 
-function ligTuruNormalize(raw: string): string {
-    const u = (raw || "").toUpperCase();
-    if (u.includes("ÖZEL") || u.includes("ÜNİVERSİTE") || u.includes("OZEL")) {
-        return "Özel Lig ve Üniversite";
-    }
-    return "Yerel Ligler";
-}
-
 function splitTeams(macAdi: string): { aTeam: string; bTeam: string } {
     if (!macAdi) return { aTeam: "", bTeam: "" };
     const parts = macAdi.split(/\s+-\s+/);
-    if (parts.length >= 2) {
-        return { aTeam: parts[0].trim(), bTeam: parts.slice(1).join(" - ").trim() };
-    }
-    return { aTeam: macAdi.trim(), bTeam: "" };
+    return parts.length >= 2
+        ? { aTeam: parts[0].trim(), bTeam: parts.slice(1).join(" - ").trim() }
+        : { aTeam: macAdi.trim(), bTeam: "" };
 }
 
-async function parseLocalXlsx(filePath: string, fileName: string) {
-    const buffer = fs.readFileSync(filePath);
-    const wb = new ExcelJS.Workbook();
-    await wb.xlsx.load(buffer as any);
-    return parseWorkbook(wb, fileName);
+function ligTuruNormalize(fileName: string, ligTuruFromParser: string): string {
+    const u = (fileName + " " + (ligTuruFromParser || "")).toUpperCase();
+    if (u.includes("ÖZEL") || u.includes("ÜNİVERSİTE") || u.includes("OZEL")) return "Özel Lig ve Üniversite";
+    if (u.includes("OKUL") || u.includes("İL VE İLÇE")) return "Okul İl ve İlçe";
+    return "Yerel Ligler";
+}
+
+async function scanFolderAndParse(folderId: string, season: ReturnType<typeof getCurrentSeason>, errors: string[]) {
+    const matches: any[] = [];
+    const { files, errors: driveErrors } = await findAllSpreadsheets([folderId], 2);
+    errors.push(...driveErrors);
+
+    for (const file of files) {
+        try {
+            const buf = await downloadAsXlsx(file.id, file.mimeType, file.resourceKey);
+            const wb = new ExcelJS.Workbook();
+            await wb.xlsx.load(new Uint8Array(buf) as any);
+            const parsed = parseWorkbook(wb, file.name);
+            const ligTuru = ligTuruNormalize(file.name, parsed[0]?.ligTuru || "");
+            matches.push(...parsed.map(m => ({ ...m, ligTuruResolved: ligTuru, sourceFile: file.name })));
+        } catch (e: any) {
+            errors.push(`${file.name}: ${e.message}`);
+        }
+    }
+    return matches;
 }
 
 export async function POST(req: Request) {
@@ -54,100 +75,46 @@ export async function POST(req: Request) {
         }
 
         const body = await req.json().catch(() => ({}));
-        const source: "local" | "drive" | "both" = body.source || "both";
         const replaceExisting: boolean = body.replaceExisting || false;
 
         const season = getCurrentSeason();
-        const allMatches: any[] = [];
         const errors: string[] = [];
+        const allMatches: any[] = [];
 
-        // ── 1. Local Archive (current season folder) ──────────────
-        if (source === "local" || source === "both") {
-            const archiveBase = path.join(process.cwd(), "data", "archive");
-            const seasonDir = path.join(archiveBase, season.folderName);
+        // Scan current folder (latest weekly files, weeks 26+)
+        try {
+            const cur = await scanFolderAndParse(SEASON_FOLDERS["current"], season, errors);
+            allMatches.push(...cur);
+        } catch (e: any) {
+            errors.push(`Current klasör: ${e.message}`);
+        }
 
-            if (fs.existsSync(seasonDir)) {
-                // Yerel Ligler hafta dosyaları
-                const yerelDir = path.join(seasonDir, "Yerel Ligler");
-                if (fs.existsSync(yerelDir)) {
-                    for (const f of fs.readdirSync(yerelDir).filter(f => /\.(xlsx|xls)$/i.test(f))) {
-                        try {
-                            const matches = await parseLocalXlsx(path.join(yerelDir, f), f);
-                            allMatches.push(...matches.map(m => ({ ...m, ligTuruRaw: "Yerel Ligler" })));
-                        } catch (e: any) {
-                            errors.push(`Yerel/${f}: ${e.message}`);
-                        }
-                    }
-                }
-
-                // Özel Lig dosyaları (root'taki xlsx'ler, özel/üniversite içerenler)
-                for (const f of fs.readdirSync(seasonDir).filter(f =>
-                    /\.(xlsx|xls)$/i.test(f) && /özel|ozel|üniversite|universite/i.test(f)
-                )) {
-                    try {
-                        const matches = await parseLocalXlsx(path.join(seasonDir, f), f);
-                        allMatches.push(...matches.map(m => ({ ...m, ligTuruRaw: "Özel Lig ve Üniversite" })));
-                    } catch (e: any) {
-                        errors.push(`ÖzelLig/${f}: ${e.message}`);
-                    }
-                }
-            } else {
-                errors.push(`Yerel arşiv klasörü bulunamadı: "${season.folderName}". Drive üzerinden devam ediliyor.`);
+        // Scan current season archive folder (weeks 1-25)
+        const archiveFolderId = SEASON_FOLDERS[season.label];
+        if (archiveFolderId) {
+            try {
+                const arc = await scanFolderAndParse(archiveFolderId, season, errors);
+                allMatches.push(...arc);
+            } catch (e: any) {
+                errors.push(`Arşiv (${season.label}): ${e.message}`);
             }
         }
 
-        // ── 2. Google Drive ───────────────────────────────────────
-        if (source === "drive" || source === "both") {
-            const folderIds = (process.env.GOOGLE_DRIVE_FOLDER_ID || "")
-                .split(",").map((s: string) => s.trim()).filter(Boolean);
-
-            if (folderIds.length > 0) {
-                try {
-                    const { files, errors: driveErrors } = await findAllSpreadsheets(folderIds, -1);
-                    errors.push(...driveErrors);
-
-                    for (const file of files) {
-                        try {
-                            const buf = await downloadAsXlsx(file.id, file.mimeType, file.resourceKey);
-                            const wb = new ExcelJS.Workbook();
-                            await wb.xlsx.load(new Uint8Array(buf) as any);
-                            const matches = parseWorkbook(wb, file.name);
-                            const lig = ligTuruNormalize(file.name);
-                            allMatches.push(...matches.map(m => ({ ...m, ligTuruRaw: lig })));
-                        } catch (e: any) {
-                            errors.push(`Drive/${file.name}: ${e.message}`);
-                        }
-                    }
-                } catch (e: any) {
-                    errors.push(`Drive bağlantı hatası: ${e.message}`);
-                }
-            }
-        }
-
-        // ── 3. Filter to current season & import ─────────────────
-        let imported = 0;
-        let skipped = 0;
-        let updated = 0;
-        let outsideSeason = 0;
+        // Import with season date filter
+        let imported = 0, updated = 0, skipped = 0, outsideSeason = 0;
 
         for (const m of allMatches) {
             const tarih = parseTarih(m.tarih);
             if (!tarih) { skipped++; continue; }
-
-            // Only import current season data
-            if (tarih < season.startDate || tarih > season.endDate) {
-                outsideSeason++;
-                continue;
-            }
+            if (tarih < season.startDate || tarih > season.endDate) { outsideSeason++; continue; }
 
             const { aTeam, bTeam } = splitTeams(m.mac_adi);
-            const ligTuru = m.ligTuruRaw || ligTuruNormalize(m.ligTuru || "");
 
             const data: any = {
                 tarih,
                 saat: m.saat || null,
                 salon: m.salon || null,
-                ligTuru,
+                ligTuru: m.ligTuruResolved,
                 hafta: m.hafta || null,
                 kategori: m.kategori || null,
                 aTeam,
@@ -180,11 +147,11 @@ export async function POST(req: Request) {
                     imported++;
                 }
             } catch (e: any) {
-                errors.push(`Kayıt hatası (${aTeam} vs ${bTeam}): ${e.message}`);
+                errors.push(`DB hatası (${aTeam} vs ${bTeam}): ${e.message}`);
             }
         }
 
-        // Save last sync time
+        // Save last import time
         try {
             await (db as any).systemSetting.upsert({
                 where: { key: "ATAMALAR_LAST_IMPORT" },

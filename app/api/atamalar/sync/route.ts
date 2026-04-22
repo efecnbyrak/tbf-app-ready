@@ -1,6 +1,7 @@
 /**
- * Auto-sync: page load'da Drive'dan sadece mevcut hafta dosyasını çeker.
- * Eski arşive bakmaz — sadece son 3 haftanın Drive dosyasını kontrol eder.
+ * Auto-sync on page load: scans only the "current" Drive folder for new weekly files.
+ * Same logic as Maçlarım refresh — finds new assignments and imports them.
+ * Does NOT touch old archive folders.
  */
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/session";
@@ -8,18 +9,21 @@ import { db } from "@/lib/db";
 import { findAllSpreadsheets, downloadAsXlsx } from "@/lib/google-drive";
 import { parseWorkbook } from "@/lib/match-parser";
 import { getCurrentSeason } from "@/lib/season-utils";
-import { getCurrentWeekNumber } from "@/lib/hafta-utils";
 import ExcelJS from "exceljs";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
+
+// Current weekly files folder (same as Maçlarım "current" folder)
+const CURRENT_FOLDER = "0ByPao_qBUjN-YXJZSG5Fancybmc?resourcekey=0-MKTgAd4XnpTp7S5flJBKuA";
 
 function parseTarih(tarihStr: string): Date | null {
     if (!tarihStr) return null;
     const dmyMatch = tarihStr.match(/(\d{1,2})[.\/](\d{1,2})[.\/](\d{4})/);
     if (dmyMatch) {
         const [, d, m, y] = dmyMatch;
-        return new Date(`${y}-${m.padStart(2, "0")}-${d.padStart(2, "0")}T00:00:00.000Z`);
+        const date = new Date(`${y}-${m.padStart(2, "0")}-${d.padStart(2, "0")}T00:00:00.000Z`);
+        return isNaN(date.getTime()) ? null : date;
     }
     const iso = new Date(tarihStr);
     return isNaN(iso.getTime()) ? null : iso;
@@ -33,11 +37,10 @@ function splitTeams(macAdi: string): { aTeam: string; bTeam: string } {
         : { aTeam: macAdi.trim(), bTeam: "" };
 }
 
-function ligTuruNormalize(raw: string): string {
-    const u = (raw || "").toUpperCase();
-    if (u.includes("ÖZEL") || u.includes("ÜNİVERSİTE") || u.includes("OZEL")) {
-        return "Özel Lig ve Üniversite";
-    }
+function ligTuruNormalize(fileName: string): string {
+    const u = (fileName || "").toUpperCase();
+    if (u.includes("ÖZEL") || u.includes("ÜNİVERSİTE") || u.includes("OZEL")) return "Özel Lig ve Üniversite";
+    if (u.includes("OKUL") || u.includes("İL VE İLÇE")) return "Okul İl ve İlçe";
     return "Yerel Ligler";
 }
 
@@ -49,35 +52,13 @@ export async function GET() {
         }
 
         const season = getCurrentSeason();
-        const currentWeek = getCurrentWeekNumber();
 
-        // Only check Drive files for current week ± 1
-        const targetWeeks = [currentWeek - 1, currentWeek, currentWeek + 1].filter(w => w > 0);
-
-        const folderIds = (process.env.GOOGLE_DRIVE_FOLDER_ID || "")
-            .split(",").map((s: string) => s.trim()).filter(Boolean);
-
-        if (folderIds.length === 0) {
-            return NextResponse.json({ success: true, message: "Drive klasörü tanımlı değil", imported: 0 });
-        }
-
-        const { files } = await findAllSpreadsheets(folderIds, -1);
-
-        // Filter to files that look like current-week hafta files for current season
-        const weekFiles = files.filter(f => {
-            const nameUp = f.name.toUpperCase();
-            // Must be a Hafta/week file
-            if (!nameUp.includes("HAFTA") && !nameUp.includes("MAÇ PROGRAM") && !nameUp.includes("MAC PROGRAM")) return false;
-            // Must match one of the target week numbers
-            const haftaMatch = f.name.match(/(\d+)\.?\s*(?:hafta|HAFTA)/i);
-            if (!haftaMatch) return false;
-            const weekNum = parseInt(haftaMatch[1]);
-            return targetWeeks.includes(weekNum);
-        });
+        // Scan current folder (maxDepth=0: direct children only, fast)
+        const { files } = await findAllSpreadsheets([CURRENT_FOLDER], 0);
 
         let imported = 0;
 
-        for (const file of weekFiles) {
+        for (const file of files) {
             try {
                 const buf = await downloadAsXlsx(file.id, file.mimeType, file.resourceKey);
                 const wb = new ExcelJS.Workbook();
@@ -88,6 +69,7 @@ export async function GET() {
                 for (const m of matches) {
                     const tarih = parseTarih(m.tarih);
                     if (!tarih) continue;
+                    // Only current season
                     if (tarih < season.startDate || tarih > season.endDate) continue;
 
                     const { aTeam, bTeam } = splitTeams(m.mac_adi);
@@ -125,7 +107,12 @@ export async function GET() {
             }
         }
 
-        return NextResponse.json({ success: true, imported, checkedWeeks: targetWeeks, season: season.label });
+        return NextResponse.json({
+            success: true,
+            imported,
+            season: season.label,
+            filesChecked: files.length,
+        });
     } catch (e: any) {
         return NextResponse.json({ error: e?.message || "Sunucu hatası" }, { status: 500 });
     }
