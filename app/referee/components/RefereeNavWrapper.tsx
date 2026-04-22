@@ -33,9 +33,6 @@ export async function RefereeNavWrapper({ userId, basePath }: { userId: number, 
 
     const calculatedBasePath = basePath || (referee ? "/referee" : "/general");
 
-    const isEfeCanBayrak = referee && (referee.firstName === "Efe Can" && referee.lastName === "Bayrak");
-    const isTalatMustafaOzdemir = official && official.officialType === "OBSERVER" && (official.firstName === "Talat Mustafa" && official.lastName === "Özdemir");
-
     return (
         <ResponsiveNav
             refereeName={name}
@@ -44,7 +41,6 @@ export async function RefereeNavWrapper({ userId, basePath }: { userId: number, 
             isAdminObserver={showAdminLinks}
             imageUrl={imageUrl}
             canSeeMatches={true}
-            canSeeReffAI={!!(isEfeCanBayrak || session.role === "SUPER_ADMIN")}
         />
     );
 }

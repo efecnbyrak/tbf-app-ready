@@ -6,7 +6,6 @@ import { ResponsiveNav } from "@/app/referee/ResponsiveNav";
 import { verifySession } from "@/lib/session";
 import { db } from "@/lib/db";
 
-import { FloatingChat } from "@/components/chat/FloatingChat";
 import { IBANRequirementModal } from "@/components/IBANRequirementModal";
 import { MandatoryAnnouncementModal } from "@/components/announcements/MandatoryAnnouncementModal";
 import { UpcomingMatchPopup } from "@/components/matches/UpcomingMatchPopup";
@@ -64,8 +63,6 @@ export default async function OfficialLayout({
                 <IBANRequirementModal isOpen={showIbanModal} />
                 <MandatoryAnnouncementModal />
                 <UpcomingMatchPopup />
-
-                <FloatingChat currentUserId={session.userId} currentUserName={currentUserName} />
 
                 {/* Dashboard Footer */}
                 <footer className="p-6 border-t border-zinc-200 dark:border-zinc-800 text-center text-zinc-500 text-xs mt-auto">

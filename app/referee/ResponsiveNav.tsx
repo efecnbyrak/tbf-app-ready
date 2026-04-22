@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { User, Calendar, Menu, X, Sparkles, LayoutDashboard, Users, Briefcase, CheckCircle, Megaphone, ClipboardList, Shield, PlayCircle, Trophy, BookOpen, Bell, Bot } from "lucide-react";
+import { User, Calendar, Menu, X, Sparkles, LayoutDashboard, Users, Briefcase, CheckCircle, Megaphone, ClipboardList, Shield, PlayCircle, Trophy, BookOpen, Bell } from "lucide-react";
 import { SignOutButton } from "@/components/auth/SignOutButton";
 
 interface ResponsiveNavProps {
@@ -15,10 +15,9 @@ interface ResponsiveNavProps {
     isAdminObserver?: boolean;
     imageUrl?: string | null;
     canSeeMatches?: boolean;
-    canSeeReffAI?: boolean;
 }
 
-export function ResponsiveNav({ refereeName, roleType, basePath = "/referee", titleOverride, isAdminObserver, imageUrl, canSeeMatches = true, canSeeReffAI = false }: ResponsiveNavProps) {
+export function ResponsiveNav({ refereeName, roleType, basePath = "/referee", titleOverride, isAdminObserver, imageUrl, canSeeMatches = true }: ResponsiveNavProps) {
     const [isOpen, setIsOpen] = useState(false);
     const [hasNewMatches, setHasNewMatches] = useState(false);
     const [unreadAnnouncements, setUnreadAnnouncements] = useState(0);
@@ -277,21 +276,6 @@ export function ResponsiveNav({ refereeName, roleType, basePath = "/referee", ti
                                     <User className="w-4 h-4" />
                                     Profilim
                                 </Link>
-
-                                {canSeeReffAI && (
-                                    <Link
-                                        href={`${basePath}/reffai`}
-                                        onClick={() => setIsOpen(false)}
-                                        prefetch={false}
-                                        className={`flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium transition-all text-[16px] ${isActive(`${basePath}/reffai`)
-                                            ? "bg-indigo-600 text-white shadow-md border-l-4 border-indigo-800 scale-[1.02]"
-                                            : "hover:bg-indigo-50 dark:hover:bg-indigo-900/20 text-indigo-700 dark:text-indigo-400 hover:translate-x-1"
-                                            }`}
-                                    >
-                                        <Bot className="w-4 h-4" />
-                                        ReffAI
-                                    </Link>
-                                )}
 
                                 <Link
                                     href={`${basePath}/availability`}

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { logout } from "@/app/actions/auth";
-import { Users, Calendar, LayoutDashboard, Settings, LogOut, Menu, X, Briefcase, History as LucideHistory, Megaphone, ClipboardList, CheckCircle, User, PlayCircle, BookOpen, Trophy, Bell, Bot } from "lucide-react";
+import { Users, Calendar, LayoutDashboard, Settings, LogOut, Menu, X, Briefcase, History as LucideHistory, Megaphone, ClipboardList, CheckCircle, User, PlayCircle, BookOpen, Trophy, Bell } from "lucide-react";
 import Image from "next/image";
 import { useState, useEffect } from "react";
 
@@ -100,19 +100,6 @@ export function AdminLayoutClient({ children, role, imageUrl }: AdminLayoutClien
                         >
                             <User className="w-4 h-4" />
                             Profilim & Ayarlar
-                        </Link>
-
-                        <Link
-                            href="/admin/reffai"
-                            onClick={() => setIsOpen(false)}
-                            prefetch={false}
-                            className={`flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium transition-all text-[16px] ${isActive("/admin/reffai")
-                                ? "bg-indigo-600 text-white shadow-md border-l-4 border-indigo-800"
-                                : "hover:bg-indigo-900/30 text-indigo-400 hover:text-white"
-                                }`}
-                        >
-                            <Bot className="w-4 h-4" />
-                            ReffAI
                         </Link>
 
                         <div className="pt-3 pb-1 px-4">
