@@ -16,32 +16,27 @@ const PDF_FILES = {
 const chunkCache: Record<string, SearchChunk[]> = {};
 const keywordCache: Record<string, string[]> = {};
 
-function splitIntoChunks(text: string): SearchChunk[] {
+export function splitIntoChunks(text: string): SearchChunk[] {
     const chunks: SearchChunk[] = [];
     let currentSection = "";
     let chunkIndex = 0;
 
-    // Normalize whitespace
     const normalized = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
-
-    // Split by double newlines (paragraphs)
     const paragraphs = normalized.split(/\n{2,}/);
 
     for (const para of paragraphs) {
         const trimmed = para.trim();
         if (!trimmed || trimmed.length < 8) continue;
 
-        // Detect section headers (KURAL X, numbered rules like "1.", "1.1", ALL_CAPS lines)
         const isHeader =
             /^KURAL\s+\d+/i.test(trimmed) ||
             /^\d+\s+[A-ZÜŞÇÖĞIIH].{5,}/i.test(trimmed) ||
-            (trimmed.length < 80 && /^[A-ZÜŞÇÖĞII\s\d.,\-]+$/.test(trimmed) && trimmed.length > 5);
+            (trimmed.length < 80 && /^[A-ZÜŞÇÖĞİI\s\d.,\-]+$/.test(trimmed) && trimmed.length > 5);
 
         if (isHeader) {
             currentSection = trimmed.slice(0, 100);
         }
 
-        // For longer paragraphs, split into overlapping chunks
         if (trimmed.length > 450) {
             const words = trimmed.split(/\s+/);
             let buffer: string[] = [];
@@ -53,7 +48,6 @@ function splitIntoChunks(text: string): SearchChunk[] {
                     if (chunkText.trim().length >= 20) {
                         chunks.push({ text: chunkText.trim(), section: currentSection, chunkIndex: chunkIndex++ });
                     }
-                    // Overlap: keep last 20 words
                     buffer = buffer.slice(-20);
                 }
             }
@@ -71,16 +65,48 @@ function splitIntoChunks(text: string): SearchChunk[] {
 export async function getPdfChunks(type: keyof typeof PDF_FILES): Promise<SearchChunk[]> {
     if (chunkCache[type]) return chunkCache[type];
 
+    // ── Primary path: pre-extracted JSON (generated at build time) ──
+    try {
+        const jsonPath = path.join(process.cwd(), 'public', 'pdf-data', `${type}.json`);
+        const raw = await fs.readFile(jsonPath, 'utf-8');
+        const chunks = JSON.parse(raw) as SearchChunk[];
+        if (chunks.length > 0) {
+            chunkCache[type] = chunks;
+            return chunks;
+        }
+    } catch {
+        // JSON not found — fall through to runtime parsing
+    }
+
+    // ── Fallback: runtime PDF parsing (local dev only) ──
     const filename = PDF_FILES[type];
     const filePath = path.join(process.cwd(), 'data', 'gameRules', filename);
 
     try {
         const buffer = await fs.readFile(filePath);
-        // Dynamic import to use serverExternalPackages config
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
-        const pdfParse: (buf: Buffer) => Promise<{ text: string; numpages: number }> = require('pdf-parse');
-        const data = await pdfParse(buffer);
-        const chunks = splitIntoChunks(data.text);
+        const pdfjsLib = await import('pdfjs-dist/legacy/build/pdf.mjs') as any;
+        const uint8 = new Uint8Array(buffer);
+        const loadingTask = pdfjsLib.getDocument({ data: uint8, useSystemFonts: true });
+        const pdf = await loadingTask.promise;
+
+        let fullText = '';
+        for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+            const page = await pdf.getPage(pageNum);
+            const content = await page.getTextContent();
+            let pageText = '';
+            let lastY: number | null = null;
+            for (const item of content.items) {
+                if (!('str' in item)) continue;
+                const y: number = (item as any).transform[5];
+                if (lastY !== null && Math.abs(y - lastY) > 5) pageText += '\n';
+                pageText += (item as any).str;
+                if ((item as any).hasEOL) pageText += '\n';
+                lastY = y;
+            }
+            fullText += pageText + '\n\n';
+        }
+
+        const chunks = splitIntoChunks(fullText);
         chunkCache[type] = chunks;
         return chunks;
     } catch (e: any) {

@@ -16,6 +16,7 @@ const nextConfig: NextConfig = {
         "unzipper",
         "@aws-sdk/client-s3",
         "pdf-parse",
+        "pdfjs-dist",
     ],
     // Ensure PDF files in data/ are included in Vercel's output bundle
     outputFileTracingIncludes: {
