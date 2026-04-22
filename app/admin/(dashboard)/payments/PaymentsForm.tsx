@@ -71,12 +71,14 @@ function CurrencyInput({
                 <input
                     type="number"
                     min={0}
-                    step={1}
+                    step={0.01}
                     value={value === 0 ? "" : value}
                     placeholder="0"
                     onChange={(e) => {
-                        const raw = e.target.value.replace(/[^0-9]/g, "");
-                        onChange(raw === "" ? 0 : parseInt(raw, 10));
+                        const raw = e.target.value.replace(/[^0-9.]/g, "");
+                        const cleaned = raw.split(".").slice(0, 2).join(".");
+                        const val = parseFloat(cleaned);
+                        onChange(isNaN(val) ? 0 : val);
                     }}
                     className={`w-full pl-7 pr-3 py-2.5 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm font-black text-zinc-900 dark:text-white focus:ring-2 ${ringColor} focus:border-transparent outline-none transition-all`}
                 />
@@ -327,12 +329,14 @@ export function PaymentsForm({ initialConfig, allCategories }: Props) {
                                 <input
                                     type="number"
                                     min={0}
-                                    step={1}
+                                    step={0.01}
                                     value={ek.tutar === 0 ? "" : ek.tutar}
                                     placeholder="0"
                                     onChange={(e) => {
-                                        const raw = e.target.value.replace(/[^0-9]/g, "");
-                                        updateEkOdeme(ek.id, "tutar", raw === "" ? 0 : parseInt(raw, 10));
+                                        const raw = e.target.value.replace(/[^0-9.]/g, "");
+                                        const cleaned = raw.split(".").slice(0, 2).join(".");
+                                        const val = parseFloat(cleaned);
+                                        updateEkOdeme(ek.id, "tutar", isNaN(val) ? 0 : val);
                                     }}
                                     className="w-full pl-7 pr-3 py-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg text-sm font-black text-zinc-900 dark:text-white focus:ring-2 focus:ring-emerald-400 focus:border-transparent outline-none transition-all"
                                 />

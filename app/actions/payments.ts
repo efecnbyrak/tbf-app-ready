@@ -24,7 +24,8 @@ export async function getPaymentConfig(): Promise<PaymentConfig> {
         return {
             okulMaclari: mergeRate(parsed.okulMaclari),
             bolgeMaclari: mergeRate(parsed.bolgeMaclari),
-            kategoriler: (parsed.kategoriler || []).map((k) => ({
+            // Filter out previously-excluded categories so they don't appear as stale extras
+            kategoriler: (parsed.kategoriler || []).filter((k) => isValidOzelLigCategory(k.name)).map((k) => ({
                 id: k.id,
                 name: k.name,
                 rates: mergeRate(k.rates),
@@ -70,25 +71,63 @@ function isValidOzelLigCategory(cat: string): boolean {
     return true;
 }
 
+// Static Özel Lig categories that are always present regardless of match data
+const STATIC_OZEL_LIG_CATEGORIES = [
+    "UNIBES'T LİG",
+    "İTÜ SPOR ŞENLİKLERİ",
+    "TÜRKİYE SİGORTA",
+    "İSTANBUL FESTİVALİ",
+    "EVOQ CHALLENGE CUP",
+    "HAZIRLIK",
+    "GARANTİ BBVA GENÇ",
+    "Gillette KBL",
+    "CBL",
+];
+
+// İ.Ü SPOR ŞÖLEN has a yearly number (e.g. 46.) — detect from registry, fallback to default
+const IU_SPOR_SOLEN_DEFAULT = "İ.Ü 46. SPOR ŞÖLEN";
+const IU_SPOR_SOLEN_PATTERN = /^İ\.Ü\s+\d+\.\s+SPOR\s+ŞÖLEN/i;
+
 export async function getAllMatchCategories(): Promise<string[]> {
     try {
         const setting = await db.systemSetting.findUnique({ where: { key: "GLOBAL_MATCH_REGISTRY" } });
-        if (!setting?.value) return [];
-        const registry = JSON.parse(setting.value);
-        const matches: any[] = registry.allMatches || [];
         const cats = new Set<string>();
-        for (const m of matches) {
-            if (
-                m.ligTuru === "ÖZEL LİG VE ÜNİVERSİTE" &&
-                m.kategori &&
-                m.kategori.trim().length > 0 &&
-                isValidOzelLigCategory(m.kategori)
-            ) {
-                cats.add(m.kategori.trim());
+
+        // Always include static categories
+        for (const cat of STATIC_OZEL_LIG_CATEGORIES) cats.add(cat);
+
+        // Detect İ.Ü SPOR ŞÖLEN number from registry, fallback to default
+        let iuSporSolen = IU_SPOR_SOLEN_DEFAULT;
+
+        if (setting?.value) {
+            const registry = JSON.parse(setting.value);
+            const matches: any[] = registry.allMatches || [];
+
+            // Scan for İ.Ü SPOR ŞÖLEN variant (yearly number changes)
+            for (const m of matches) {
+                const trimmed = (m.kategori || "").trim();
+                if (IU_SPOR_SOLEN_PATTERN.test(trimmed)) {
+                    iuSporSolen = trimmed;
+                    break;
+                }
+            }
+
+            // Add dynamic categories from registry
+            for (const m of matches) {
+                if (
+                    m.ligTuru === "ÖZEL LİG VE ÜNİVERSİTE" &&
+                    m.kategori &&
+                    m.kategori.trim().length > 0 &&
+                    isValidOzelLigCategory(m.kategori)
+                ) {
+                    cats.add(m.kategori.trim());
+                }
             }
         }
+
+        cats.add(iuSporSolen);
         return Array.from(cats).sort((a, b) => a.localeCompare(b, "tr"));
     } catch {
-        return [];
+        return [...STATIC_OZEL_LIG_CATEGORIES, IU_SPOR_SOLEN_DEFAULT];
     }
 }

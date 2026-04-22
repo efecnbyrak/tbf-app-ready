@@ -225,41 +225,17 @@ export function RefereeListClient({ initialReferees, refereeTypeMap, currentUser
 
     return (
         <div className="space-y-8 pb-20 px-4 md:px-10 lg:px-14">
-            {/* Header / Navigation Folders Aesthetic */}
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 px-4 md:px-8 lg:px-12">
-                <div>
-                    <div className="flex items-center gap-3 mb-2">
-                        <div className="w-10 h-10 bg-red-600 rounded-2xl flex items-center justify-center shadow-lg shadow-red-600/30">
-                            <Users className="w-5 h-5 text-white" />
-                        </div>
-                        <h1 className="text-3xl font-black text-zinc-900 dark:text-white tracking-tight uppercase italic underline decoration-red-600/30 underline-offset-8">
-                            Hakem Yönetimi
-                        </h1>
+            {/* Header */}
+            <div className="px-4 md:px-8 lg:px-12">
+                <div className="flex items-center gap-3 mb-2">
+                    <div className="w-10 h-10 bg-red-600 rounded-2xl flex items-center justify-center shadow-lg shadow-red-600/30">
+                        <Users className="w-5 h-5 text-white" />
                     </div>
-                    <p className="text-zinc-500 font-bold tracking-tight uppercase italic text-[10px] ml-13">Klasman bazlı gruplandırma ve gelişmiş arama sistemi.</p>
+                    <h1 className="text-3xl font-black text-zinc-900 dark:text-white tracking-tight uppercase italic underline decoration-red-600/30 underline-offset-8">
+                        Hakem Yönetimi
+                    </h1>
                 </div>
-
-                <div className="flex items-center gap-3 w-full md:w-auto">
-                    <div className="relative flex-1 md:w-96 group">
-                        <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400 group-focus-within:text-red-500 transition-colors" />
-                        <input
-                            type="text"
-                            placeholder="Hakemlerde ara (İsim)..."
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full pl-14 pr-6 py-4 bg-white dark:bg-zinc-900 border-2 border-zinc-100 dark:border-zinc-800 rounded-3xl focus:border-red-600 outline-none transition-all font-bold text-zinc-900 dark:text-white shadow-sm hover:shadow-md"
-                        />
-                    </div>
-                    {currentUserRole === "SUPER_ADMIN" && (
-                        <button
-                            onClick={() => setExportModalOpen(true)}
-                            className="flex items-center gap-2 px-5 py-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-3xl text-sm font-black shadow-lg shadow-emerald-600/20 transition-all hover:scale-[1.02] active:scale-[0.98] whitespace-nowrap"
-                        >
-                            <Download className="w-4 h-4" />
-                            <span className="hidden sm:inline">Veri Al</span>
-                        </button>
-                    )}
-                </div>
+                <p className="text-zinc-500 font-bold tracking-tight uppercase italic text-[10px] ml-13">Klasman bazlı gruplandırma ve gelişmiş arama sistemi.</p>
             </div>
 
             {/* Top Categories Filter */}
@@ -306,27 +282,66 @@ export function RefereeListClient({ initialReferees, refereeTypeMap, currentUser
                 })}
             </div>
 
-            {/* Sub-category Side Filter */}
-            <div className="flex justify-center md:justify-end px-4 md:px-8 lg:px-12 mt-4">
-                <div className="flex bg-zinc-100 dark:bg-zinc-800 p-1.5 rounded-2xl gap-1 w-full md:w-auto overflow-x-auto scrollbar-hide">
+            {/* Toolbar — mirrors Officials page structure */}
+            <div className="flex flex-col gap-4 bg-white dark:bg-zinc-900 p-6 rounded-[2rem] shadow-sm border border-zinc-200 dark:border-zinc-800 mx-4 md:mx-8 lg:mx-12">
+                <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-red-50 dark:bg-red-900/20 rounded-2xl flex items-center justify-center">
+                        <Users className="w-6 h-6 text-red-600" />
+                    </div>
+                    <div>
+                        <h2 className="text-xl font-black text-zinc-900 dark:text-white tracking-tight uppercase italic">
+                            {activeCategory === "ALL" ? "TÜM HAKEMLER" : (CLASSIFICATION_MAP[activeCategory] || activeCategory).toUpperCase()}
+                        </h2>
+                        <p className="text-xs text-zinc-500 font-bold tracking-tight uppercase italic">{filteredReferees.length} KAYIT BULUNDU</p>
+                    </div>
+                </div>
+
+                {/* Side Filter */}
+                <div className="flex overflow-x-auto bg-zinc-100 dark:bg-zinc-800 p-1.5 rounded-2xl gap-1">
                     <button
+                        type="button"
                         onClick={() => setSelectedSide(null)}
-                        className={`flex-1 md:flex-none px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${!selectedSide ? 'bg-white dark:bg-zinc-700 text-red-600 shadow-sm' : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'}`}
+                        className={`flex-1 sm:flex-none px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${!selectedSide ? 'bg-white dark:bg-zinc-700 text-red-600 shadow-sm' : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'}`}
                     >
                         TÜM YAKALAR
                     </button>
                     <button
+                        type="button"
                         onClick={() => setSelectedSide("Anadolu")}
-                        className={`flex-1 md:flex-none px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${selectedSide === "Anadolu" ? 'bg-red-600 text-white shadow-lg shadow-red-600/20' : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'}`}
+                        className={`flex-1 sm:flex-none px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${selectedSide === "Anadolu" ? 'bg-red-600 text-white shadow-lg shadow-red-600/20' : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'}`}
                     >
                         ANADOLU
                     </button>
                     <button
+                        type="button"
                         onClick={() => setSelectedSide("Avrupa")}
-                        className={`flex-1 md:flex-none px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${selectedSide === "Avrupa" ? 'bg-red-600 text-white shadow-lg shadow-red-600/20' : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'}`}
+                        className={`flex-1 sm:flex-none px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${selectedSide === "Avrupa" ? 'bg-red-600 text-white shadow-lg shadow-red-600/20' : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'}`}
                     >
                         AVRUPA
                     </button>
+                </div>
+
+                {/* Search + Veri Al */}
+                <div className="flex items-center gap-3 w-full">
+                    <div className="relative flex-1 min-w-0">
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400" />
+                        <input
+                            type="text"
+                            placeholder="Hakemlerde ara (İsim)..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="w-full pl-12 pr-6 py-3.5 bg-zinc-50 dark:bg-zinc-950 border-2 border-zinc-100 dark:border-zinc-800 rounded-2xl focus:border-red-600 outline-none transition-all font-medium text-zinc-900 dark:text-white"
+                        />
+                    </div>
+                    {currentUserRole === "SUPER_ADMIN" && (
+                        <button
+                            onClick={() => setExportModalOpen(true)}
+                            className="flex items-center gap-2 px-4 py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl text-sm font-black shadow-lg shadow-emerald-600/20 transition-all hover:scale-[1.02] active:scale-[0.98] whitespace-nowrap"
+                        >
+                            <Download className="w-4 h-4" />
+                            <span className="hidden sm:inline">Veri Al</span>
+                        </button>
+                    )}
                 </div>
             </div>
 

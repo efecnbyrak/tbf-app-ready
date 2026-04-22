@@ -13,7 +13,7 @@ import { tr } from "date-fns/locale";
 export const dynamic = 'force-dynamic';
 
 interface PageProps {
-    searchParams: Promise<{ group?: string; type?: string; week?: string }>;
+    searchParams: Promise<{ group?: string; type?: string; week?: string; classification?: string }>;
 }
 
 export default async function AvailabilityAdminPage({ searchParams }: PageProps) {
@@ -38,9 +38,10 @@ export default async function AvailabilityAdminPage({ searchParams }: PageProps)
     const formattedStart = format(startDate, "d MMMM", { locale: tr });
     const formattedEnd = format(endDate, "d MMMM yyyy", { locale: tr });
 
-    // Determine active group and type
+    // Determine active group, type and classification
     const activeGroup = params.group || "REFEREE"; // "REFEREE" or "GENERAL"
     const activeType = params.type; // "TABLE", "OBSERVER", etc.
+    const activeClassification = params.classification; // "IL_HAKEMI", "ADAY_HAKEM", "A", "B", "C"
 
     // Fetch forms with database-level filtering
     // Use a date range to avoid timezone-induced exact-match failures
@@ -56,7 +57,9 @@ export default async function AvailabilityAdminPage({ searchParams }: PageProps)
                 lte: rangeEnd
             },
             ...(activeGroup === "REFEREE"
-                ? { referee: { isNot: null } }
+                ? activeClassification
+                    ? { referee: { is: { classification: activeClassification } } }
+                    : { referee: { isNot: null } }
                 : {
                     official: activeType
                         ? {
@@ -93,6 +96,15 @@ export default async function AvailabilityAdminPage({ searchParams }: PageProps)
         { id: "STATISTICIAN", label: "İstatistik Görevlileri", icon: FileSpreadsheet },
         { id: "HEALTH", label: "Sağlık Görevlileri", icon: Activity },
         { id: "FIELD_COMMISSIONER", label: "Saha Komiserleri", icon: Shield },
+    ];
+
+    // Classification sub-tabs for Referee group
+    const refereeClassifications = [
+        { id: "IL_HAKEMI", label: "İl Hakem" },
+        { id: "ADAY_HAKEM", label: "Aday Hakem" },
+        { id: "A", label: "A Klasman" },
+        { id: "B", label: "B Klasman" },
+        { id: "C", label: "C Klasman" },
     ];
 
     return (
@@ -209,6 +221,40 @@ export default async function AvailabilityAdminPage({ searchParams }: PageProps)
                             >
                                 <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                                 {t.label}
+                            </Link>
+                        );
+                    })}
+                </div>
+            )}
+
+            {/* Sub-Tabs for Referee — filter by classification */}
+            {activeGroup === "REFEREE" && (
+                <div className="flex gap-2 overflow-x-auto pb-2 -mx-1 px-1">
+                    <Link
+                        href={`/admin/all-availabilities?group=REFEREE&week=${isLastWeek ? 'last' : 'current'}`}
+                        className={`
+                            px-3 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm font-medium border transition-colors whitespace-nowrap shrink-0
+                            ${!activeClassification
+                                ? "bg-zinc-900 text-white border-zinc-900 dark:bg-zinc-100 dark:text-zinc-900"
+                                : "bg-white text-zinc-600 border-zinc-200 hover:bg-zinc-50 dark:bg-zinc-800 dark:text-zinc-300 dark:border-zinc-700 dark:hover:bg-zinc-700"}
+                        `}
+                    >
+                        Tümü
+                    </Link>
+                    {refereeClassifications.map((cls) => {
+                        const isActive = activeClassification === cls.id;
+                        return (
+                            <Link
+                                key={cls.id}
+                                href={`/admin/all-availabilities?group=REFEREE&classification=${cls.id}&week=${isLastWeek ? 'last' : 'current'}`}
+                                className={`
+                                    px-3 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm font-medium border transition-colors whitespace-nowrap shrink-0
+                                    ${isActive
+                                        ? "bg-zinc-900 text-white border-zinc-900 dark:bg-zinc-100 dark:text-zinc-900"
+                                        : "bg-white text-zinc-600 border-zinc-200 hover:bg-zinc-50 dark:bg-zinc-800 dark:text-zinc-300 dark:border-zinc-700 dark:hover:bg-zinc-700"}
+                                `}
+                            >
+                                {cls.label}
                             </Link>
                         );
                     })}

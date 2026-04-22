@@ -310,6 +310,36 @@ export async function GET(req: NextRequest) {
             }
         }
 
+        // Add Ek Ödemeler rows just before the total
+        const ekOdemeler: any[] = (paymentConfig as any).ekOdemeler || [];
+        if (ekOdemeler.length > 0) {
+            const EK_FILL: ExcelJS.Fill = {
+                type: "pattern", pattern: "solid",
+                fgColor: { argb: "FFE8F5E9" },
+            };
+            for (const ek of ekOdemeler) {
+                if (!ek.aciklama && !ek.tutar) continue;
+                const ekRow = wsOdemeler.addRow([
+                    "", "", "", "", "", ek.aciklama || "Ek Ödeme", Number(ek.tutar) || 0,
+                ]);
+                ekRow.height = 22;
+                for (let cn = 1; cn <= 7; cn++) {
+                    const cell = ekRow.getCell(cn);
+                    cell.font = { size: 10, name: "Calibri", italic: true };
+                    cell.border = THIN_BLACK;
+                    cell.fill = EK_FILL;
+                    cell.alignment = {
+                        vertical: "middle",
+                        horizontal: cn === 7 ? "right" : "center",
+                        wrapText: false,
+                    };
+                    if (cn === 7) cell.numFmt = "#,##0.00";
+                }
+                totalAmount += Number(ek.tutar) || 0;
+                payRowIndex++;
+            }
+        }
+
         // Add totals row
         wsOdemeler.addRow([]); // Empty spacer row
         const totalRow = wsOdemeler.addRow([
