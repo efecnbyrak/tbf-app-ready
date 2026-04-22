@@ -6,11 +6,14 @@ import { redirect } from "next/navigation";
 const BOOTSTRAP_COOKIE_NAME = "session";
 // 10/10 Security Recommendation: Always set NEXTAUTH_SECRET in your production environment variables.
 const getSessionKey = () => {
-    const secret = process.env.NEXTAUTH_SECRET || process.env.JWT_SECRET || "local-dev-fallback-secure-key-32-chars-min";
+    const secret = process.env.NEXTAUTH_SECRET || process.env.JWT_SECRET;
 
-    if (process.env.NODE_ENV === "production" && !process.env.NEXTAUTH_SECRET && !process.env.JWT_SECRET) {
-        // Only log critical security warning in production if absolutely necessary
-        // In some environments, this might be intentional (e.g. specialized auth)
+    if (!secret) {
+        if (process.env.NODE_ENV === "production") {
+            throw new Error("CRITICAL: NEXTAUTH_SECRET or JWT_SECRET must be set in production.");
+        }
+        // Dev-only fallback — never used in production
+        return new TextEncoder().encode("dev-only-fallback-key-not-for-production-use!!");
     }
 
     return new TextEncoder().encode(secret);

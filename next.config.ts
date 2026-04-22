@@ -38,6 +38,11 @@ const nextConfig: NextConfig = {
             "recharts",
             "date-fns",
             "react-hot-toast",
+            "@radix-ui/react-dialog",
+            "@radix-ui/react-dropdown-menu",
+            "@radix-ui/react-select",
+            "@radix-ui/react-tabs",
+            "zod",
         ],
     },
     images: {

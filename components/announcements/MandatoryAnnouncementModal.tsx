@@ -21,11 +21,21 @@ export function MandatoryAnnouncementModal() {
     useEffect(() => {
         const fetchUnread = async () => {
             try {
+                // Skip API call if no unread announcements were found this session
+                const cached = sessionStorage.getItem("announcementsChecked");
+                if (cached === "none") {
+                    setIsLoading(false);
+                    return;
+                }
+
                 const res = await fetch("/api/announcements/unread-list");
                 if (res.ok) {
                     const data = await res.json();
                     if (data.announcements && data.announcements.length > 0) {
                         setAnnouncements(data.announcements);
+                    } else {
+                        // No unread announcements — cache to skip future checks this session
+                        sessionStorage.setItem("announcementsChecked", "none");
                     }
                 }
             } catch (e) {
@@ -45,11 +55,16 @@ export function MandatoryAnnouncementModal() {
         try {
             const formData = new FormData();
             formData.append("announcementId", id.toString());
-            
+
             await fetch("/api/announcements/mark-read", {
                 method: "POST",
                 body: formData
             });
+
+            // If this was the last announcement, mark session as clean
+            if (currentIndex >= announcements.length - 1) {
+                sessionStorage.setItem("announcementsChecked", "none");
+            }
 
             // Move to next announcement
             setCurrentIndex(prev => prev + 1);

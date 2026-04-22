@@ -15,20 +15,23 @@ export async function saveAvailability(prevState: ActionState, formData: FormDat
     const session = await verifySession();
     const userId = session.userId;
 
-    let profile: any = await db.referee.findUnique({
-        where: { userId },
-        include: {
-            regions: true,
-            user: true // Include user to check suspension
-        }
-    });
+    // Fetch both profile types in parallel to avoid sequential queries
+    const [refereeProfile, officialProfile] = await Promise.all([
+        db.referee.findUnique({
+            where: { userId },
+            include: { regions: true, user: true }
+        }),
+        db.generalOfficial.findUnique({
+            where: { userId },
+            include: { regions: true, user: true }
+        }),
+    ]);
+
+    let profile: any = refereeProfile;
     let isOfficial = false;
 
     if (!profile) {
-        profile = (await db.generalOfficial.findUnique({
-            where: { userId },
-            include: { regions: true, user: true }
-        })) as any;
+        profile = officialProfile;
         isOfficial = true;
     }
 

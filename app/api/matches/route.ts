@@ -120,9 +120,11 @@ export async function GET(request: Request) {
             pendingSeasons = [...ALL_ARCHIVE_SEASONS];
         }
 
-        // --- Fetch Phone Numbers ---
-        const allReferees = await db.referee.findMany({ select: { firstName: true, lastName: true, phone: true } });
-        const allOfficials = await db.generalOfficial.findMany({ select: { firstName: true, lastName: true, phone: true } });
+        // --- Fetch Phone Numbers (only name+phone, minimal query) ---
+        const [allReferees, allOfficials] = await Promise.all([
+            db.referee.findMany({ select: { firstName: true, lastName: true, phone: true } }),
+            db.generalOfficial.findMany({ select: { firstName: true, lastName: true, phone: true } }),
+        ]);
 
         const personnelPhones: Record<string, string> = {};
 
@@ -199,7 +201,7 @@ export async function GET(request: Request) {
     } catch (error: any) {
         console.error("[MATCHES API] Error:", error?.message, error?.stack);
         return NextResponse.json({
-            error: error?.message || "Beklenmedik bir hata oluştu.",
+            error: "Maç verileri yüklenirken bir hata oluştu.",
         }, { status: 500 });
     }
 }

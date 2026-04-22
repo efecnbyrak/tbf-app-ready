@@ -13,14 +13,9 @@ export default async function QuestionsHubPage() {
         include: { official: true }
     });
     
-    const isSuperAdmin = session.role === "SUPER_ADMIN";
-    const isObserverAdmin = (session.role === "ADMIN" || session.role === "ADMIN_IHK") && user?.official?.officialType === "OBSERVER";
-    const isSpecialCase = user?.official?.officialType === "Gözlemci" || session.role === "ADMIN"; 
-
-    if (!isSuperAdmin && !isObserverAdmin) {
-        if (session.role !== "ADMIN" && session.role !== "SUPER_ADMIN") {
-             redirect("/admin/bag");
-        }
+    const adminRoles = ["ADMIN", "SUPER_ADMIN", "ADMIN_IHK"];
+    if (!adminRoles.includes(session.role)) {
+        redirect("/admin/bag");
     }
 
     const standardCategories = [

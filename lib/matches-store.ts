@@ -72,24 +72,17 @@ export async function saveUserMatchesStore(userId: number, matches: MatchData[],
 }
 
 /**
- * Clears the "new matches" notification flag — single direct update, no read needed
+ * Clears the "new matches" notification flag via direct SQL update (no read needed)
  */
 export async function clearMatchNotification(userId: number) {
     try {
-        const user = await db.user.findUnique({
-            where: { id: userId },
-            select: { matchStore: true }
-        });
-        if (!user?.matchStore) return;
-
-        const storage = user.matchStore as unknown as UserStorage;
-        if (!storage.hasNew) return;
-
-        storage.hasNew = false;
-        await db.user.update({
-            where: { id: userId },
-            data: { matchStore: storage as any }
-        });
+        await db.$executeRaw`
+            UPDATE users
+            SET "matchStore" = jsonb_set("matchStore"::jsonb, '{hasNew}', 'false'::jsonb)
+            WHERE id = ${userId}
+            AND "matchStore" IS NOT NULL
+            AND ("matchStore"::jsonb ->> 'hasNew')::boolean = true
+        `;
     } catch (e) {
         console.error(`[STORAGE] clearMatchNotification error for user ${userId}:`, e);
     }

@@ -5,7 +5,8 @@ import { db } from "@/lib/db";
 export async function POST(req: NextRequest) {
     try {
         const session = await verifySession();
-        if (session.role !== "ADMIN" && session.role !== "SUPER_ADMIN") {
+        const adminRoles = ["ADMIN", "SUPER_ADMIN", "ADMIN_IHK"];
+        if (!adminRoles.includes(session.role)) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
@@ -42,7 +43,8 @@ export async function POST(req: NextRequest) {
 export async function DELETE(req: NextRequest) {
     try {
         const session = await verifySession();
-        if (session.role !== "ADMIN" && session.role !== "SUPER_ADMIN") {
+        const adminRoles = ["ADMIN", "SUPER_ADMIN", "ADMIN_IHK"];
+        if (!adminRoles.includes(session.role)) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { getSession } from "@/lib/session";
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
@@ -10,12 +11,17 @@ export const maxDuration = 30; // seconds
 // GET /api/rules
 export async function GET() {
     try {
+        const session = await getSession();
+        if (!session?.userId) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
         const rules = await db.ruleBook.findMany({
             orderBy: { createdAt: 'desc' }
         });
         return NextResponse.json(rules, {
             headers: {
-                'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=59'
+                'Cache-Control': 'private, s-maxage=3600, stale-while-revalidate=59'
             }
         });
     } catch (error) {
@@ -24,10 +30,14 @@ export async function GET() {
     }
 }
 
-// POST /api/rules
+// POST /api/rules (Admin only)
 export async function POST(req: Request) {
-    console.log("[API /api/rules POST] Request received");
     try {
+        const session = await getSession();
+        const adminRoles = ["ADMIN", "SUPER_ADMIN", "ADMIN_IHK"];
+        if (!session?.userId || !adminRoles.includes(session.role)) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
         const formData = await req.formData();
         const title = formData.get("title") as string;
         const category = formData.get("category") as string;
@@ -108,7 +118,6 @@ export async function POST(req: Request) {
         console.error("[API] Error saving rule:", error);
         return NextResponse.json({
             error: "İşlem başarısız.",
-            details: error.message
         }, { status: 500 });
     }
 }

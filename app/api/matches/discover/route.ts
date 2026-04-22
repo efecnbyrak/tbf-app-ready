@@ -1,11 +1,16 @@
 import { NextResponse } from "next/server";
 import { findAllSpreadsheets } from "@/lib/google-drive";
 import { getCachedData } from "@/lib/cache";
+import { getSession } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
     try {
+        const session = await getSession();
+        if (!session?.userId) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
         const folderIds = (process.env.GOOGLE_DRIVE_FOLDER_ID || "")
             .split(",").map((s: string) => s.trim()).filter(Boolean);
 

@@ -1,4 +1,5 @@
 import { db } from "./db";
+import { randomBytes } from "crypto";
 
 // Cache to prevent redundant schema checks in the same execution context
 let isSchemaChecked = false;
@@ -68,15 +69,16 @@ export async function ensureSchemaColumns() {
             if (usersMissingCode.length > 0) {
                 const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
                 const generateCode = () => {
+                    const bytes = randomBytes(8);
                     let code = "";
                     for (let i = 0; i < 8; i++) {
                         if (i === 4) code += "-";
-                        code += chars.charAt(Math.floor(Math.random() * chars.length));
+                        code += chars.charAt(bytes[i] % chars.length);
                     }
                     return code;
                 };
 
-                await Promise.all(
+                await db.$transaction(
                     usersMissingCode.map(u =>
                         db.user.update({
                             where: { id: u.id },
@@ -88,31 +90,6 @@ export async function ensureSchemaColumns() {
             }
         } catch(e) {
              console.warn("[DB-HEAL] Could not generate recovery codes (table might not exist yet):", e);
-        }
-
-        // FIX ERAY UKSAL ROLE TO ADMIN explicitly
-        try {
-            const erayOfficial = await db.generalOfficial.findFirst({
-                where: { firstName: { equals: "Eray", mode: "insensitive" }, lastName: { equals: "Ukşal", mode: "insensitive"} }
-            });
-            const erayReferee = await db.referee.findFirst({
-                where: { firstName: { equals: "Eray", mode: "insensitive" }, lastName: { equals: "Ukşal", mode: "insensitive"} }
-            });
-
-            const erayUserId = erayOfficial?.userId || erayReferee?.userId;
-            
-            if (erayUserId) {
-                let adminRole = await db.role.findUnique({ where: { name: "ADMIN" } });
-                if (!adminRole) {
-                    adminRole = await db.role.create({ data: { name: "ADMIN" } });
-                }
-                await db.user.update({
-                    where: { id: erayUserId },
-                    data: { roleId: adminRole.id }
-                });
-            }
-        } catch (e) {
-            console.warn("[DB-HEAL] Eray Uksal role fix warning:", e);
         }
 
         // 3. Referee columns

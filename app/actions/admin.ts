@@ -6,7 +6,8 @@ import { revalidatePath } from "next/cache";
 
 export async function deleteReferee(refereeId: number) {
     const session = await verifySession();
-    if (session.role !== "ADMIN") {
+    const adminRoles = ["ADMIN", "SUPER_ADMIN", "ADMIN_IHK"];
+    if (!adminRoles.includes(session.role)) {
         return { error: "Yetkisiz işlem." };
     }
 
@@ -38,7 +39,8 @@ export async function deleteReferee(refereeId: number) {
 
 export async function updateRefereeClassification(refereeId: number, classification: string) {
     const session = await verifySession();
-    if (session.role !== "ADMIN") {
+    const adminRoles = ["ADMIN", "SUPER_ADMIN", "ADMIN_IHK"];
+    if (!adminRoles.includes(session.role)) {
         return { error: "Yetkisiz işlem." };
     }
 
@@ -55,15 +57,12 @@ export async function updateRefereeClassification(refereeId: number, classificat
 }
 export async function updateRefereeType(id: number, officialType: string) {
     const session = await verifySession();
-    if (session.role !== "ADMIN" && session.role !== "SUPER_ADMIN") {
+    const adminRoles = ["ADMIN", "SUPER_ADMIN", "ADMIN_IHK"];
+    if (!adminRoles.includes(session.role)) {
         return { error: "Yetkisiz işlem." };
     }
 
     try {
-        // Find if it's a referee (though referees don't have types anymore, 
-        // they are just REFEREE. If we change it to something else, they should move table)
-        // But for now, this is likely used for GeneralOfficials.
-
         await db.generalOfficial.update({
             where: { id },
             data: { officialType }

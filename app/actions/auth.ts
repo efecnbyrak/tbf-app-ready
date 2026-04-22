@@ -12,111 +12,26 @@ import { logAction, ensureAuditLogTable } from "@/lib/logger";
 import { LoginSchema, RegisterSchema, PasswordResetRequestSchema } from "@/lib/schemas";
 import { validatePhone, formatPhone } from "@/lib/validation-utils";
 import { z } from "zod";
+import { randomBytes, randomInt } from "crypto";
 
-// Cache to prevent redundant admin checks in the same execution context
-let isAdminUserChecked = false;
+// Cache to prevent redundant role checks in the same execution context
+let isRolesChecked = false;
 
-// Seed Roles and Admin User at runtime if missing
-async function ensureAdminUser() {
-    if (isAdminUserChecked) return;
+// Ensure required roles exist (no hardcoded users or passwords)
+async function ensureRoles() {
+    if (isRolesChecked) return;
     try {
-        const superAdminRole = await db.role.findUnique({ where: { name: 'SUPER_ADMIN' } });
-        if (!superAdminRole) {
-            await db.role.create({ data: { name: 'SUPER_ADMIN' } });
-        }
-
-
-        const adminUsername = 'talat.mustafa.ozdemir50';
-        const expectedPassword = "talat!56742";
-        const hashedPassword = await bcrypt.hash(expectedPassword, 10);
-
-        const existingAdmin = await db.user.findUnique({ where: { username: adminUsername } });
-
-        if (!existingAdmin) {
-            const adminRole = await db.role.findUnique({ where: { name: 'SUPER_ADMIN' } });
-            if (adminRole) {
-                await db.user.create({
-                    data: {
-                        username: adminUsername,
-                        password: hashedPassword,
-                        roleId: adminRole.id,
-                        isApproved: true,
-                        isVerified: true
-                    }
-                });
-                if (process.env.NODE_ENV !== "production") {
-                    console.log("[DB-FIX] Super Admin created successfully.");
-                }
-            }
-        } else {
-            // Force update password to ensure they can log in even if they changed it or if it was different
-            const isPasswordMatch = await bcrypt.compare(expectedPassword, existingAdmin.password);
-            if (!isPasswordMatch) {
-                await db.user.update({
-                    where: { id: existingAdmin.id },
-                    data: { password: hashedPassword }
-                });
-                console.log("[DB-FIX] Super Admin password reset successfully to the required one.");
+        const requiredRoles = ['SUPER_ADMIN', 'ADMIN', 'ADMIN_IHK', 'REFEREE', 'USER'];
+        for (const roleName of requiredRoles) {
+            const existing = await db.role.findUnique({ where: { name: roleName } });
+            if (!existing) {
+                await db.role.create({ data: { name: roleName } });
             }
         }
-
-        // =====================================================
-        // AUTO-MIGRATE: Replace TCKN usernames with emails
-        // This runs once at startup. It finds all users whose
-        // username is an 11-digit number (TCKN) and replaces it
-        // with their email from referees or general_officials.
-        // =====================================================
-        try {
-            // Update users who have a referee with an email
-            await db.$executeRawUnsafe(`
-                UPDATE users
-                SET "username" = r."email"
-                FROM referees r
-                WHERE users.id = r."userId"
-                AND users."username" ~ '^[0-9]{11}$'
-                AND r."email" IS NOT NULL
-                AND r."email" != ''
-            `);
-
-            // Update users who have an official with an email
-            await db.$executeRawUnsafe(`
-                UPDATE users
-                SET "username" = g."email"
-                FROM general_officials g
-                WHERE users.id = g."userId"
-                AND users."username" ~ '^[0-9]{11}$'
-                AND g."email" IS NOT NULL
-                AND g."email" != ''
-            `);
-
-            // For any remaining 11-digit usernames with no email, give them a placeholder
-            await db.$executeRawUnsafe(`
-                UPDATE users
-                SET "username" = CONCAT('kullanici_', id::text, '@bks.local')
-                WHERE "username" ~ '^[0-9]{11}$'
-            `);
-
-            // Also fix any empty or NULL usernames (if user manually cleared them)
-            await db.$executeRawUnsafe(`
-                UPDATE users
-                SET "username" = COALESCE(
-                    (SELECT r."email" FROM referees r WHERE r."userId" = users.id AND r."email" IS NOT NULL AND r."email" != '' LIMIT 1),
-                    (SELECT g."email" FROM general_officials g WHERE g."userId" = users.id AND g."email" IS NOT NULL AND g."email" != '' LIMIT 1),
-                    CONCAT('kullanici_', id::text, '@bks.local')
-                )
-                WHERE "username" IS NULL OR "username" = ''
-            `);
-
-            console.log("[DB-FIX] TCKN username migration completed.");
-        } catch (migrationError) {
-            console.warn("[DB-FIX] TCKN migration warning:", (migrationError as any)?.message);
-        }
-
     } catch (e) {
-        // Silently fail if columns exist or other DB issues
-        console.warn("[DB-FIX] Self-healing attempt finished with warning:", (e as any)?.message);
+        console.warn("[ROLES] Ensure roles warning:", (e as any)?.message);
     } finally {
-        isAdminUserChecked = true;
+        isRolesChecked = true;
     }
 }
 
@@ -178,7 +93,7 @@ export async function login(prevState: ActionState, formData: FormData): Promise
     }
 
 
-    await ensureAdminUser();
+    await ensureRoles();
     await ensureAuditLogTable();
 
     try {
@@ -265,11 +180,10 @@ export async function login(prevState: ActionState, formData: FormData): Promise
             return { success: true, redirectTo: "/admin" };
         }
 
-        // Special test account handling - ensure it goes to the correct dashboard based on its CURRENT role
-        const isTestAccount = identifier === "test@example.com";
-        const is2FA_Disabled_Temporarily = true; // Temporary disable
+        // 2FA bypass for dev environment only
+        const is2FADisabled = process.env.NODE_ENV !== "production" && process.env.DISABLE_2FA === "true";
 
-        if (isTestAccount || is2FA_Disabled_Temporarily) {
+        if (is2FADisabled) {
             await createSession(user.id, user.role.name, rememberMe);
             let redirectTo = "/";
             if (roleName === "ADMIN" || roleName === "SUPER_ADMIN" || roleName === "ADMIN_IHK") {
@@ -282,7 +196,7 @@ export async function login(prevState: ActionState, formData: FormData): Promise
             return { success: true, redirectTo };
         }
 
-        const code = Math.floor(100000 + Math.random() * 900000).toString();
+        const code = randomInt(100000, 999999).toString();
         const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 mins
 
         await db.user.update({
@@ -418,7 +332,7 @@ export async function register(prevState: ActionState, formData: FormData): Prom
         const selectedCity = formData.get("selectedCity") as string || "İstanbul";
 
         // 4. Transactional Create
-        const token = Array.from({ length: 32 }, () => Math.floor(Math.random() * 16).toString(16)).join('');
+        const token = randomBytes(32).toString('hex');
         const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
 
         await db.$transaction(async (tx: any) => {
@@ -599,14 +513,7 @@ export async function promoteToAdmin(userId: number) {
             return { error: "Yetkisiz işlem. Oturum bulunamadı." };
         }
 
-        const currentUser = await db.user.findUnique({
-            where: { id: currentSession.userId },
-            include: { referee: true, official: true }
-        });
-
-        const currentUserEmail = currentUser?.referee?.email || currentUser?.official?.email || currentUser?.username || "";
-
-        if (currentSession.role !== "SUPER_ADMIN" && currentUserEmail !== "talatmustafaozdemir@gmail.com") {
+        if (currentSession.role !== "SUPER_ADMIN") {
             return { error: "Yetkisiz işlem. Sadece Süper Admin bu işlemi yapabilir." };
         }
 
@@ -665,14 +572,7 @@ export async function demoteFromAdmin(userId: number) {
             return { error: "Yetkisiz işlem. Oturum bulunamadı." };
         }
 
-        const currentUser = await db.user.findUnique({
-            where: { id: currentSession.userId },
-            include: { referee: true, official: true }
-        });
-
-        const currentUserEmail = currentUser?.referee?.email || currentUser?.official?.email || currentUser?.username || "";
-
-        if (currentSession.role !== "SUPER_ADMIN" && currentUserEmail !== "talatmustafaozdemir@gmail.com") {
+        if (currentSession.role !== "SUPER_ADMIN") {
             return { error: "Yetkisiz işlem. Sadece Süper Admin bu işlemi yapabilir." };
         }
 
@@ -765,10 +665,9 @@ export async function requestPasswordReset(prevState: ActionState, formData: For
             include: { referee: true, official: true }
         });
 
-        // Security: Direct feedback requested by user
+        // Security: Don't reveal whether account exists to prevent enumeration
         if (!user) {
-            // Log attempt nonetheless for security monitoring
-            return { error: "Bu e-posta adresi ile kayıtlı bir hesap bulunamadı.", success: false };
+            return { success: true, message: "Eğer bu e-posta ile kayıtlı bir hesap varsa, şifre sıfırlama bağlantısı gönderilecektir." };
         }
 
         const email = user.referee?.email || user.official?.email || user.username;
@@ -777,7 +676,7 @@ export async function requestPasswordReset(prevState: ActionState, formData: For
         }
 
         // Generate a random 32-char hex token
-        const token = Array.from({ length: 32 }, () => Math.floor(Math.random() * 16).toString(16)).join('');
+        const token = randomBytes(32).toString('hex');
         const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
 
         await db.user.update({

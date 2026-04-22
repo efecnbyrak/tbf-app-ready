@@ -6,6 +6,7 @@ let isAuditLogTableChecked = false;
 export async function ensureAuditLogTable() {
     if (isAuditLogTableChecked) return;
     try {
+        // Static DDL — no user input, safe to use $executeRawUnsafe
         await db.$executeRawUnsafe(`
             CREATE TABLE IF NOT EXISTS audit_logs (
                 id SERIAL PRIMARY KEY,
@@ -32,7 +33,7 @@ export async function logAction(userId: number | null, action: string, details?:
         const ipAddress = headerList.get("x-forwarded-for") || "127.0.0.1";
 
         try {
-            await (db as any).auditLog.create({
+            await db.auditLog.create({
                 data: {
                     userId,
                     action,
@@ -42,11 +43,11 @@ export async function logAction(userId: number | null, action: string, details?:
                 }
             });
         } catch (prismaError) {
-            // Fallback to raw SQL if table exists but Prisma model is stale
-            await db.$executeRawUnsafe(`
+            // Fallback to raw SQL using parameterized query (tagged template)
+            await db.$executeRaw`
                 INSERT INTO audit_logs ("userId", action, details, "targetId", "ipAddress", "createdAt")
-                VALUES ($1, $2, $3, $4, $5, NOW())
-            `, userId, action, details || null, targetId || null, ipAddress);
+                VALUES (${userId}, ${action}, ${details || null}, ${targetId || null}, ${ipAddress}, NOW())
+            `;
         }
     } catch (error) {
         console.error("[LOGGER ERROR] Failed to create audit log:", error);

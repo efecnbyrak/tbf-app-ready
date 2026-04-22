@@ -34,7 +34,8 @@ export async function POST(req: Request) {
             include: { role: true }
         });
 
-        if (user?.role.name !== "ADMIN") {
+        const adminRoles = ["ADMIN", "SUPER_ADMIN", "ADMIN_IHK"];
+        if (!user || !adminRoles.includes(user.role.name)) {
             return NextResponse.json({ error: "Forbidden" }, { status: 403 });
         }
 
@@ -64,7 +65,6 @@ export async function POST(req: Request) {
 
         return NextResponse.json({
             error: "Kategori oluşturulurken bir hata oluştu.",
-            details: error.message
         }, { status: 500 });
     }
 }

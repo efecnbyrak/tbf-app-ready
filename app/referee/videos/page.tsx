@@ -3,7 +3,7 @@ import { getYouTubeThumbnail } from "@/lib/youtube-utils";
 import { db } from "@/lib/db";
 import Image from "next/image";
 
-export const revalidate = 3600; // Revalidate every hour
+export const dynamic = 'force-dynamic';
 
 interface VideoCategory {
     id: number;

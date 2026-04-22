@@ -18,10 +18,10 @@ const getMobileKey = () => {
     const secret = process.env.NEXTAUTH_SECRET || process.env.JWT_SECRET;
     if (!secret) {
         if (process.env.NODE_ENV === "production") {
-            console.warn("[API/LOGIN] Secret missing during build phase.");
-            return new TextEncoder().encode("temp-build-key");
+            throw new Error("CRITICAL: NEXTAUTH_SECRET or JWT_SECRET must be set in production.");
         }
-        throw new Error("CRITICAL: NEXTAUTH_SECRET or JWT_SECRET environment variable is missing.");
+        // Dev-only fallback
+        return new TextEncoder().encode("dev-only-mobile-key-not-for-production!!");
     }
     return new TextEncoder().encode(secret);
 };

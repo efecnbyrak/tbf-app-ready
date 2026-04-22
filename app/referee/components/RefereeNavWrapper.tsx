@@ -4,36 +4,48 @@ import { verifySession } from "@/lib/session";
 
 const ADMIN_ROLES = ["ADMIN", "SUPER_ADMIN", "ADMIN_IHK", "OBSERVER"];
 
-export async function RefereeNavWrapper({ userId, role, basePath }: { userId: number, role?: string, basePath?: string }) {
-    // If role is passed from the parent layout (already verified), skip re-verifying session.
-    // Fall back to verifySession() only when called standalone without a role prop.
+interface RefereeNavWrapperProps {
+    userId: number;
+    role?: string;
+    basePath?: string;
+    preloadedName?: string;
+    preloadedRoleType?: string;
+    preloadedImageUrl?: string | null;
+    preloadedBasePath?: string;
+}
+
+export async function RefereeNavWrapper({
+    userId, role, basePath,
+    preloadedName, preloadedRoleType, preloadedImageUrl, preloadedBasePath,
+}: RefereeNavWrapperProps) {
     const resolvedRole = role ?? (await verifySession()).role;
     const isAdmin = ADMIN_ROLES.includes(resolvedRole);
+    const showAdminLinks = isAdmin;
 
-    // Run both queries in parallel — only fetch needed fields
-    const [referee, official] = await Promise.all([
-        db.referee.findUnique({ where: { userId }, select: { firstName: true, imageUrl: true } }),
-        db.generalOfficial.findUnique({ where: { userId }, select: { firstName: true, officialType: true, imageUrl: true } }),
-    ]);
+    let name = preloadedName ?? "Kullanıcı";
+    let roleType = preloadedRoleType ?? "REFEREE";
+    let imageUrl = preloadedImageUrl ?? null;
+    let calculatedBasePath = basePath || preloadedBasePath || "/referee";
 
-    const isObserver = official?.officialType === "OBSERVER";
-    const showAdminLinks = isAdmin; // Universal for all Official-Admins
+    // Only query DB when parent layout didn't pre-fetch the data
+    if (!preloadedName) {
+        const [referee, official] = await Promise.all([
+            db.referee.findUnique({ where: { userId }, select: { firstName: true, imageUrl: true } }),
+            db.generalOfficial.findUnique({ where: { userId }, select: { firstName: true, officialType: true, imageUrl: true } }),
+        ]);
 
-    let roleType = "REFEREE";
-    let name = "Kullanıcı";
-    let imageUrl = null;
-
-    if (referee) {
-        name = referee.firstName;
-        roleType = "REFEREE";
-        imageUrl = referee.imageUrl;
-    } else if (official) {
-        name = official.firstName;
-        roleType = official.officialType;
-        imageUrl = official.imageUrl;
+        if (referee) {
+            name = referee.firstName;
+            roleType = "REFEREE";
+            imageUrl = referee.imageUrl;
+            calculatedBasePath = basePath || "/referee";
+        } else if (official) {
+            name = official.firstName;
+            roleType = official.officialType;
+            imageUrl = official.imageUrl;
+            calculatedBasePath = basePath || "/general";
+        }
     }
-
-    const calculatedBasePath = basePath || (referee ? "/referee" : "/general");
 
     return (
         <ResponsiveNav

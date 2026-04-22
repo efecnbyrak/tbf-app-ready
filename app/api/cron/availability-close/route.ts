@@ -25,10 +25,11 @@ async function getSettings() {
 export const dynamic = "force-dynamic";
 
 export async function GET(req: Request) {
+    // Authorization check — CRON_SECRET is required
     const authHeader = req.headers.get("authorization");
     const cronSecret = process.env.CRON_SECRET;
 
-    if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+    if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -97,13 +98,16 @@ export async function GET(req: Request) {
 
         const chunkedUsers = chunkArray(targetUsers, 20);
 
+        // HTML-escape helper to prevent XSS in email content
+        const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
         for (const chunk of chunkedUsers) {
             await Promise.allSettled(chunk.map(async (user) => {
                 if (!user.email) return;
                 const html = `
                     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333; border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; padding: 20px;">
-                        <h2 style="color: #ea580c; text-transform: uppercase;">⏰ Uygunluk Formu Kapanmak Üzere</h2>
-                        <p>Sayın <strong>${user.firstName} ${user.lastName}</strong>,</p>
+                        <h2 style="color: #ea580c; text-transform: uppercase;">Uygunluk Formu Kapanmak Uzere</h2>
+                        <p>Sayin <strong>${esc(user.firstName)} ${esc(user.lastName)}</strong>,</p>
                         <p>Önümüzdeki hafta için uygunluk formunu <strong>henüz doldurmadığınızı</strong> fark ettik.</p>
                         <p>Form, bugün saat <strong>20:30'da</strong> kapanacaktır. Görev alabilmek için lütfen formunuzu doldurunuz.</p>
                         <div style="margin: 30px 0; text-align: center;">

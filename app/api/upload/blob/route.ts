@@ -13,7 +13,8 @@ export async function POST(request: Request): Promise<NextResponse> {
                 // Verify session - only admins can upload
                 const session = await getSession();
 
-                if (!session || session.role !== 'ADMIN') {
+                const adminRoles = ['ADMIN', 'SUPER_ADMIN', 'ADMIN_IHK'];
+                if (!session || !adminRoles.includes(session.role)) {
                     console.error("[BLOB AUTH] Unauthorized attempt by:", session?.userId || 'Unknown');
                     throw new Error('Yetkisiz işlem: Sadece adminler dosya yükleyebilir.');
                 }

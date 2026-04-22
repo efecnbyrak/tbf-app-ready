@@ -57,6 +57,7 @@ model User {
   @@index([roleId])
   @@index([isActive])
   @@index([isApproved])
+  @@index([isApproved, isActive])
   @@map("users")
 }
 
@@ -180,6 +181,8 @@ model AvailabilityForm {
   @@index([weekStartDate])
   @@index([refereeId])
   @@index([officialId])
+  @@index([weekStartDate, refereeId])
+  @@index([weekStartDate, officialId])
   @@map("availability_forms")
 }
 
@@ -392,6 +395,7 @@ model Message {
   createdAt DateTime    @default(now())
 
   @@index([sessionId])
+  @@index([sessionId, createdAt])
   @@map("messages")
 }
 
@@ -521,5 +525,6 @@ model GameAssignment {
   updatedAt         DateTime @updatedAt
 
   @@index([tarih])
+  @@index([tarih, aTeam, bTeam])
   @@map("game_assignments")
 }

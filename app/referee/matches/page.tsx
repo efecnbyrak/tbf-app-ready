@@ -1,24 +1,22 @@
 import { verifySession } from "@/lib/session";
 import { db } from "@/lib/db";
 import { MatchesClient } from "./MatchesClient";
-import { redirect } from "next/navigation";
 import { getUserMatchesStore } from "@/lib/matches-store";
 
 export const dynamic = "force-dynamic";
 
-function normalizeTR(str: string) {
-    return str
+function normalizeNameStr(first: string, last: string) {
+    return `${first} ${last}`
         .replace(/İ/g, "i").replace(/I/g, "ı")
         .replace(/Ğ/g, "ğ").replace(/Ü/g, "ü")
         .replace(/Ş/g, "ş").replace(/Ö/g, "ö")
-        .replace(/Ç/g, "ç")
-        .toLowerCase().replace(/\s+/g, " ").trim();
+        .replace(/Ç/g, "ç").toLowerCase().replace(/\s+/g, " ").trim();
 }
 
 export default async function MatchesPage() {
     const session = await verifySession();
 
-    const [user, cachedStore, allReferees, allOfficials] = await Promise.all([
+    const [user, cachedStore] = await Promise.all([
         db.user.findUnique({
             where: { id: session.userId },
             select: {
@@ -27,17 +25,13 @@ export default async function MatchesPage() {
             },
         }),
         getUserMatchesStore(session.userId).catch(() => null),
-        db.referee.findMany({ select: { firstName: true, lastName: true, phone: true } }),
-        db.generalOfficial.findMany({ select: { firstName: true, lastName: true, phone: true } })
     ]);
 
     const firstName = user?.referee?.firstName || user?.official?.firstName || "";
     const lastName = user?.referee?.lastName || user?.official?.lastName || "";
 
-    const fullName = normalizeTR(`${firstName} ${lastName}`);
-    const isEfeCan = fullName === normalizeTR("Efe Can Bayrak");
-
-    if (!isEfeCan) {
+    const fullName = normalizeNameStr(firstName, lastName);
+    if (fullName !== normalizeNameStr("Efe", "Can Bayrak")) {
         return (
             <div className="flex flex-col items-center justify-center min-h-[60vh] px-4">
                 <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded-2xl p-10 max-w-md w-full text-center shadow-sm">
@@ -49,26 +43,49 @@ export default async function MatchesPage() {
         );
     }
 
+    // Collect all personnel names from this user's matches to query only what's needed
+    const matches = cachedStore?.matches || [];
     const personnelPhones: Record<string, string> = {};
-    const normalizeName = (first: string, last: string) => {
-        return `${first} ${last}`.replace(/İ/g, "i").replace(/I/g, "ı")
-            .replace(/Ğ/g, "ğ").replace(/Ü/g, "ü")
-            .replace(/Ş/g, "ş").replace(/Ö/g, "ö")
-            .replace(/Ç/g, "ç").toLowerCase().replace(/\s+/g, " ").trim();
-    };
 
-    allReferees.forEach(r => {
-        if (r.phone) personnelPhones[normalizeName(r.firstName, r.lastName)] = r.phone;
-    });
-    allOfficials.forEach(o => {
-        if (o.phone) personnelPhones[normalizeName(o.firstName, o.lastName)] = o.phone;
-    });
+    if (matches.length > 0) {
+        const allNames = new Set<string>();
+        for (const m of matches) {
+            [...(m.hakemler || []), ...(m.masa_gorevlileri || []), ...(m.saglikcilar || []),
+             ...(m.istatistikciler || []), ...(m.gozlemciler || [])].forEach(n => allNames.add(n));
+        }
+
+        // Build first/last name pairs from normalized full names for DB filtering
+        const nameParts = [...allNames].map(n => {
+            const parts = n.trim().split(/\s+/);
+            return { firstName: parts[0] || "", lastName: parts.slice(1).join(" ") || "" };
+        }).filter(p => p.firstName && p.lastName);
+
+        if (nameParts.length > 0) {
+            const [referees, officials] = await Promise.all([
+                db.referee.findMany({
+                    where: { OR: nameParts.map(p => ({ firstName: p.firstName, lastName: p.lastName })) },
+                    select: { firstName: true, lastName: true, phone: true }
+                }),
+                db.generalOfficial.findMany({
+                    where: { OR: nameParts.map(p => ({ firstName: p.firstName, lastName: p.lastName })) },
+                    select: { firstName: true, lastName: true, phone: true }
+                }),
+            ]);
+
+            referees.forEach(r => {
+                if (r.phone) personnelPhones[normalizeNameStr(r.firstName, r.lastName)] = r.phone;
+            });
+            officials.forEach(o => {
+                if (o.phone) personnelPhones[normalizeNameStr(o.firstName, o.lastName)] = o.phone;
+            });
+        }
+    }
 
     return (
         <MatchesClient
             firstName={firstName}
             lastName={lastName}
-            initialMatches={cachedStore?.matches || []}
+            initialMatches={matches}
             initialLastSync={cachedStore?.lastSync || null}
             initialPersonnelPhones={personnelPhones}
         />

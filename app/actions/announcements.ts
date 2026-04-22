@@ -58,6 +58,12 @@ export async function sendAnnouncement(subject: string, content: string, target:
 
         // 2. Send emails in parallel
         const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://tbf-hakem-sistemi.vercel.app";
+
+        // HTML-escape to prevent XSS in email content
+        const escapeHtml = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        const safeSubject = escapeHtml(subject);
+        const safeContent = escapeHtml(content);
+
         const emailPromises = recipients.map(async (user) => {
             try {
                 const html = `
@@ -84,8 +90,8 @@ export async function sendAnnouncement(subject: string, content: string, target:
                                 <div style="display:inline-block;padding:12px 24px;background:rgba(255,255,255,0.2);border-radius:12px;color:white;font-weight:900;font-size:32px;italic:true;">BKS</div>
                             </div>
                             <div class="content">
-                                <h1 class="title">${subject}</h1>
-                                <div class="message">${content}</div>
+                                <h1 class="title">${safeSubject}</h1>
+                                <div class="message">${safeContent}</div>
                                 <a href="${appUrl}" class="button">Sisteme Giriş Yap</a>
                             </div>
                             <div class="footer">

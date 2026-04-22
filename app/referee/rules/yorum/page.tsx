@@ -3,7 +3,7 @@ import { FileText, FolderOpen } from "lucide-react";
 import Link from "next/link";
 import { NativeRulesViewer } from "@/components/rules/NativeRulesViewer";
 
-export const revalidate = 3600;
+export const dynamic = 'force-dynamic';
 
 export default async function YorumPage({
     searchParams

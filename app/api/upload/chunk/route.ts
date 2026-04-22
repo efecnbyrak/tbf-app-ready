@@ -5,7 +5,8 @@ import { verifySession } from "@/lib/session";
 export async function POST(req: Request) {
     try {
         const session = await verifySession();
-        if (session.role !== "ADMIN") {
+        const adminRoles = ["ADMIN", "SUPER_ADMIN", "ADMIN_IHK"];
+        if (!adminRoles.includes(session.role)) {
             return NextResponse.json({ error: "Yetkisiz işlem" }, { status: 403 });
         }
 

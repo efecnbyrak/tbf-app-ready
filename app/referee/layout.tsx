@@ -22,7 +22,7 @@ export default async function RefereeLayout({
             where: { id: session.userId },
             select: {
                 referee: { select: { firstName: true, lastName: true, imageUrl: true, iban: true } },
-                official: { select: { firstName: true, lastName: true, imageUrl: true, iban: true } },
+                official: { select: { firstName: true, lastName: true, imageUrl: true, iban: true, officialType: true } },
             }
         }),
         getSetting("IBAN_COLLECTION_ENABLED")
@@ -38,6 +38,12 @@ export default async function RefereeLayout({
     const userIban = user?.referee?.iban || user?.official?.iban;
     const showIbanModal = ibanRequired && !userIban;
 
+    // Resolve nav data here so RefereeNavWrapper can skip duplicate DB queries
+    const navName = user?.referee?.firstName || user?.official?.firstName || "Kullanıcı";
+    const navRoleType = user?.referee ? "REFEREE" : (user?.official?.officialType || "REFEREE");
+    const navImageUrl = user?.referee?.imageUrl || user?.official?.imageUrl || null;
+    const navBasePath = user?.referee ? "/referee" : "/general";
+
     return (
         <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 flex flex-col md:flex-row">
             <Suspense fallback={
@@ -46,7 +52,14 @@ export default async function RefereeLayout({
                     roleType="REFEREE"
                 />
             }>
-                <RefereeNavWrapper userId={session.userId} role={session.role} />
+                <RefereeNavWrapper
+                    userId={session.userId}
+                    role={session.role}
+                    preloadedName={navName}
+                    preloadedRoleType={navRoleType}
+                    preloadedImageUrl={navImageUrl}
+                    preloadedBasePath={navBasePath}
+                />
             </Suspense>
 
             <main className="flex-1 md:pl-72 flex flex-col min-h-screen">

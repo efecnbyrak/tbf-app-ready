@@ -1,10 +1,15 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { headers } from "next/headers";
+import { getSession } from "@/lib/session";
 
 // GET /api/videos
 export async function GET() {
     try {
+        const session = await getSession();
+        if (!session?.userId) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
         const videos = await db.video.findMany({
             include: {
                 videoCategory: true
@@ -13,7 +18,7 @@ export async function GET() {
         });
         return NextResponse.json(videos, {
             headers: {
-                'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=59'
+                'Cache-Control': 'private, s-maxage=3600, stale-while-revalidate=59'
             }
         });
     } catch (error) {
@@ -21,11 +26,14 @@ export async function GET() {
     }
 }
 
-// POST /api/videos
+// POST /api/videos (Admin only)
 export async function POST(req: Request) {
     try {
-        // Auth check (basic)
-        // In real app, check session/role here
+        const session = await getSession();
+        const adminRoles = ["ADMIN", "SUPER_ADMIN", "ADMIN_IHK"];
+        if (!session?.userId || !adminRoles.includes(session.role)) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
 
         const body = await req.json();
         const { title, url, category, description, duration, videoCategoryId } = body;

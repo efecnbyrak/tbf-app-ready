@@ -25,11 +25,11 @@ async function getSettings() {
 export const dynamic = "force-dynamic";
 
 export async function GET(req: Request) {
-    // Basic authorization check (Vercel Cron requests usually have an Auth header)
+    // Authorization check — CRON_SECRET is required
     const authHeader = req.headers.get("authorization");
     const cronSecret = process.env.CRON_SECRET;
 
-    if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+    if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -71,17 +71,18 @@ export async function GET(req: Request) {
         let successCount = 0;
         let failCount = 0;
 
-        // Note: For a larger list (500+), an actual bulk email API (like Resend broadcast) is much better,
-        // but since we are using SMTP/nodemailer right now, we will send them sequentially or in small chunks.
         const chunkedUsers = chunkArray(allUsers, 20);
+
+        // HTML-escape helper to prevent XSS in email content
+        const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
         for (const chunk of chunkedUsers) {
             await Promise.allSettled(chunk.map(async (user) => {
                 if (!user.email) return;
                 const html = `
                     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
-                        <h2 style="color: #dc2626; text-transform: uppercase;">📢 Uygunluk Formu Açıldı</h2>
-                        <p>Sayın <strong>${user.firstName} ${user.lastName}</strong>,</p>
+                        <h2 style="color: #dc2626; text-transform: uppercase;">Uygunluk Formu Acildi</h2>
+                        <p>Sayin <strong>${esc(user.firstName)} ${esc(user.lastName)}</strong>,</p>
                         <p>Önümüzdeki hafta için uygunluk formunuz an itibariyle sisteme açılmıştır.</p>
                         <p>Lütfen en geç <strong>Salı günü saat 20:30'a</strong> kadar uygunluk durumunuzu sisteme giriniz.</p>
                         <div style="margin: 30px 0; text-align: center;">

@@ -20,6 +20,9 @@ export const matchCache = globalCache.__matchCache;
  * @param fetcher Async function to fetch data if not cached
  * @param ttl Time to live in milliseconds (default: 1 hour)
  */
+// Max cache entries to prevent memory leaks in long-running processes
+const MAX_CACHE_ENTRIES = 100;
+
 export async function getCachedData<T>(
     key: string,
     fetcher: () => Promise<T>,
@@ -30,12 +33,23 @@ export async function getCachedData<T>(
 
     // Return cached data if valid
     if (cached && (now - cached.timestamp < ttl)) {
-        console.log(`[CACHE HIT] Returning instantly for ${key}`);
         return cached.data;
     }
 
-    console.log(`[CACHE MISS] Fetching fresh data for ${key}`);
     const data = await fetcher();
+
+    // Evict oldest entries if cache is too large
+    if (matchCache.size >= MAX_CACHE_ENTRIES) {
+        let oldestKey = '';
+        let oldestTime = Infinity;
+        for (const [k, v] of matchCache) {
+            if (v.timestamp < oldestTime) {
+                oldestTime = v.timestamp;
+                oldestKey = k;
+            }
+        }
+        if (oldestKey) matchCache.delete(oldestKey);
+    }
 
     // Save to cache
     matchCache.set(key, {
