@@ -2,7 +2,9 @@ import { verifySession } from "@/lib/session";
 import { db } from "@/lib/db";
 import { redirect } from "next/navigation";
 import { AtamalarClient } from "./AtamalarClient";
-import { getTeamNames, getAssignments } from "@/app/actions/atamalar";
+import { getAssignments } from "@/app/actions/atamalar";
+import fs from "fs";
+import path from "path";
 
 export const dynamic = "force-dynamic";
 
@@ -13,9 +15,15 @@ export default async function AtamalarPage() {
         redirect("/admin");
     }
 
-    const [assignmentsResult, teamNamesResult, referees, officials] = await Promise.all([
+    // Load static data from archive extraction
+    let staticData = { teams: [] as string[], categories: [] as string[], groups: [] as string[], salons: [] as string[] };
+    try {
+        const dataPath = path.join(process.cwd(), "data", "atama-static-data.json");
+        staticData = JSON.parse(fs.readFileSync(dataPath, "utf8"));
+    } catch {}
+
+    const [assignmentsResult, referees, officials] = await Promise.all([
         getAssignments(),
-        getTeamNames(),
         db.referee.findMany({
             select: { firstName: true, lastName: true },
             orderBy: [{ lastName: "asc" }, { firstName: "asc" }],
@@ -53,7 +61,10 @@ export default async function AtamalarPage() {
     return (
         <AtamalarClient
             initialAssignments={(assignmentsResult.assignments || []) as any}
-            teamNames={teamNamesResult.teams || []}
+            teamNames={staticData.teams}
+            categories={staticData.categories}
+            groups={staticData.groups}
+            salons={staticData.salons}
             referees={refereeOptions}
             tableOfficials={tableOfficials}
             observers={observers}

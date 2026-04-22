@@ -33,6 +33,9 @@ interface PersonOption {
 interface Props {
     initialAssignments: GameAssignment[];
     teamNames: string[];
+    categories: string[];
+    groups: string[];
+    salons: string[];
     referees: PersonOption[];
     tableOfficials: PersonOption[];
     observers: PersonOption[];
@@ -161,7 +164,7 @@ function SearchableSelect({
     );
 }
 
-export function AtamalarClient({ initialAssignments, teamNames, referees, tableOfficials, observers, fieldCommissioners, healthOfficials, statisticians }: Props) {
+export function AtamalarClient({ initialAssignments, teamNames, categories, groups, salons, referees, tableOfficials, observers, fieldCommissioners, healthOfficials, statisticians }: Props) {
     const router = useRouter();
     const [assignments, setAssignments] = useState<GameAssignment[]>(initialAssignments);
     const [modalOpen, setModalOpen] = useState(false);
@@ -173,6 +176,9 @@ export function AtamalarClient({ initialAssignments, teamNames, referees, tableO
     const [tableSearch, setTableSearch] = useState("");
 
     const teamOptions = teamNames.map(t => ({ name: t }));
+    const categoryOptions = categories.map(c => ({ name: c }));
+    const groupOptions = groups.map(g => ({ name: g }));
+    const salonOptions = salons.map(s => ({ name: s }));
 
     function openCreate() {
         setForm({ ...EMPTY_FORM });
@@ -418,10 +424,9 @@ export function AtamalarClient({ initialAssignments, teamNames, referees, tableO
                                 <div className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] mb-3">Maç Bilgileri</div>
                                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                                     <div>
-                                        <label className="block text-xs font-semibold text-zinc-500 mb-1 uppercase tracking-wide">Tarih *</label>
+                                        <label className="block text-xs font-semibold text-zinc-500 mb-1 uppercase tracking-wide">Tarih</label>
                                         <input
                                             type="date"
-                                            required
                                             value={form.tarih}
                                             onChange={e => setField("tarih", e.target.value)}
                                             className="w-full px-3 py-2 text-sm bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg text-zinc-900 dark:text-white focus:outline-none focus:border-red-500"
@@ -437,24 +442,29 @@ export function AtamalarClient({ initialAssignments, teamNames, referees, tableO
                                         />
                                     </div>
                                     <div className="sm:col-span-2">
-                                        <label className="block text-xs font-semibold text-zinc-500 mb-1 uppercase tracking-wide">Salon / Mekan</label>
+                                        <SearchableSelect
+                                            label="Salon / Mekan"
+                                            value={form.salon}
+                                            onChange={v => setField("salon", v)}
+                                            options={salonOptions}
+                                            placeholder="— Salon Seçin —"
+                                        />
                                         <input
                                             type="text"
                                             value={form.salon}
                                             onChange={e => setField("salon", e.target.value)}
-                                            placeholder="Salon adı..."
-                                            className="w-full px-3 py-2 text-sm bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg text-zinc-900 dark:text-white focus:outline-none focus:border-red-500 placeholder:text-zinc-400"
+                                            placeholder="veya yazın..."
+                                            className="mt-1 w-full px-3 py-1.5 text-xs bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-lg text-zinc-700 dark:text-zinc-300 focus:outline-none focus:border-red-400 placeholder:text-zinc-400"
                                         />
                                     </div>
                                     <div>
                                         <SearchableSelect
-                                            label="A Takımı *"
+                                            label="A Takımı"
                                             value={form.aTeam}
                                             onChange={v => setField("aTeam", v)}
                                             options={teamOptions}
                                             placeholder="— A Takımı —"
                                         />
-                                        {/* Also allow free text */}
                                         <input
                                             type="text"
                                             value={form.aTeam}
@@ -465,7 +475,7 @@ export function AtamalarClient({ initialAssignments, teamNames, referees, tableO
                                     </div>
                                     <div>
                                         <SearchableSelect
-                                            label="B Takımı *"
+                                            label="B Takımı"
                                             value={form.bTeam}
                                             onChange={v => setField("bTeam", v)}
                                             options={teamOptions}
@@ -480,23 +490,35 @@ export function AtamalarClient({ initialAssignments, teamNames, referees, tableO
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-xs font-semibold text-zinc-500 mb-1 uppercase tracking-wide">Kategori</label>
+                                        <SearchableSelect
+                                            label="Kategori"
+                                            value={form.kategori}
+                                            onChange={v => setField("kategori", v)}
+                                            options={categoryOptions}
+                                            placeholder="— Kategori Seçin —"
+                                        />
                                         <input
                                             type="text"
                                             value={form.kategori}
                                             onChange={e => setField("kategori", e.target.value)}
-                                            placeholder="ör. U14 Erkek"
-                                            className="w-full px-3 py-2 text-sm bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg text-zinc-900 dark:text-white focus:outline-none focus:border-red-500 placeholder:text-zinc-400"
+                                            placeholder="veya yazın..."
+                                            className="mt-1 w-full px-3 py-1.5 text-xs bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-lg text-zinc-700 dark:text-zinc-300 focus:outline-none focus:border-red-400 placeholder:text-zinc-400"
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-xs font-semibold text-zinc-500 mb-1 uppercase tracking-wide">Grup</label>
+                                        <SearchableSelect
+                                            label="Grup"
+                                            value={form.grup}
+                                            onChange={v => setField("grup", v)}
+                                            options={groupOptions}
+                                            placeholder="— Grup Seçin —"
+                                        />
                                         <input
                                             type="text"
                                             value={form.grup}
                                             onChange={e => setField("grup", e.target.value)}
-                                            placeholder="ör. A"
-                                            className="w-full px-3 py-2 text-sm bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg text-zinc-900 dark:text-white focus:outline-none focus:border-red-500 placeholder:text-zinc-400"
+                                            placeholder="veya yazın..."
+                                            className="mt-1 w-full px-3 py-1.5 text-xs bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-lg text-zinc-700 dark:text-zinc-300 focus:outline-none focus:border-red-400 placeholder:text-zinc-400"
                                         />
                                     </div>
                                 </div>

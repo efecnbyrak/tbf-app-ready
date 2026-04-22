@@ -76,11 +76,11 @@ export interface AssignmentFormData {
 
 function buildDbData(data: AssignmentFormData) {
     return {
-        tarih: new Date(data.tarih),
+        tarih: data.tarih ? new Date(data.tarih) : new Date(),
         saat: data.saat || null,
         salon: data.salon || null,
-        aTeam: data.aTeam,
-        bTeam: data.bTeam,
+        aTeam: data.aTeam || "",
+        bTeam: data.bTeam || "",
         kategori: data.kategori || null,
         grup: data.grup || null,
         hakem1: data.hakem1 || null,
@@ -101,13 +101,6 @@ export async function createAssignment(data: AssignmentFormData) {
         const session = await verifySession();
         requireSuperAdmin(session.role);
 
-        if (!data.aTeam?.trim() || !data.bTeam?.trim()) {
-            return { success: false, error: "A Takımı ve B Takımı zorunludur" };
-        }
-        if (!data.tarih) {
-            return { success: false, error: "Tarih zorunludur" };
-        }
-
         await (db as any).gameAssignment.create({ data: buildDbData(data) });
         revalidatePath("/admin/atamalar");
         return { success: true };
@@ -120,10 +113,6 @@ export async function updateAssignment(id: number, data: AssignmentFormData) {
     try {
         const session = await verifySession();
         requireSuperAdmin(session.role);
-
-        if (!data.aTeam?.trim() || !data.bTeam?.trim()) {
-            return { success: false, error: "A Takımı ve B Takımı zorunludur" };
-        }
 
         await (db as any).gameAssignment.update({
             where: { id },
