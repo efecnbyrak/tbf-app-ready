@@ -9,6 +9,7 @@ import { demoteFromAdmin } from "@/app/actions/auth";
 import { useRouter } from "next/navigation";
 import { TURKEY_CITIES, OFFICIAL_TYPES, CLASSIFICATIONS } from "@/lib/constants";
 import { formatIBAN } from "@/lib/format-utils";
+import { formatLocation } from "@/lib/region-utils";
 
 interface ProfileDetailModalProps {
     official: any;
@@ -201,6 +202,8 @@ export function ProfileDetailModal({ official, onClose, onToggleActive, onPromot
     };
 
     const selectedRegionName = availableRegions.filter(r => editData.regionIds.includes(r.id)).map(r => r.name).join(", ") || "Belirtilmemiş";
+    const selectedRegionObjects = availableRegions.filter(r => editData.regionIds.includes(r.id));
+    const displayLocation = formatLocation(selectedRegionObjects.length > 0 ? selectedRegionObjects : (official.regions || []), editData.address || official.address);
 
     return (
         <div
@@ -484,7 +487,7 @@ export function ProfileDetailModal({ official, onClose, onToggleActive, onPromot
                                                     className={`flex items-center gap-3 text-sm font-black text-zinc-900 dark:text-white transition-colors ${isSuperAdmin ? 'hover:text-red-600 cursor-pointer' : 'cursor-default'}`}
                                                 >
                                                     <MapPin className="w-4 h-4 text-red-600" />
-                                                    {selectedRegionName}
+                                                    {displayLocation}
                                                 </button>
                                             </div>
                                             {editingField === 'region' && (

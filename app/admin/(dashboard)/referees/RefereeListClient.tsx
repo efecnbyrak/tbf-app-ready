@@ -69,6 +69,7 @@ export function RefereeListClient({ initialReferees, refereeTypeMap, currentUser
         { key: "phone", label: "Telefon Numarası" },
     ];
     const [selectedExportFields, setSelectedExportFields] = useState<string[]>(["name"]);
+    const [exportCategory, setExportCategory] = useState<string>("ALL");
 
     const toggleExportField = (key: string) => {
         setSelectedExportFields(prev =>
@@ -101,7 +102,15 @@ export function RefereeListClient({ initialReferees, refereeTypeMap, currentUser
                 "IL_HAKEMI": "İl Hakemi", "ADAY_HAKEM": "Aday Hakem", "BELIRLENMEMIS": "Belirlenmemiş"
             };
 
-            initialReferees.forEach((ref, i) => {
+            const refsToExport = exportCategory === "ALL" ? initialReferees : initialReferees.filter(ref => {
+                if (exportCategory === "MANAGERS") return ref.user?.role?.name === "ADMIN";
+                if (ref.user?.role?.name === "ADMIN") return false;
+                if (exportCategory === "UNAPPROVED") return !ref.user?.isApproved;
+                if (!ref.user?.isApproved) return false;
+                if (exportCategory === "BELIRLENMEMIS") return !ref.classification || ref.classification === "" || ref.classification === "BELIRLENMEMIS";
+                return ref.classification === exportCategory;
+            });
+            refsToExport.forEach((ref, i) => {
                 const row: any = {};
                 if (selectedExportFields.includes("name")) row.name = `${ref.firstName || ""} ${ref.lastName || ""}`.trim();
                 if (selectedExportFields.includes("iban")) row.iban = ref.iban || "-";
@@ -120,7 +129,8 @@ export function RefereeListClient({ initialReferees, refereeTypeMap, currentUser
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement("a");
             a.href = url;
-            a.download = `hakemler_${new Date().toISOString().slice(0, 10)}.xlsx`;
+            const catLabel = exportCategory === "ALL" ? "tum" : (CLASSIFICATION_MAP[exportCategory] || exportCategory).replace(/\s/g, "_").toLocaleLowerCase('tr');
+            a.download = `hakemler_${catLabel}_${new Date().toISOString().slice(0, 10)}.xlsx`;
             a.click();
             window.URL.revokeObjectURL(url);
             setExportModalOpen(false);
@@ -430,8 +440,39 @@ export function RefereeListClient({ initialReferees, refereeTypeMap, currentUser
                                 </div>
                                 <div>
                                     <h2 className="text-lg font-black uppercase italic tracking-tight">Hakem Verisi Al</h2>
-                                    <p className="text-emerald-100 text-xs">{initialReferees.length} hakem • İndirmek istediğiniz alanları seçin</p>
+                                    <p className="text-emerald-100 text-xs">
+                                        {exportCategory === "ALL" ? initialReferees.length : initialReferees.filter(ref => {
+                                            if (exportCategory === "MANAGERS") return ref.user?.role?.name === "ADMIN";
+                                            if (ref.user?.role?.name === "ADMIN") return false;
+                                            if (exportCategory === "UNAPPROVED") return !ref.user?.isApproved;
+                                            if (!ref.user?.isApproved) return false;
+                                            if (exportCategory === "BELIRLENMEMIS") return !ref.classification || ref.classification === "" || ref.classification === "BELIRLENMEMIS";
+                                            return ref.classification === exportCategory;
+                                        }).length} hakem • İndirmek istediğiniz alanları seçin
+                                    </p>
                                 </div>
+                            </div>
+                        </div>
+
+                        {/* Category Selection */}
+                        <div className="px-6 pt-6 space-y-2">
+                            <p className="text-xs font-black uppercase tracking-widest text-zinc-500 mb-3">Klasman Filtresi</p>
+                            <div className="flex flex-wrap gap-2">
+                                <button
+                                    onClick={() => setExportCategory("ALL")}
+                                    className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border-2 ${exportCategory === "ALL" ? "bg-emerald-600 border-emerald-600 text-white" : "bg-zinc-50 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300"}`}
+                                >
+                                    TÜMÜ
+                                </button>
+                                {ORDERED_CLASSIFICATIONS.map(code => (
+                                    <button
+                                        key={code}
+                                        onClick={() => setExportCategory(code)}
+                                        className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border-2 ${exportCategory === code ? "bg-emerald-600 border-emerald-600 text-white" : "bg-zinc-50 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300"}`}
+                                    >
+                                        {CLASSIFICATION_MAP[code]}
+                                    </button>
+                                ))}
                             </div>
                         </div>
 

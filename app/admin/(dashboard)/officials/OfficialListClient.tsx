@@ -50,6 +50,7 @@ export function OfficialListClient({ initialOfficials, refereeTypeMap, currentUs
         { key: "phone", label: "Telefon Numarası" },
     ];
     const [selectedExportFields, setSelectedExportFields] = useState<string[]>(["name"]);
+    const [exportOfficialType, setExportOfficialType] = useState<string>("ALL");
 
     const toggleExportField = (key: string) => {
         setSelectedExportFields(prev =>
@@ -84,7 +85,10 @@ export function OfficialListClient({ initialOfficials, refereeTypeMap, currentUs
             sheet.getRow(1).font = { bold: true, color: { argb: "FFFFFFFF" } };
             sheet.getRow(1).fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFDC2626" } };
 
-            initialOfficials.forEach((off, i) => {
+            const officialsToExport = exportOfficialType === "ALL"
+                ? initialOfficials
+                : initialOfficials.filter(off => refereeTypeMap[off.id] === exportOfficialType);
+            officialsToExport.forEach((off, i) => {
                 if (off.email === 'talat.mustafa.ozdemir50@gmail.com' || off.tcNo === '5555555555') return;
                 const row: any = {};
                 if (selectedExportFields.includes("name")) row.name = `${off.firstName || ""} ${off.lastName || ""}`.trim();
@@ -104,7 +108,8 @@ export function OfficialListClient({ initialOfficials, refereeTypeMap, currentUs
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement("a");
             a.href = url;
-            a.download = `gorevliler_${new Date().toISOString().slice(0, 10)}.xlsx`;
+            const typeLabel = exportOfficialType === "ALL" ? "tum" : (OFFICIAL_TYPE_MAP[exportOfficialType] || exportOfficialType).replace(/\s/g, "_").toLocaleLowerCase('tr');
+            a.download = `gorevliler_${typeLabel}_${new Date().toISOString().slice(0, 10)}.xlsx`;
             a.click();
             window.URL.revokeObjectURL(url);
             setExportModalOpen(false);
@@ -381,8 +386,35 @@ export function OfficialListClient({ initialOfficials, refereeTypeMap, currentUs
                                 </div>
                                 <div>
                                     <h2 className="text-lg font-black uppercase italic tracking-tight">Görevli Verisi Al</h2>
-                                    <p className="text-emerald-100 text-xs">{initialOfficials.length} görevli • İndirmek istediğiniz alanları seçin</p>
+                                    <p className="text-emerald-100 text-xs">
+                                        {exportOfficialType === "ALL"
+                                            ? initialOfficials.length
+                                            : initialOfficials.filter(off => refereeTypeMap[off.id] === exportOfficialType).length
+                                        } görevli • İndirmek istediğiniz alanları seçin
+                                    </p>
                                 </div>
+                            </div>
+                        </div>
+
+                        {/* Type Selection */}
+                        <div className="px-6 pt-6 space-y-2">
+                            <p className="text-xs font-black uppercase tracking-widest text-zinc-500 mb-3">Görevli Tipi Filtresi</p>
+                            <div className="flex flex-wrap gap-2">
+                                <button
+                                    onClick={() => setExportOfficialType("ALL")}
+                                    className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border-2 ${exportOfficialType === "ALL" ? "bg-emerald-600 border-emerald-600 text-white" : "bg-zinc-50 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300"}`}
+                                >
+                                    TÜMÜ
+                                </button>
+                                {TYPES.map(t => (
+                                    <button
+                                        key={t.id}
+                                        onClick={() => setExportOfficialType(t.id)}
+                                        className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border-2 ${exportOfficialType === t.id ? "bg-emerald-600 border-emerald-600 text-white" : "bg-zinc-50 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300"}`}
+                                    >
+                                        {t.label}
+                                    </button>
+                                ))}
                             </div>
                         </div>
 
