@@ -1,0 +1,107 @@
+import { PrismaClient } from '@prisma/client';
+import bcrypt from 'bcryptjs';
+
+const prisma = new PrismaClient();
+
+async function main() {
+    console.log('🌱 Seeding database...');
+
+    // 1. Create Roles
+    const roles = ['SUPER_ADMIN', 'ADMIN_IHK', 'REFEREE', 'GENERAL_OFFICIAL'];
+    for (const roleName of roles) {
+        await prisma.role.upsert({
+            where: { name: roleName },
+            create: { name: roleName },
+            update: {}
+        });
+    }
+    console.log('✅ Synchronized Roles: SUPER_ADMIN, ADMIN_IHK, REFEREE, GENERAL_OFFICIAL');
+
+    const adminRole = await prisma.role.findUniqueOrThrow({ where: { name: 'SUPER_ADMIN' } });
+    const refereeRole = await prisma.role.findUniqueOrThrow({ where: { name: 'REFEREE' } });
+
+    // 2.5 Create Default Regions
+    const regions = ["Avrupa", "Anadolu", "BGM"];
+    for (const name of regions) {
+        await prisma.region.upsert({
+            where: { name },
+            create: { name },
+            update: {}
+        });
+    }
+    console.log('✅ Created Regions: Avrupa, Anadolu, BGM');
+
+    // 3. Create or Update Permanent Admin User
+    const adminPassword = 'talat!56742';
+    const adminUsername = 'talat.mustafa.ozdemir50';
+    const hashedAdminPassword = await bcrypt.hash(adminPassword, 10);
+
+    await prisma.user.upsert({
+        where: { username: adminUsername },
+        update: {
+            password: hashedAdminPassword,
+            roleId: adminRole.id,
+            isApproved: true,
+            isVerified: true
+        },
+        create: {
+            username: adminUsername,
+            password: hashedAdminPassword,
+            roleId: adminRole.id,
+            isApproved: true,
+            isVerified: true
+        }
+    });
+
+    // Also ensure a simpler "admin" fallback exists
+    const simpleAdminPass = await bcrypt.hash('admin123', 10);
+    await prisma.user.upsert({
+        where: { username: 'admin' },
+        update: {
+            password: simpleAdminPass,
+            roleId: adminRole.id,
+            isApproved: true,
+            isVerified: true
+        },
+        create: {
+            username: 'admin',
+            password: simpleAdminPass,
+            roleId: adminRole.id,
+            isApproved: true,
+            isVerified: true
+        }
+    });
+
+    console.log(`✅ Fixed Admin Users: ${adminUsername} and "admin"`);
+
+    // Fix Talat Mustafa Özdemir phone number
+    const talatReferees = await prisma.referee.findMany({
+        where: {
+            OR: [
+                { firstName: { contains: "TALAT", mode: "insensitive" } },
+                { lastName: { contains: "ÖZDEMİR", mode: "insensitive" } }
+            ]
+        }
+    });
+
+    for (const r of talatReferees) {
+        if (r.firstName && r.firstName.toUpperCase().includes("TALAT")) {
+            await prisma.referee.update({
+                where: { id: r.id },
+                data: { phone: "535 624 27 86" }
+            });
+            console.log(`✅ Updated phone for ${r.firstName} ${r.lastName} to 535 624 27 86`);
+        }
+    }
+
+    console.log('🎉 Seeding completed!');
+}
+
+main()
+    .catch((e) => {
+        console.error('❌ Seeding failed:', e);
+        process.exit(1);
+    })
+    .finally(async () => {
+        await prisma.$disconnect();
+    });

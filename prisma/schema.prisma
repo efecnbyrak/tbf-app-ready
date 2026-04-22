@@ -1,0 +1,489 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  binaryTargets = ["native"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id       Int      @id @default(autoincrement())
+  username String   @unique
+  password String
+  role     Role     @relation(fields: [roleId], references: [id])
+  roleId   Int
+  imageUrl String?  // For Admin avatars
+  referee  Referee?
+  official GeneralOfficial?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  verificationCode String?
+  verificationCodeExpiresAt DateTime?
+  isVerified Boolean @default(false)
+  isApproved Boolean @default(false)
+  suspendedUntil DateTime?
+  isActive Boolean @default(true)
+  forceRefresh Boolean @default(false)
+  lastLoginAt DateTime?
+  pendingEmail String?
+  matchStore  Json?     // Stores cumulative matches & sync metadata
+  resetPasswordCode String?
+  resetPasswordExpiresAt DateTime?
+  recoveryCode String? @unique
+  videoProgress VideoProgress[]
+  chats ChatSession[]
+  securityQuestion String?
+  securityAnswer String?
+  
+  auditLogs AuditLog[]
+
+  announcements Announcement[]
+  penalties     Penalty[]
+
+  sentMessages     UserMessage[] @relation("SentMessages")
+  receivedMessages UserMessage[] @relation("ReceivedMessages")
+  observerReports  ObserverReport[]
+  createdAssignments ExamAssignment[]
+  announcementReads AnnouncementRead[]
+
+  @@index([id])
+  @@index([username])
+  @@index([isActive])
+  @@index([isApproved])
+  @@map("users")
+}
+
+model Penalty {
+  id          Int      @id @default(autoincrement())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      Int
+  type        String   // "SUSPENSION", "WARNING", "FINE"
+  reason      String   @db.Text
+  startDate   DateTime @default(now())
+  endDate     DateTime?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId])
+  @@index([isActive, endDate])
+  @@map("penalties")
+}
+
+model AuditLog {
+  id        Int      @id @default(autoincrement())
+  userId    Int?     // Who did the action
+  user      User?    @relation(fields: [userId], references: [id])
+  action    String   // e.g., "PASSWORD_RESET", "EMAIL_CHANGE"
+  details   String?  @db.Text
+  targetId  Int?     // ID of the target resource (if applicable)
+  ipAddress String?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+model Role {
+  id    Int    @id @default(autoincrement())
+  name  String @unique // "ADMIN" or "REFEREE"
+  users User[]
+
+  @@map("roles")
+}
+
+model Region {
+  id       Int       @id @default(autoincrement())
+  name     String    @unique // "Anadolu", "Avrupa", "BGM"
+  referees Referee[] // Many-to-many relation implicitly handled by Prisma
+  officials GeneralOfficial[]
+
+  @@map("regions")
+}
+
+model Referee {
+  id             Int      @id @default(autoincrement())
+  user           User     @relation(fields: [userId], references: [id])
+  userId         Int      @unique
+  firstName      String
+  lastName       String
+  email          String   @unique
+  phone          String
+  address        String?
+  job            String?
+  classification String // "A", "B", "C", "IL_HAKEMI", "ADAY_HAKEM"
+  imageUrl       String?
+  regions        Region[]
+  forms          AvailabilityForm[]
+  assignments    MatchAssignment[]
+  examAttempts   ExamAttempt[]
+  points         Int      @default(0)
+  rating         Int      @default(0)
+  iban           String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([userId])
+  @@index([classification])
+  @@index([email])
+  @@map("referees")
+}
+
+model GeneralOfficial {
+  id             Int      @id @default(autoincrement())
+  user           User     @relation(fields: [userId], references: [id])
+  userId         Int      @unique
+  firstName      String
+  lastName       String
+  email          String   @unique
+  phone          String
+  address        String?
+  job            String?
+  officialType   String   // "TABLE", "OBSERVER", "HEALTH", "STATISTICIAN"
+  imageUrl       String?
+  regions        Region[]
+  forms          AvailabilityForm[]
+  assignments    MatchAssignment[]
+  points         Int      @default(0)
+  rating         Int      @default(0)
+  examAttempts   ExamAttempt[]
+  iban           String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([userId])
+  @@index([officialType])
+  @@index([email])
+  @@map("general_officials")
+}
+
+model AvailabilityForm {
+  id            Int      @id @default(autoincrement())
+  referee       Referee? @relation(fields: [refereeId], references: [id])
+  refereeId     Int?
+  official      GeneralOfficial? @relation(fields: [officialId], references: [id])
+  officialId    Int?
+  weekStartDate DateTime // The Monday (or specific start) of the week
+  status        String   @default("DRAFT") // "DRAFT", "SUBMITTED", "LOCKED"
+  days          AvailabilityDay[]
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([weekStartDate])
+  @@index([refereeId])
+  @@index([officialId])
+  @@map("availability_forms")
+}
+
+model AvailabilityDay {
+  id       Int              @id @default(autoincrement())
+  form     AvailabilityForm @relation(fields: [formId], references: [id], onDelete: Cascade)
+  formId   Int
+  date     DateTime
+  slots    String           // Stores selected time slots e.g. "10:00-13:00,19:00-22:00"
+  
+  @@index([formId])
+  @@map("availability_days")
+}
+
+model SystemSetting {
+  key         String @id
+  value       String
+  description String?
+
+  @@map("system_settings")
+}
+
+model Match {
+  id        Int      @id @default(autoincrement())
+  matchCode String   @unique
+  league    String
+  homeTeam  String
+  awayTeam  String
+  date      DateTime
+  location  String
+  
+  assignments MatchAssignment[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([date])
+  @@index([matchCode])
+  @@map("matches")
+}
+
+model MatchAssignment {
+  id        Int      @id @default(autoincrement())
+  match     Match    @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  matchId   Int
+  referee   Referee? @relation(fields: [refereeId], references: [id], onDelete: Cascade)
+  refereeId Int?
+  official  GeneralOfficial? @relation(fields: [officialId], references: [id], onDelete: Cascade)
+  officialId Int?
+  role      String
+
+  @@index([matchId])
+  @@index([refereeId])
+  @@index([officialId])
+  @@map("match_assignments")
+}
+
+model LoginAttempt {
+  id           Int      @id @default(autoincrement())
+  ipAddress    String   @unique
+  attempts     Int      @default(0)
+  lastAttempt  DateTime @default(now())
+  blockedUntil DateTime?
+
+  @@map("login_attempts")
+}
+
+model Question {
+  id            Int      @id @default(autoincrement())
+  questionText  String
+  optionA       String
+  optionB       String
+  optionC       String
+  optionD       String
+  correctAnswer String   // "A", "B", "C", or "D"
+  category      String?  // Optional categorization
+  difficulty    String   @default("Orta") // "Kolay", "Orta", "Zor"
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  @@map("questions")
+}
+
+model ExamAttempt {
+  id             Int      @id @default(autoincrement())
+  referee        Referee? @relation(fields: [refereeId], references: [id], onDelete: Cascade)
+  refereeId      Int?
+  official       GeneralOfficial? @relation(fields: [officialId], references: [id], onDelete: Cascade)
+  officialId     Int?
+  score          Int      // Score out of X
+  totalQuestions Int      @default(20)
+  difficulty     String?  // Difficulty level taken: "Kolay", "Orta", "Zor"
+  answers        UserAnswer[]
+
+  assignment     ExamAssignment? @relation(fields: [assignmentId], references: [id])
+  assignmentId   Int?
+
+  createdAt      DateTime @default(now())
+  
+  @@map("exam_attempts")
+}
+
+model ExamAssignment {
+  id               Int      @id @default(autoincrement())
+  title            String
+  assignmentType   String   // "PRACTICE" or "HOMEWORK"
+  targetGroups     String   // e.g., "ALL", "REFEREE", "OFFICIAL", "ADAY_HAKEM", "OBSERVER"
+  targetCategories String   // Comma-separated categories or "ALL"
+  questionCount    Int      @default(20)
+  dueDate          DateTime? // Optional deadline for completion
+  isActive         Boolean  @default(true)
+  createdBy        User     @relation(fields: [createdById], references: [id])
+  createdById      Int
+  
+  attempts         ExamAttempt[]
+
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  
+  @@index([isActive])
+  @@map("exam_assignments")
+}
+
+model UserAnswer {
+  id             Int          @id @default(autoincrement())
+  attempt        ExamAttempt  @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  attemptId      Int
+  questionId     Int          // Store question ID to track which question was answered
+  questionText   String       // Store snapshot of question
+  selectedAnswer String       // "A", "B", "C", or "D"
+  correctAnswer  String       // Snapshot of correct answer
+  isCorrect      Boolean
+  
+  @@map("user_answers")
+}
+
+model VideoCategory {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  description String?
+  displayOrder Int     @default(0) // For sorting categories
+  videos      Video[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("video_categories")
+}
+
+model Video {
+  id          Int      @id @default(autoincrement())
+  title       String
+  url         String   // YouTube URL
+  description String?
+  category    String?  // Legacy field, kept for backward compatibility
+  duration    Int      // Duration in seconds (optional, fetched from API or manual)
+  viewCount   Int      @default(0) // Track video views
+  
+  // New category relation
+  videoCategory   VideoCategory? @relation(fields: [videoCategoryId], references: [id], onDelete: SetNull)
+  videoCategoryId Int?
+  
+  progress    VideoProgress[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([videoCategoryId])
+  @@map("videos")
+}
+
+model VideoProgress {
+  id             Int      @id @default(autoincrement())
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId         Int
+  video          Video    @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  videoId        Int
+  
+  watched        Boolean  @default(false)
+  lastPosition   Int      @default(0) // Seconds
+  updatedAt      DateTime @updatedAt
+
+  @@unique([userId, videoId])
+  @@map("video_progress")
+}
+
+model ChatSession {
+  id        String    @id @default(uuid())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    Int
+  messages  Message[]
+  title     String?   @default("Yeni Sohbet")
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@map("chat_sessions")
+}
+
+model Message {
+  id        String      @id @default(uuid())
+  session   ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  sessionId String
+  role      String      // "user" or "assistant"
+  content   String      @db.Text
+  createdAt DateTime    @default(now())
+
+  @@index([sessionId])
+  @@map("messages")
+}
+
+model RuleBook {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String?
+  url         String?  // URL to PDF or resource
+  content     String?  @db.Text // Extracted PDF text content
+  category    String?  // Optional category
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("rule_books")
+}
+
+model ReffAIDocument {
+  id          Int      @id @default(autoincrement())
+  fileName    String
+  chunkIndex  Int
+  content     String   @db.Text
+  createdAt   DateTime @default(now())
+
+  @@index([fileName])
+  @@map("reffai_documents")
+}
+
+model PendingUpload {
+  id        String        @id @default(uuid())
+  filename  String
+  type      String
+  total     Int           @default(0)
+  chunks    UploadChunk[]
+  createdAt DateTime      @default(now())
+
+  @@map("pending_uploads")
+}
+
+model UploadChunk {
+  id              Int           @id @default(autoincrement())
+  pendingUpload   PendingUpload @relation(fields: [pendingUploadId], references: [id], onDelete: Cascade)
+  pendingUploadId String
+  index           Int
+  data            String        @db.Text
+
+  @@map("upload_chunks")
+}
+
+model Announcement {
+  id        Int      @id @default(autoincrement())
+  subject   String
+  content   String   @db.Text
+  target    String   @default("ALL") // "ALL", "REFEREE", "TABLE", etc.
+  sender    User?    @relation(fields: [senderId], references: [id])
+  senderId  Int?
+  sentCount Int      @default(0)
+  createdAt DateTime @default(now())
+  reads     AnnouncementRead[]
+
+  @@index([target, createdAt])
+  @@map("announcements")
+}
+
+model UserMessage {
+  id          Int      @id @default(autoincrement())
+  sender      User     @relation("SentMessages", fields: [senderId], references: [id])
+  senderId    Int
+  receiver    User     @relation("ReceivedMessages", fields: [receiverId], references: [id])
+  receiverId  Int
+  content     String   @db.Text
+  isRead      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  @@index([senderId])
+  @@index([receiverId])
+  @@map("user_messages")
+}
+
+model ObserverReport {
+  id          Int      @id @default(autoincrement())
+  title       String
+  content     String   @db.Text
+  imageUrl    String?
+  createdBy   User     @relation(fields: [createdById], references: [id])
+  createdById Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([createdById])
+  @@map("observer_reports")
+}
+
+model AnnouncementRead {
+  id             Int          @id @default(autoincrement())
+  announcement   Announcement @relation(fields: [announcementId], references: [id], onDelete: Cascade)
+  announcementId Int
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId         Int
+  readAt         DateTime     @default(now())
+
+  @@unique([announcementId, userId])
+  @@map("announcement_reads")
+}
