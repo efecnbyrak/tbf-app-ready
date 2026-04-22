@@ -82,8 +82,8 @@ export function AdminDashboardCharts({ registrationData, classificationData }: A
                 </div>
 
                 {/* Classification Distribution (Pie Chart) */}
-                <div className="bg-white dark:bg-zinc-900 p-8 rounded-[2.5rem] shadow-sm border border-zinc-200 dark:border-zinc-800 transition-all hover:shadow-md">
-                    <div className="flex items-center justify-between mb-8">
+                <div className="bg-white dark:bg-zinc-900 p-8 rounded-[2.5rem] shadow-sm border border-zinc-200 dark:border-zinc-800 transition-all hover:shadow-md flex flex-col">
+                    <div className="flex items-center justify-between mb-6">
                         <div>
                             <h3 className="text-lg font-black text-zinc-900 dark:text-white uppercase tracking-tight italic">Klasman Dağılımı</h3>
                             <p className="text-xs text-zinc-500 font-bold uppercase italic tracking-widest">Hakem Seviyeleri</p>
@@ -92,16 +92,17 @@ export function AdminDashboardCharts({ registrationData, classificationData }: A
                             <div className="w-6 h-6 border-2 border-blue-600 rounded-full"></div>
                         </div>
                     </div>
-                    <div className="h-[360px] w-full">
+                    {/* Pie chart — fixed height keeps the donut from being crowded by the legend */}
+                    <div className="h-[260px] w-full">
                         <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
                                 <Pie
                                     data={classificationData}
                                     cx="50%"
-                                    cy="45%"
+                                    cy="50%"
                                     innerRadius={70}
-                                    outerRadius={95}
-                                    paddingAngle={8}
+                                    outerRadius={110}
+                                    paddingAngle={5}
                                     dataKey="value"
                                     animationBegin={200}
                                     animationDuration={1500}
@@ -118,15 +119,20 @@ export function AdminDashboardCharts({ registrationData, classificationData }: A
                                         fontSize: '12px',
                                         color: '#fff'
                                     }}
-                                />
-                                <Legend
-                                    verticalAlign="bottom"
-                                    align="center"
-                                    iconType="circle"
-                                    wrapperStyle={{ fontSize: '11px', paddingTop: '30px', fontWeight: 'bold', color: '#71717a' }}
+                                    formatter={(value: any, name: any) => [value, name]}
                                 />
                             </PieChart>
                         </ResponsiveContainer>
+                    </div>
+                    {/* Custom legend rendered outside the SVG — never overlaps the chart */}
+                    <div className="mt-4 flex flex-wrap gap-x-4 gap-y-2 justify-center">
+                        {classificationData.map((entry, index) => (
+                            <div key={entry.name} className="flex items-center gap-1.5">
+                                <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: COLORS[index % COLORS.length] }} />
+                                <span className="text-[11px] font-bold text-zinc-500 dark:text-zinc-400">{entry.name}</span>
+                                <span className="text-[11px] font-black text-zinc-800 dark:text-zinc-200">({entry.value})</span>
+                            </div>
+                        ))}
                     </div>
                 </div>
             </div>

@@ -111,6 +111,13 @@ export async function advanceWeek() {
             update: { value: nextWeek.toISOString() }
         });
 
+        // Clear manual override so auto-rollover resumes from here
+        await db.systemSetting.upsert({
+            where: { key: "AVAILABILITY_TARGET_MANUAL" },
+            create: { key: "AVAILABILITY_TARGET_MANUAL", value: "false" },
+            update: { value: "false" }
+        });
+
         revalidatePath("/admin/settings");
         revalidatePath("/admin/availability");
         revalidatePath("/referee/availability");

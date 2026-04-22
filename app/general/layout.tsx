@@ -43,7 +43,7 @@ export default async function OfficialLayout({
     const realOfficialType = user?.official?.officialType || "TABLE";
     const realFirstName = user?.official?.firstName || "Kullanıcı";
 
-    const isAdmin = ["ADMIN", "SUPER_ADMIN", "ADMIN_IHK"].includes(session.role);
+    const isAdmin = ["ADMIN", "SUPER_ADMIN", "ADMIN_IHK", "OBSERVER"].includes(session.role);
 
     return (
         <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 flex flex-col md:flex-row">

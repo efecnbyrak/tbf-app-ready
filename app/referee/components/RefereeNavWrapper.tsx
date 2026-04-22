@@ -4,7 +4,7 @@ import { verifySession } from "@/lib/session";
 
 export async function RefereeNavWrapper({ userId, basePath }: { userId: number, basePath?: string }) {
     const session = await verifySession();
-    const isAdmin = session.role === "ADMIN" || session.role === "SUPER_ADMIN" || session.role === "ADMIN_IHK";
+    const isAdmin = session.role === "ADMIN" || session.role === "SUPER_ADMIN" || session.role === "ADMIN_IHK" || session.role === "OBSERVER";
 
     const referee = await db.referee.findUnique({
         where: { userId }

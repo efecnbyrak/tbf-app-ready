@@ -43,6 +43,7 @@ export function SettingsForm({
             { key: "CURRENT_WEEK_NUMBER", value: weekNumberVal },
             { key: "AVAILABILITY_TARGET_DATE", value: new Date(targetDateVal).toISOString() },
             { key: "IBAN_COLLECTION_ENABLED", value: String(ibanRequiredVal) },
+            { key: "AVAILABILITY_TARGET_MANUAL", value: "true" },
         ];
 
         const result = await updateSystemSettingsBatch(settings);

@@ -111,7 +111,7 @@ export default async function GeneralDashboard() {
         return <div>Profil bulunamadı.</div>;
     }
 
-    const isObserverAndAdmin = ["ADMIN", "SUPER_ADMIN", "ADMIN_IHK"].includes(session.role);
+    const isObserverAndAdmin = ["ADMIN", "SUPER_ADMIN", "ADMIN_IHK", "OBSERVER"].includes(session.role);
 
     // Prepare all dependent promises to run concurrently
     const assignmentsPromise = db.matchAssignment.findMany({
@@ -124,7 +124,7 @@ export default async function GeneralDashboard() {
     });
 
     const userGroups = ["ALL", "OFFICIAL"];
-    if (official.officialType === "Gözlemci") userGroups.push("OBSERVER");
+    if (official.officialType === "OBSERVER") userGroups.push("OBSERVER");
     else userGroups.push("TABLE");
 
     const activeAssignmentsPromise = db.examAssignment.findMany({
@@ -172,10 +172,11 @@ export default async function GeneralDashboard() {
         });
     } else {
         let officialTarget = "ALL";
-        if (official.officialType === "Masa Görevlisi") officialTarget = "TABLE";
-        else if (official.officialType === "İstatistikçi") officialTarget = "STATISTICIAN";
-        else if (official.officialType === "Sağlık Görevlisi") officialTarget = "HEALTH";
-        else if (official.officialType === "Saha Komiseri") officialTarget = "FIELD_COMMISSIONER";
+        if (official.officialType === "TABLE") officialTarget = "TABLE";
+        else if (official.officialType === "STATISTICIAN") officialTarget = "STATISTICIAN";
+        else if (official.officialType === "HEALTH") officialTarget = "HEALTH";
+        else if (official.officialType === "FIELD_COMMISSIONER") officialTarget = "FIELD_COMMISSIONER";
+        else if (official.officialType === "OBSERVER") officialTarget = "OBSERVER";
         
         recentDashboardAnnouncementsPromise = db.announcement.findMany({
             where: {

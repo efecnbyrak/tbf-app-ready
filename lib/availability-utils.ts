@@ -12,16 +12,20 @@ export async function getAvailabilityWindow() {
     let storedWeekNumber = 1;
     let setting = "AUTO";
 
+    let isManualOverride = false;
+
     try {
-        const [targetS, weekS, modeS] = await Promise.all([
+        const [targetS, weekS, modeS, manualS] = await Promise.all([
             db.systemSetting.findUnique({ where: { key: "AVAILABILITY_TARGET_DATE" } }),
             db.systemSetting.findUnique({ where: { key: "CURRENT_WEEK_NUMBER" } }),
-            db.systemSetting.findUnique({ where: { key: "AVAILABILITY_MODE" } })
+            db.systemSetting.findUnique({ where: { key: "AVAILABILITY_MODE" } }),
+            db.systemSetting.findUnique({ where: { key: "AVAILABILITY_TARGET_MANUAL" } })
         ]);
 
         if (targetS?.value) storedTargetDate = new Date(targetS.value);
         if (weekS?.value) storedWeekNumber = parseInt(weekS.value);
         if (modeS?.value) setting = modeS.value;
+        if (manualS?.value === "true") isManualOverride = true;
     } catch (e) {
         console.error("[AVAILABILITY] Error fetching settings:", e);
     }
@@ -51,16 +55,19 @@ export async function getAvailabilityWindow() {
     let didRolloverWeek = false;
 
     // 1. Rollover for Target Date (Tuesday 20:30)
-    while (true) {
-        const rolloverThreshold = new Date(currentTarget);
-        rolloverThreshold.setDate(currentTarget.getDate() - 4); // Tuesday
-        rolloverThreshold.setHours(20, 30, 0, 0);
+    // Skipped when admin has manually set the target date via settings panel.
+    if (!isManualOverride) {
+        while (true) {
+            const rolloverThreshold = new Date(currentTarget);
+            rolloverThreshold.setDate(currentTarget.getDate() - 4); // Tuesday
+            rolloverThreshold.setHours(20, 30, 0, 0);
 
-        if (today > rolloverThreshold) {
-            currentTarget.setDate(currentTarget.getDate() + 7);
-            didRolloverTarget = true;
-        } else {
-            break;
+            if (today > rolloverThreshold) {
+                currentTarget.setDate(currentTarget.getDate() + 7);
+                didRolloverTarget = true;
+            } else {
+                break;
+            }
         }
     }
 

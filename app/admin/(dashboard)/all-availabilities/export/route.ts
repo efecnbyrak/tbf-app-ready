@@ -94,10 +94,10 @@ export async function GET(request: Request) {
             }
 
             worksheet.columns = [
-                { header: 'AD SOYAD', key: 'name', width: 35 },
-                { header: 'GÖREV', key: 'officialType', width: 20 },
-                { header: 'KLASMAN', key: 'class', width: 15 },
-                { header: 'TELEFON', key: 'phone', width: 15 },
+                { header: 'AD SOYAD', key: 'name', width: 45 },
+                { header: 'GÖREV', key: 'officialType', width: 22 },
+                { header: 'KLASMAN', key: 'class', width: 18 },
+                { header: 'TELEFON', key: 'phone', width: 18 },
                 { header: 'BÖLGELER', key: 'regions', width: 40 },
                 ...dateHeaders.map((dh, i) => ({ header: dh.toUpperCase(), key: `day_${i}`, width: 24 }))
             ];
@@ -136,9 +136,19 @@ export async function GET(request: Request) {
                     if (!phone) return "-";
                     const digits = phone.replace(/\D/g, '');
                     if (digits.length === 11 && digits.startsWith('0')) {
+                        // 05321234567 → 0532 123 45 67
                         return `${digits.substring(0, 4)} ${digits.substring(4, 7)} ${digits.substring(7, 9)} ${digits.substring(9, 11)}`;
                     } else if (digits.length === 10) {
+                        // 5321234567 → 0532 123 45 67
                         return `0${digits.substring(0, 3)} ${digits.substring(3, 6)} ${digits.substring(6, 8)} ${digits.substring(8, 10)}`;
+                    } else if (digits.length === 12 && digits.startsWith('90')) {
+                        // 905321234567 → 0532 123 45 67
+                        const local = digits.substring(2);
+                        return `0${local.substring(0, 3)} ${local.substring(3, 6)} ${local.substring(6, 8)} ${local.substring(8, 10)}`;
+                    } else if (digits.length === 13 && digits.startsWith('090')) {
+                        // 0905321234567 → 0532 123 45 67
+                        const local = digits.substring(3);
+                        return `0${local.substring(0, 3)} ${local.substring(3, 6)} ${local.substring(6, 8)} ${local.substring(8, 10)}`;
                     }
                     return phone;
                 };
@@ -203,11 +213,9 @@ export async function GET(request: Request) {
 
                         if (colNumber >= 6) {
                             cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
-                        } else if (colNumber === 5) {
-                            // Regions column: No wrap, side-by-side
-                            cell.alignment = { vertical: 'middle', wrapText: false };
                         } else {
-                            cell.alignment = { vertical: 'middle', wrapText: true };
+                            // Name, type, class, phone, regions: no wrap so nothing gets cut off
+                            cell.alignment = { vertical: 'middle', wrapText: false };
                         }
                     }
                 });
