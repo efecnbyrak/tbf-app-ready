@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Search, X, Loader2, BookOpen, ChevronDown, ChevronUp, Hash, Sparkles } from "lucide-react";
+import { Search, X, Loader2, BookOpen, ChevronDown, ChevronUp, Sparkles } from "lucide-react";
 
 interface RuleSection {
     id: string;
@@ -73,34 +73,43 @@ function ArticleCard({
     }, [defaultOpen]);
 
     return (
-        <div className="border border-zinc-200 dark:border-zinc-800 rounded-2xl overflow-hidden bg-white dark:bg-zinc-900">
+        <div className="border border-zinc-200 dark:border-zinc-800 rounded-2xl overflow-hidden bg-white dark:bg-zinc-900 shadow-sm">
             {/* Article Header */}
             <button
                 onClick={() => setOpen(o => !o)}
-                className="w-full flex items-center gap-4 p-4 text-left hover:bg-zinc-50 dark:hover:bg-zinc-800/60 transition-colors"
+                className="w-full flex items-center gap-4 px-4 py-4 sm:px-5 sm:py-5 text-left hover:bg-zinc-50 dark:hover:bg-zinc-800/60 active:bg-zinc-100 dark:active:bg-zinc-800 transition-colors"
             >
-                <span className="shrink-0 inline-flex items-center justify-center w-10 h-10 rounded-xl bg-red-600 text-white text-sm font-black">
+                {/* Number badge */}
+                <span className="shrink-0 inline-flex items-center justify-center w-12 h-12 rounded-xl bg-red-600 text-white text-base font-black shadow-sm shadow-red-600/30">
                     {article.id}
                 </span>
+
                 <div className="flex-1 min-w-0">
-                    <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-0.5">Madde {article.id}</p>
-                    <p className="font-bold text-zinc-900 dark:text-zinc-100 text-sm leading-tight">
+                    <p className="text-[10px] font-black text-red-500 dark:text-red-400 uppercase tracking-[0.15em] mb-0.5">
+                        Madde {article.id}
+                    </p>
+                    <p className="font-bold text-zinc-900 dark:text-zinc-100 text-[15px] sm:text-base leading-snug">
                         {query ? highlightText(article.title, query) : article.title}
                     </p>
                 </div>
-                <div className="shrink-0 text-zinc-400">
-                    {open ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
-                </div>
+
+                <span className={`shrink-0 flex items-center justify-center w-8 h-8 rounded-lg transition-colors ${
+                    open
+                        ? "bg-red-50 dark:bg-red-900/20 text-red-500"
+                        : "bg-zinc-100 dark:bg-zinc-800 text-zinc-400"
+                }`}>
+                    {open ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                </span>
             </button>
 
             {/* Article Content */}
             {open && (
-                <div className="border-t border-zinc-100 dark:border-zinc-800 px-4 pb-4 pt-3 space-y-4">
+                <div className="border-t border-zinc-100 dark:border-zinc-800 px-4 pb-5 pt-4 sm:px-5 space-y-5">
                     {/* Intro paragraphs */}
                     {article.intro.length > 0 && (
-                        <div className="space-y-1.5">
+                        <div className="space-y-2.5 pb-1">
                             {article.intro.map((p, i) => (
-                                <p key={i} className="text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed">
+                                <p key={i} className="text-[15px] text-zinc-700 dark:text-zinc-300 leading-[1.75]">
                                     {query ? highlightText(p, query) : p}
                                 </p>
                             ))}
@@ -108,37 +117,50 @@ function ArticleCard({
                     )}
 
                     {/* Sections */}
-                    {article.sections.map((sec, si) => {
-                        const isMatchedSection = matchedSectionIds.includes(sec.id);
-                        return (
-                            <div
-                                key={si}
-                                className={`rounded-xl p-3 space-y-1.5 ${
-                                    isMatchedSection && query
-                                        ? "bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800/40"
-                                        : "bg-zinc-50 dark:bg-zinc-800/40"
-                                }`}
-                            >
-                                {sec.title && (
-                                    <p className="text-xs font-black text-red-600 dark:text-red-400 uppercase tracking-wide">
-                                        {sec.id} — {query ? highlightText(sec.title, query) : sec.title}
-                                    </p>
-                                )}
-                                {!sec.title && sec.id && (
-                                    <p className="text-xs font-black text-zinc-400 uppercase tracking-wide">{sec.id}</p>
-                                )}
-                                {sec.paragraphs.map((para, pi) => (
-                                    <p key={pi} className={`text-sm leading-relaxed ${
-                                        para.startsWith('•') || para.startsWith('-')
-                                            ? "pl-3 text-zinc-600 dark:text-zinc-400"
-                                            : "text-zinc-700 dark:text-zinc-300"
-                                    }`}>
-                                        {query ? highlightText(para, query) : para}
-                                    </p>
-                                ))}
-                            </div>
-                        );
-                    })}
+                    <div className="space-y-4">
+                        {article.sections.map((sec, si) => {
+                            const isMatchedSection = matchedSectionIds.includes(sec.id);
+                            return (
+                                <div
+                                    key={si}
+                                    className={`relative pl-4 border-l-[3px] rounded-r-xl pr-3 py-3 space-y-2 ${
+                                        isMatchedSection && query
+                                            ? "border-amber-400 bg-amber-50 dark:bg-amber-900/10"
+                                            : "border-red-200 dark:border-red-900/60 bg-zinc-50 dark:bg-zinc-800/40"
+                                    }`}
+                                >
+                                    {/* Section ID + Title */}
+                                    {(sec.title || sec.id) && (
+                                        <div className="flex flex-wrap items-baseline gap-2">
+                                            {sec.id && (
+                                                <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 text-xs font-black tracking-wide shrink-0">
+                                                    {sec.id}
+                                                </span>
+                                            )}
+                                            {sec.title && (
+                                                <span className="text-[15px] sm:text-base font-bold text-zinc-800 dark:text-zinc-200 leading-snug">
+                                                    {query ? highlightText(sec.title, query) : sec.title}
+                                                </span>
+                                            )}
+                                        </div>
+                                    )}
+
+                                    {/* Paragraphs */}
+                                    <div className="space-y-2">
+                                        {sec.paragraphs.map((para, pi) => (
+                                            <p key={pi} className={`text-[14px] sm:text-[15px] leading-[1.75] ${
+                                                para.startsWith('•') || para.startsWith('-')
+                                                    ? "pl-4 text-zinc-500 dark:text-zinc-400"
+                                                    : "text-zinc-700 dark:text-zinc-300"
+                                            }`}>
+                                                {query ? highlightText(para, query) : para}
+                                            </p>
+                                        ))}
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
                 </div>
             )}
         </div>
@@ -155,7 +177,6 @@ export function NativeRulesViewer({ type }: NativeRulesViewerProps) {
     const [showSuggestions, setShowSuggestions] = useState(false);
     const [searching, setSearching] = useState(false);
 
-    // Search results: list of {article, matchedSectionIds}
     const [searchResults, setSearchResults] = useState<{article: RuleArticle; matchedSectionIds: string[]}[]>([]);
     const [hasSearched, setHasSearched] = useState(false);
 
@@ -163,7 +184,6 @@ export function NativeRulesViewer({ type }: NativeRulesViewerProps) {
     const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const fuseRef = useRef<any>(null);
 
-    // Load data once
     useEffect(() => {
         async function load() {
             try {
@@ -176,7 +196,6 @@ export function NativeRulesViewer({ type }: NativeRulesViewerProps) {
                 setArticles(arts);
                 setSearchIndex(idx);
 
-                // Init Fuse
                 const Fuse = (await import('fuse.js')).default;
                 fuseRef.current = new Fuse(idx, {
                     keys: [
@@ -211,7 +230,6 @@ export function NativeRulesViewer({ type }: NativeRulesViewerProps) {
 
         const results = fuseRef.current.search(q.trim(), { limit: 20 });
 
-        // Group by madde and find matched sections
         const maddeMap = new Map<string, Set<string>>();
         for (const r of results) {
             const item: SearchEntry = r.item;
@@ -219,7 +237,6 @@ export function NativeRulesViewer({ type }: NativeRulesViewerProps) {
             if (item.sectionId) maddeMap.get(item.madde)!.add(item.sectionId);
         }
 
-        // Map back to articles
         const matched = [];
         for (const [maddeId, sectionIds] of maddeMap) {
             const article = articles.find(a => a.id === maddeId);
@@ -232,7 +249,6 @@ export function NativeRulesViewer({ type }: NativeRulesViewerProps) {
         setHasSearched(true);
         setSearching(false);
 
-        // Generate suggestions from search index keywords
         const q2 = q.toLowerCase();
         const words = new Set<string>();
         for (const entry of searchIndex) {
@@ -274,9 +290,9 @@ export function NativeRulesViewer({ type }: NativeRulesViewerProps) {
 
     if (loadingData) {
         return (
-            <div className="flex items-center justify-center py-20">
+            <div className="flex items-center justify-center py-24">
                 <Loader2 className="w-8 h-8 text-red-500 animate-spin" />
-                <span className="ml-3 text-zinc-500 font-medium">Kurallar yükleniyor...</span>
+                <span className="ml-3 text-zinc-500 font-semibold">Kurallar yükleniyor...</span>
             </div>
         );
     }
@@ -287,7 +303,7 @@ export function NativeRulesViewer({ type }: NativeRulesViewerProps) {
         <div className="space-y-5">
             {/* Search Input */}
             <div className="relative">
-                <div className={`flex items-center gap-3 bg-white dark:bg-zinc-900 border-2 rounded-2xl transition-all duration-200 shadow-lg ${
+                <div className={`flex items-center gap-3 bg-white dark:bg-zinc-900 border-2 rounded-2xl transition-all duration-200 shadow-md ${
                     query
                         ? "border-red-500 shadow-red-500/10 dark:shadow-red-500/5"
                         : "border-zinc-200 dark:border-zinc-700 hover:border-zinc-300 dark:hover:border-zinc-600 focus-within:border-red-500 focus-within:shadow-red-500/10"
@@ -308,10 +324,10 @@ export function NativeRulesViewer({ type }: NativeRulesViewerProps) {
                         onKeyDown={e => { if (e.key === 'Escape') clearSearch(); }}
                         placeholder={
                             type === "kural"
-                                ? "Madde, kural veya kelime arayın... (örn: '8 saniye', 'faul', 'dripling')"
+                                ? "Madde, kural veya kelime arayın..."
                                 : "Yorum, pozisyon veya madde arayın..."
                         }
-                        className="flex-1 bg-transparent py-4 text-base text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-600 outline-none font-medium min-w-0"
+                        className="flex-1 bg-transparent py-4 text-[15px] text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-600 outline-none font-medium min-w-0"
                     />
                     {query && (
                         <button
@@ -335,7 +351,7 @@ export function NativeRulesViewer({ type }: NativeRulesViewerProps) {
                             <button
                                 key={i}
                                 onMouseDown={() => applyQuery(s)}
-                                className="flex items-center gap-3 w-full px-4 py-2.5 text-left text-sm hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
+                                className="flex items-center gap-3 w-full px-4 py-3 text-left text-sm hover:bg-zinc-50 dark:hover:bg-zinc-800 active:bg-zinc-100 transition-colors"
                             >
                                 <Search className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
                                 <span className="text-zinc-700 dark:text-zinc-300 font-medium">{s}</span>
@@ -348,13 +364,13 @@ export function NativeRulesViewer({ type }: NativeRulesViewerProps) {
             {/* Quick chips */}
             {!query && (
                 <div>
-                    <p className="text-xs font-bold text-zinc-400 uppercase tracking-widest mb-2.5">Hızlı Arama</p>
+                    <p className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.15em] mb-3">Hızlı Arama</p>
                     <div className="flex flex-wrap gap-2">
                         {QUICK_CHIPS[type].map(chip => (
                             <button
                                 key={chip}
                                 onClick={() => applyQuery(chip)}
-                                className="px-3.5 py-1.5 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 rounded-xl text-sm font-semibold hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                                className="px-4 py-2 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 rounded-xl text-sm font-semibold hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 active:scale-95 transition-all"
                             >
                                 {chip}
                             </button>
@@ -363,31 +379,31 @@ export function NativeRulesViewer({ type }: NativeRulesViewerProps) {
                 </div>
             )}
 
-            {/* Results header */}
-            {hasSearched && (
-                <div className="flex items-center justify-between">
+            {/* Results / list header */}
+            {hasSearched ? (
+                <div className="flex items-center justify-between py-0.5">
                     <p className="text-sm font-bold text-zinc-500 dark:text-zinc-400">
                         {searchResults.length > 0
                             ? <><span className="text-red-600 dark:text-red-500">{searchResults.length}</span> madde bulundu</>
                             : `"${query}" için sonuç bulunamadı`
                         }
                     </p>
-                    <button onClick={clearSearch} className="text-xs text-zinc-400 hover:text-zinc-600 font-medium underline-offset-2 hover:underline">
+                    <button onClick={clearSearch} className="text-xs text-zinc-400 hover:text-zinc-600 font-semibold underline-offset-2 hover:underline transition-colors">
                         Temizle
                     </button>
                 </div>
+            ) : (
+                !query && (
+                    <div className="flex items-center justify-between py-0.5">
+                        <p className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.15em]">
+                            {TYPE_LABEL[type]} — {articles.length} Madde
+                        </p>
+                    </div>
+                )
             )}
 
             {/* Articles list */}
-            {!hasSearched && !query && (
-                <div className="flex items-center justify-between">
-                    <p className="text-xs font-bold text-zinc-400 uppercase tracking-widest">
-                        {TYPE_LABEL[type]} — {articles.length} Madde
-                    </p>
-                </div>
-            )}
-
-            <div className="space-y-2">
+            <div className="space-y-2.5">
                 {displayArticles.map(({ article, matchedSectionIds }) => (
                     <ArticleCard
                         key={article.id}
@@ -402,11 +418,11 @@ export function NativeRulesViewer({ type }: NativeRulesViewerProps) {
             {/* Empty state */}
             {hasSearched && searchResults.length === 0 && (
                 <div className="text-center py-16 text-zinc-400">
-                    <BookOpen className="w-12 h-12 mx-auto mb-3 opacity-30" />
-                    <p className="font-semibold text-zinc-500 dark:text-zinc-400">
+                    <BookOpen className="w-12 h-12 mx-auto mb-4 opacity-25" />
+                    <p className="font-bold text-zinc-500 dark:text-zinc-400 text-base">
                         &ldquo;{query}&rdquo; için sonuç bulunamadı
                     </p>
-                    <p className="text-sm mt-1.5">Farklı bir kelime veya madde numarası deneyin</p>
+                    <p className="text-sm mt-2 text-zinc-400">Farklı bir kelime veya madde numarası deneyin</p>
                 </div>
             )}
         </div>
