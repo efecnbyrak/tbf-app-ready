@@ -1,5 +1,5 @@
 import { db } from "@/lib/db";
-import { ExternalLink, FolderOpen, Search } from "lucide-react";
+import { FileText, ExternalLink, FolderOpen, Search } from "lucide-react";
 import Link from "next/link";
 import { PdfSearchBox } from "@/components/rules/PdfSearchBox";
 import { PdfViewer } from "@/components/rules/PdfViewer";
