@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { AtamalarClient } from "./AtamalarClient";
 import { getAssignments } from "@/app/actions/atamalar";
 import { getCurrentWeekNumber } from "@/lib/hafta-utils";
+import { getCurrentSeason } from "@/lib/season-utils";
 import fs from "fs";
 import path from "path";
 
@@ -17,6 +18,7 @@ export default async function AtamalarPage() {
     }
 
     const currentWeek = getCurrentWeekNumber();
+    const season = getCurrentSeason();
 
     // Load static data from archive extraction
     let staticData = { teams: [] as string[], categories: [] as string[], groups: [] as string[], salons: [] as string[] };
@@ -69,6 +71,7 @@ export default async function AtamalarPage() {
             groups={staticData.groups}
             salons={staticData.salons}
             currentWeek={currentWeek}
+            season={season.label}
             referees={refereeOptions}
             tableOfficials={tableOfficials}
             observers={observers}

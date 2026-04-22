@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition, useMemo } from "react";
+import { useState, useTransition, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createAssignment, updateAssignment, deleteAssignment } from "@/app/actions/atamalar";
 import { ClipboardList, Plus, X, Pencil, Trash2, Search, ChevronDown, Download, RefreshCw, CheckCircle2, AlertCircle } from "lucide-react";
@@ -45,6 +45,7 @@ interface Props {
     healthOfficials: PersonOption[];
     statisticians: PersonOption[];
     currentWeek: number;
+    season: string;
 }
 
 const EMPTY_FORM = {
@@ -175,7 +176,7 @@ function SearchableSelect({
 export function AtamalarClient({
     initialAssignments, teamNames, categories, groups, salons,
     referees, tableOfficials, observers, fieldCommissioners, healthOfficials, statisticians,
-    currentWeek,
+    currentWeek, season,
 }: Props) {
     const router = useRouter();
     const [assignments, setAssignments] = useState<GameAssignment[]>(initialAssignments);
@@ -190,6 +191,7 @@ export function AtamalarClient({
     const [filterHafta, setFilterHafta] = useState("");
     const [exportModalOpen, setExportModalOpen] = useState(false);
     const [exportLig, setExportLig] = useState("");
+    const [syncStatus, setSyncStatus] = useState<{ imported: number } | null>(null);
     const [importModalOpen, setImportModalOpen] = useState(false);
     const [importSource, setImportSource] = useState<"local" | "drive" | "both">("both");
     const [replaceExisting, setReplaceExisting] = useState(false);
@@ -205,6 +207,19 @@ export function AtamalarClient({
     const maxHafta = currentWeek + 2;
     const haftaOptions = Array.from({ length: maxHafta }, (_, i) => i + 1)
         .map(w => ({ name: String(w), label: `${w}. Hafta (${getWeekLabel(w)})` }));
+
+    // Auto-sync on mount: check Drive for current week's new matches
+    useEffect(() => {
+        fetch("/api/atamalar/sync")
+            .then(r => r.json())
+            .then(data => {
+                if (data.success && data.imported > 0) {
+                    setSyncStatus({ imported: data.imported });
+                    router.refresh();
+                }
+            })
+            .catch(() => {});
+    }, []);
 
     function openCreate() {
         setForm({ ...EMPTY_FORM, hafta: String(currentWeek) });
@@ -339,8 +354,14 @@ const isYerelLigler = form.ligTuru === "Yerel Ligler";
                         Atamalar
                     </h1>
                     <p className="text-zinc-500 font-medium italic mt-1">
-                        Maç atamaları ve görevli düzenlemeleri. Toplam {assignments.length} atama.
+                        {season} Sezonu — Toplam {assignments.length} atama.
                     </p>
+                    {syncStatus && syncStatus.imported > 0 && (
+                        <p className="text-emerald-600 dark:text-emerald-400 text-xs font-bold mt-1 flex items-center gap-1">
+                            <CheckCircle2 className="w-3.5 h-3.5" />
+                            {syncStatus.imported} yeni maç Drive'dan otomatik aktarıldı.
+                        </p>
+                    )}
                 </div>
                 <div className="flex items-center gap-2">
                     <button

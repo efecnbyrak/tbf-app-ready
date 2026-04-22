@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
-import { verifySession } from "@/lib/session";
+import { getSession } from "@/lib/session";
 import { db } from "@/lib/db";
 import { findAllSpreadsheets, downloadAsXlsx } from "@/lib/google-drive";
 import { parseWorkbook } from "@/lib/match-parser";
+import { getCurrentSeason } from "@/lib/season-utils";
 import ExcelJS from "exceljs";
 import fs from "fs";
 import path from "path";
@@ -12,21 +13,18 @@ export const maxDuration = 120;
 
 function parseTarih(tarihStr: string): Date | null {
     if (!tarihStr) return null;
-    // Formats: "25.03.2025", "25/03/2025", "2025-03-25"
     const dmyMatch = tarihStr.match(/(\d{1,2})[.\/](\d{1,2})[.\/](\d{4})/);
     if (dmyMatch) {
         const [, d, m, y] = dmyMatch;
-        const date = new Date(`${y}-${m.padStart(2, "0")}-${d.padStart(2, "0")}T00:00:00.000Z`);
-        if (!isNaN(date.getTime())) return date;
+        return new Date(`${y}-${m.padStart(2, "0")}-${d.padStart(2, "0")}T00:00:00.000Z`);
     }
     const iso = new Date(tarihStr);
-    if (!isNaN(iso.getTime())) return iso;
-    return null;
+    return isNaN(iso.getTime()) ? null : iso;
 }
 
 function ligTuruNormalize(raw: string): string {
-    const u = raw.toUpperCase();
-    if (u.includes("ÖZEL") || u.includes("ÜNİVERSİTE") || u.includes("OZEL") || u.includes("UNIVERSITE")) {
+    const u = (raw || "").toUpperCase();
+    if (u.includes("ÖZEL") || u.includes("ÜNİVERSİTE") || u.includes("OZEL")) {
         return "Özel Lig ve Üniversite";
     }
     return "Yerel Ligler";
@@ -34,7 +32,6 @@ function ligTuruNormalize(raw: string): string {
 
 function splitTeams(macAdi: string): { aTeam: string; bTeam: string } {
     if (!macAdi) return { aTeam: "", bTeam: "" };
-    // Try split on " - "
     const parts = macAdi.split(/\s+-\s+/);
     if (parts.length >= 2) {
         return { aTeam: parts[0].trim(), bTeam: parts.slice(1).join(" - ").trim() };
@@ -42,17 +39,17 @@ function splitTeams(macAdi: string): { aTeam: string; bTeam: string } {
     return { aTeam: macAdi.trim(), bTeam: "" };
 }
 
-async function parseLocalFile(filePath: string, fileName: string) {
+async function parseLocalXlsx(filePath: string, fileName: string) {
     const buffer = fs.readFileSync(filePath);
-    const workbook = new ExcelJS.Workbook();
-    await workbook.xlsx.load(buffer as any);
-    return parseWorkbook(workbook, fileName);
+    const wb = new ExcelJS.Workbook();
+    await wb.xlsx.load(buffer as any);
+    return parseWorkbook(wb, fileName);
 }
 
 export async function POST(req: Request) {
     try {
-        const session = await verifySession();
-        if (session.role !== "SUPER_ADMIN") {
+        const session = await getSession();
+        if (!session || session.role !== "SUPER_ADMIN") {
             return NextResponse.json({ error: "Yetkisiz" }, { status: 403 });
         }
 
@@ -60,38 +57,42 @@ export async function POST(req: Request) {
         const source: "local" | "drive" | "both" = body.source || "both";
         const replaceExisting: boolean = body.replaceExisting || false;
 
+        const season = getCurrentSeason();
         const allMatches: any[] = [];
         const errors: string[] = [];
 
-        // ── 1. Local Archive ──────────────────────────────────────
+        // ── 1. Local Archive (current season folder) ──────────────
         if (source === "local" || source === "both") {
-            const archiveBase = path.join(process.cwd(), "data", "archive", "2024-2025 Sezonu");
+            const archiveBase = path.join(process.cwd(), "data", "archive");
+            const seasonDir = path.join(archiveBase, season.folderName);
 
-            // Yerel Ligler hafta dosyaları
-            const yerelDir = path.join(archiveBase, "Yerel Ligler");
-            if (fs.existsSync(yerelDir)) {
-                const files = fs.readdirSync(yerelDir).filter(f => /\.(xlsx|xls)$/i.test(f));
-                for (const f of files) {
-                    try {
-                        const matches = await parseLocalFile(path.join(yerelDir, f), f);
-                        allMatches.push(...matches.map(m => ({ ...m, ligTuruRaw: "Yerel Ligler" })));
-                    } catch (e: any) {
-                        errors.push(`Yerel/${f}: ${e.message}`);
+            if (fs.existsSync(seasonDir)) {
+                // Yerel Ligler hafta dosyaları
+                const yerelDir = path.join(seasonDir, "Yerel Ligler");
+                if (fs.existsSync(yerelDir)) {
+                    for (const f of fs.readdirSync(yerelDir).filter(f => /\.(xlsx|xls)$/i.test(f))) {
+                        try {
+                            const matches = await parseLocalXlsx(path.join(yerelDir, f), f);
+                            allMatches.push(...matches.map(m => ({ ...m, ligTuruRaw: "Yerel Ligler" })));
+                        } catch (e: any) {
+                            errors.push(`Yerel/${f}: ${e.message}`);
+                        }
                     }
                 }
-            }
 
-            // Özel Lig ve Üniversite (dosya adında çift boşluk olabilir)
-            const rootFiles = fs.readdirSync(archiveBase).filter(f =>
-                /\.(xlsx|xls)$/i.test(f) && /özel|ozel|üniversite|universite/i.test(f)
-            );
-            for (const f of rootFiles) {
-                try {
-                    const matches = await parseLocalFile(path.join(archiveBase, f), f);
-                    allMatches.push(...matches.map(m => ({ ...m, ligTuruRaw: "Özel Lig ve Üniversite" })));
-                } catch (e: any) {
-                    errors.push(`ÖzelLig/${f}: ${e.message}`);
+                // Özel Lig dosyaları (root'taki xlsx'ler, özel/üniversite içerenler)
+                for (const f of fs.readdirSync(seasonDir).filter(f =>
+                    /\.(xlsx|xls)$/i.test(f) && /özel|ozel|üniversite|universite/i.test(f)
+                )) {
+                    try {
+                        const matches = await parseLocalXlsx(path.join(seasonDir, f), f);
+                        allMatches.push(...matches.map(m => ({ ...m, ligTuruRaw: "Özel Lig ve Üniversite" })));
+                    } catch (e: any) {
+                        errors.push(`ÖzelLig/${f}: ${e.message}`);
+                    }
                 }
+            } else {
+                errors.push(`Yerel arşiv klasörü bulunamadı: "${season.folderName}". Drive üzerinden devam ediliyor.`);
             }
         }
 
@@ -107,10 +108,10 @@ export async function POST(req: Request) {
 
                     for (const file of files) {
                         try {
-                            const buffer = await downloadAsXlsx(file.id, file.mimeType, file.resourceKey);
-                            const workbook = new ExcelJS.Workbook();
-                            await workbook.xlsx.load(new Uint8Array(buffer) as any);
-                            const matches = parseWorkbook(workbook, file.name);
+                            const buf = await downloadAsXlsx(file.id, file.mimeType, file.resourceKey);
+                            const wb = new ExcelJS.Workbook();
+                            await wb.xlsx.load(new Uint8Array(buf) as any);
+                            const matches = parseWorkbook(wb, file.name);
                             const lig = ligTuruNormalize(file.name);
                             allMatches.push(...matches.map(m => ({ ...m, ligTuruRaw: lig })));
                         } catch (e: any) {
@@ -123,14 +124,21 @@ export async function POST(req: Request) {
             }
         }
 
-        // ── 3. Import to DB ───────────────────────────────────────
+        // ── 3. Filter to current season & import ─────────────────
         let imported = 0;
         let skipped = 0;
         let updated = 0;
+        let outsideSeason = 0;
 
         for (const m of allMatches) {
             const tarih = parseTarih(m.tarih);
             if (!tarih) { skipped++; continue; }
+
+            // Only import current season data
+            if (tarih < season.startDate || tarih > season.endDate) {
+                outsideSeason++;
+                continue;
+            }
 
             const { aTeam, bTeam } = splitTeams(m.mac_adi);
             const ligTuru = m.ligTuruRaw || ligTuruNormalize(m.ligTuru || "");
@@ -156,22 +164,13 @@ export async function POST(req: Request) {
             };
 
             try {
-                // Duplicate check: same tarih + saat + aTeam + bTeam
                 const existing = await (db as any).gameAssignment.findFirst({
-                    where: {
-                        tarih,
-                        saat: data.saat,
-                        aTeam,
-                        bTeam,
-                    },
+                    where: { tarih, saat: data.saat, aTeam, bTeam },
                 });
 
                 if (existing) {
                     if (replaceExisting) {
-                        await (db as any).gameAssignment.update({
-                            where: { id: existing.id },
-                            data,
-                        });
+                        await (db as any).gameAssignment.update({ where: { id: existing.id }, data });
                         updated++;
                     } else {
                         skipped++;
@@ -185,15 +184,26 @@ export async function POST(req: Request) {
             }
         }
 
+        // Save last sync time
+        try {
+            await (db as any).systemSetting.upsert({
+                where: { key: "ATAMALAR_LAST_IMPORT" },
+                create: { key: "ATAMALAR_LAST_IMPORT", value: new Date().toISOString() },
+                update: { value: new Date().toISOString() },
+            });
+        } catch {}
+
         return NextResponse.json({
             success: true,
+            season: season.label,
             total: allMatches.length,
+            outsideSeason,
             imported,
             updated,
             skipped,
             errors: errors.slice(0, 20),
         });
     } catch (e: any) {
-        return NextResponse.json({ error: e.message }, { status: 500 });
+        return NextResponse.json({ error: e?.message || "Sunucu hatası" }, { status: 500 });
     }
 }

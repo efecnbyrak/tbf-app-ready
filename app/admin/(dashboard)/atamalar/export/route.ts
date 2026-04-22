@@ -3,6 +3,7 @@ import { verifySession } from "@/lib/session";
 import { db } from "@/lib/db";
 import ExcelJS from "exceljs";
 import { redirect } from "next/navigation";
+import { getCurrentSeason } from "@/lib/season-utils";
 
 export const dynamic = "force-dynamic";
 
@@ -25,7 +26,10 @@ export async function GET(req: NextRequest) {
         const ligTuru = searchParams.get("ligTuru") || undefined;
         const hafta = searchParams.get("hafta") ? parseInt(searchParams.get("hafta")!) : undefined;
 
-        const where: any = {};
+        const season = getCurrentSeason();
+        const where: any = {
+            tarih: { gte: season.startDate, lte: season.endDate },
+        };
         if (ligTuru) where.ligTuru = ligTuru;
         if (hafta) where.hafta = hafta;
 

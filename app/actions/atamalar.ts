@@ -3,6 +3,7 @@
 import { verifySession } from "@/lib/session";
 import { db } from "@/lib/db";
 import { revalidatePath } from "next/cache";
+import { getCurrentSeason } from "@/lib/season-utils";
 
 function requireSuperAdmin(role: string) {
     if (role !== "SUPER_ADMIN") throw new Error("Yetkisiz");
@@ -13,11 +14,19 @@ export async function getAssignments() {
         const session = await verifySession();
         requireSuperAdmin(session.role);
 
+        const season = getCurrentSeason();
+
         const assignments = await (db as any).gameAssignment.findMany({
+            where: {
+                tarih: {
+                    gte: season.startDate,
+                    lte: season.endDate,
+                },
+            },
             orderBy: [{ tarih: "asc" }, { saat: "asc" }],
         });
 
-        return { success: true, assignments };
+        return { success: true, assignments, season: season.label };
     } catch (e: any) {
         return { success: false, assignments: [], error: e?.message };
     }
