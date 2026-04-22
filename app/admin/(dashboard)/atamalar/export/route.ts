@@ -102,6 +102,7 @@ export async function GET(req: NextRequest) {
                 okul: { basHakem: 0, yardimciHakem: 0 },
                 il: { basHakem: 0, yardimciHakem: 0 },
                 ilce: { basHakem: 0, yardimciHakem: 0 },
+                bolge: { basHakem: 0, yardimciHakem: 0 },
             },
             specialLeagues: [],
         };

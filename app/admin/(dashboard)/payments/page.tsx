@@ -1,6 +1,6 @@
 import { verifySession } from "@/lib/session";
 import { redirect } from "next/navigation";
-import { getPaymentConfig } from "@/app/actions/payments";
+import { getPaymentConfig, getSpecialLeagueCategories } from "@/app/actions/payments";
 import { PaymentsForm } from "./PaymentsForm";
 
 export const dynamic = "force-dynamic";
@@ -9,7 +9,10 @@ export default async function PaymentsPage() {
     const session = await verifySession();
     if (session?.role !== "SUPER_ADMIN") redirect("/admin");
 
-    const config = await getPaymentConfig();
+    const [config, driveCategories] = await Promise.all([
+        getPaymentConfig(),
+        getSpecialLeagueCategories(),
+    ]);
 
     return (
         <div>
@@ -21,7 +24,7 @@ export default async function PaymentsPage() {
                     Maç kategorilerine ve görevlere göre hakem ücretlerini yapılandırın. Bu değerler Excel atama raporunda otomatik olarak kullanılır.
                 </p>
             </div>
-            <PaymentsForm initialConfig={config} />
+            <PaymentsForm initialConfig={config} driveCategories={driveCategories} />
         </div>
     );
 }
