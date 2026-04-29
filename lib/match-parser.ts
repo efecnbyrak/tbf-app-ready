@@ -1,5 +1,5 @@
+import type ExcelJS from "exceljs"; // type-only — no runtime cost; module loaded lazily in getAllMatches
 import { findAllSpreadsheets, downloadAsXlsx } from "./google-drive";
-import ExcelJS from "exceljs";
 
 export interface MatchData {
     mac_adi: string;
@@ -92,28 +92,29 @@ export function nameMatches(cellName: string, firstName: string, lastName: strin
 }
 
 /**
- * Simple Levenshtein for short strings
+ * Simple Levenshtein for short strings.
+ * Uses two 1-D rolling arrays instead of a full matrix — O(b) memory vs O(a*b).
  */
 function levenshteinSimple(a: string, b: string): number {
     if (a === b) return 0;
     if (a.length === 0) return b.length;
     if (b.length === 0) return a.length;
 
-    const matrix: number[][] = [];
-    for (let i = 0; i <= a.length; i++) matrix[i] = [i];
-    for (let j = 0; j <= b.length; j++) matrix[0][j] = j;
+    // Allocate two rows once; swap them each outer iteration
+    let prev = new Array<number>(b.length + 1);
+    let curr = new Array<number>(b.length + 1);
+    for (let j = 0; j <= b.length; j++) prev[j] = j;
 
     for (let i = 1; i <= a.length; i++) {
+        curr[0] = i;
         for (let j = 1; j <= b.length; j++) {
             const cost = a[i - 1] === b[j - 1] ? 0 : 1;
-            matrix[i][j] = Math.min(
-                matrix[i - 1][j] + 1,
-                matrix[i][j - 1] + 1,
-                matrix[i - 1][j - 1] + cost
-            );
+            curr[j] = Math.min(prev[j] + 1, curr[j - 1] + 1, prev[j - 1] + cost);
         }
+        // Swap rows without allocating a new array
+        const tmp = prev; prev = curr; curr = tmp;
     }
-    return matrix[a.length][b.length];
+    return prev[b.length];
 }
 
 // ============================================================
@@ -286,6 +287,27 @@ export function parseWorkbook(workbook: ExcelJS.Workbook, fileName: string): Mat
 
         if (headerIdx < 0) continue;
 
+        // Pre-extract column index arrays once — avoids repeated colMap lookups and optional chaining
+        // on every row iteration.
+        const hakemCols = colMap["hakem"] || [];
+        const masaCols = colMap["masa"] || [];
+        const saglikCols = colMap["saglik"] || [];
+        const istatistikCols = colMap["istatistik"] || [];
+        const gozlemciCols = colMap["gozlemci"] || [];
+        const sahaKomiseriCols = colMap["sahaKomiseri"] || [];
+        const tarihCols = colMap["tarih"] || [];
+        const saatCols = colMap["saat"] || [];
+        const salonCols = colMap["salon"] || [];
+        const macCols = colMap["mac"] || [];
+        const organizasyonCols = colMap["organizasyon"] || [];
+
+        // Pre-compute the "used columns" set — only built when macAdi fallback is needed,
+        // but the set is identical on every row so compute it once outside the loop.
+        const usedColsSet = new Set([
+            ...hakemCols, ...masaCols, ...saglikCols, ...istatistikCols,
+            ...gozlemciCols, ...sahaKomiseriCols, ...tarihCols, ...saatCols, ...salonCols, ...macCols,
+        ]);
+
         let lastTarih = "";
         let lastSalon = "";
 
@@ -297,8 +319,8 @@ export function parseWorkbook(workbook: ExcelJS.Workbook, fileName: string): Mat
             let rowTarih = "";
             let rowSalon = "";
 
-            if (colMap["tarih"]?.length) {
-                rowTarih = row[colMap["tarih"][0]] || "";
+            if (tarihCols.length) {
+                rowTarih = row[tarihCols[0]] || "";
                 if (rowTarih && /\d/.test(rowTarih)) lastTarih = rowTarih.trim();
             }
 
@@ -311,35 +333,28 @@ export function parseWorkbook(workbook: ExcelJS.Workbook, fileName: string): Mat
                 }
             }
 
-            if (colMap["salon"]?.length) {
-                rowSalon = cleanDatePrefix(row[colMap["salon"][0]] || "");
+            if (salonCols.length) {
+                rowSalon = cleanDatePrefix(row[salonCols[0]] || "");
                 if (rowSalon && rowSalon.length > 2) lastSalon = rowSalon.trim();
             }
 
-            const hakemler = (colMap["hakem"] || []).map(j => row[j] || "").filter(v => v.length > 2);
-            const masaGorevlileri = (colMap["masa"] || []).map(j => row[j] || "").filter(v => v.length > 2);
-            const saglikcilar = (colMap["saglik"] || []).map(j => row[j] || "").filter(v => v.length > 2);
-            const istatistikciler = (colMap["istatistik"] || []).map(j => row[j] || "").filter(v => v.length > 2);
-            const gozlemciler = (colMap["gozlemci"] || []).map(j => row[j] || "").filter(v => v.length > 2);
-            const sahaKomiserleri = (colMap["sahaKomiseri"] || []).map(j => row[j] || "").filter(v => v.length > 2);
+            const hakemler = hakemCols.map(j => row[j] || "").filter(v => v.length > 2);
+            const masaGorevlileri = masaCols.map(j => row[j] || "").filter(v => v.length > 2);
+            const saglikcilar = saglikCols.map(j => row[j] || "").filter(v => v.length > 2);
+            const istatistikciler = istatistikCols.map(j => row[j] || "").filter(v => v.length > 2);
+            const gozlemciler = gozlemciCols.map(j => row[j] || "").filter(v => v.length > 2);
+            const sahaKomiserleri = sahaKomiseriCols.map(j => row[j] || "").filter(v => v.length > 2);
 
             if (hakemler.length === 0 && masaGorevlileri.length === 0 &&
                 saglikcilar.length === 0 && istatistikciler.length === 0 &&
                 gozlemciler.length === 0 && sahaKomiserleri.length === 0) continue;
 
             let macAdi = "";
-            if (colMap["mac"]?.length) {
-                macAdi = colMap["mac"].map(j => row[j] || "").filter(v => v.length > 1).join(" - ");
+            if (macCols.length) {
+                macAdi = macCols.map(j => row[j] || "").filter(v => v.length > 1).join(" - ");
             }
             if (!macAdi) {
-                const usedCols = new Set([
-                    ...(colMap["hakem"] || []), ...(colMap["masa"] || []),
-                    ...(colMap["saglik"] || []), ...(colMap["istatistik"] || []),
-                    ...(colMap["gozlemci"] || []), ...(colMap["sahaKomiseri"] || []),
-                    ...(colMap["tarih"] || []),
-                    ...(colMap["saat"] || []), ...(colMap["salon"] || []), ...(colMap["mac"] || []),
-                ]);
-                const extras = row.map((v, j) => ({ v, j })).filter(x => x.v.length > 2 && !usedCols.has(x.j)).map(x => x.v).slice(0, 3);
+                const extras = row.map((v, j) => ({ v, j })).filter(x => x.v.length > 2 && !usedColsSet.has(x.j)).map(x => x.v).slice(0, 3);
                 if (extras.length > 0) macAdi = extras.join(" - ");
             }
             if (!macAdi) macAdi = `${category} — ${ws.name}`;
@@ -351,7 +366,7 @@ export function parseWorkbook(workbook: ExcelJS.Workbook, fileName: string): Mat
             else if (!tarih && lastTarih) tarih = lastTarih;
 
             let saat = "";
-            if (colMap["saat"]?.length) saat = cleanSaat(row[colMap["saat"][0]] || "");
+            if (saatCols.length) saat = cleanSaat(row[saatCols[0]] || "");
 
             let salon = rowSalon || "";
             if (salon && salon.length > 2) lastSalon = salon;
@@ -359,8 +374,8 @@ export function parseWorkbook(workbook: ExcelJS.Workbook, fileName: string): Mat
 
             // If there's an ORGANİZASYON column, use its value as kategori
             let rowKategori = sheetCategory;
-            if (colMap["organizasyon"]?.length) {
-                const orgVal = (row[colMap["organizasyon"][0]] || "").trim();
+            if (organizasyonCols.length) {
+                const orgVal = (row[organizasyonCols[0]] || "").trim();
                 if (orgVal.length > 1) rowKategori = orgVal;
             }
 
@@ -380,10 +395,19 @@ export function parseWorkbook(workbook: ExcelJS.Workbook, fileName: string): Mat
 // Get matches from Drive
 // ============================================================
 
-export async function getAllMatches(folderIds: string[], maxDepth: number = 0): Promise<MatchData[]> {
+export async function getAllMatches(folderIds: string[], maxDepth: number = 0): Promise<{ matches: MatchData[], hasErrors: boolean }> {
     const startTime = Date.now();
     const { files, errors } = await findAllSpreadsheets(folderIds, maxDepth);
     console.log(`[MATCHES] Found ${files.length} spreadsheets. Errors: ${errors.length}`);
+
+    if (files.length === 0) {
+        return { matches: [], hasErrors: errors.length > 0 };
+    }
+
+    // Lazy-load ExcelJS only when there are files to parse.
+    // On cache-hit request paths this function is never called, so ExcelJS is never loaded —
+    // improving cold-start time for the majority of requests.
+    const { default: ExcelJSRuntime } = await import("exceljs");
 
     const allMatches: MatchData[] = [];
     const CONCURRENCY = 3;
@@ -393,9 +417,9 @@ export async function getAllMatches(folderIds: string[], maxDepth: number = 0): 
         const chunkResults = await Promise.all(chunk.map(async (sheet) => {
             try {
                 const buffer = await downloadAsXlsx(sheet.id, sheet.mimeType, sheet.resourceKey);
-                const workbook = new ExcelJS.Workbook();
+                const workbook = new ExcelJSRuntime.Workbook();
                 await workbook.xlsx.load(new Uint8Array(buffer) as any);
-                const matches = parseWorkbook(workbook, sheet.name);
+                const matches = parseWorkbook(workbook as any, sheet.name);
                 console.log(`[MATCHES] ✅ ${sheet.name}: ${matches.length} maç`);
                 return matches;
             } catch (e: any) {
@@ -408,17 +432,30 @@ export async function getAllMatches(folderIds: string[], maxDepth: number = 0): 
 
     const duration = ((Date.now() - startTime) / 1000).toFixed(1);
     console.log(`[MATCHES] Done: ${allMatches.length} matches in ${duration}s`);
-    return allMatches;
+    return { matches: allMatches, hasErrors: errors.length > 0 };
 }
 
 export function getMatchesForUser(allMatches: MatchData[], firstName: string, lastName: string): UserMatchSummary {
+    // Memoize nameMatches results within this call.
+    // Many spreadsheet rows list the same person names — avoiding redundant fuzzy-match
+    // computations (including Levenshtein) reduces CPU significantly on large match sets.
+    const nameCache = new Map<string, boolean>();
+    const cachedNameMatches = (person: string): boolean => {
+        let result = nameCache.get(person);
+        if (result === undefined) {
+            result = nameMatches(person, firstName, lastName);
+            nameCache.set(person, result);
+        }
+        return result;
+    };
+
     const userMatches = allMatches.filter(match => {
         const allPeople = [
             ...match.hakemler, ...match.masa_gorevlileri,
             ...match.saglikcilar, ...match.istatistikciler, ...match.gozlemciler,
             ...match.sahaKomiserleri,
         ];
-        return allPeople.some(person => nameMatches(person, firstName, lastName));
+        return allPeople.some(person => cachedNameMatches(person));
     });
 
     const kategoriler: Record<string, number> = {};

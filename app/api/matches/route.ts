@@ -9,11 +9,11 @@ export const maxDuration = 60;
 
 /**
  * Folder structure:
- * 
+ *
  * 📁 2025-2026 Maç Programları (0ByPao_qBUjN-YXJZSG5Fancybmc)        ← "current" — has 26/27.HAFTA + OKUL + ÖZEL LİG etc.
  *   📊 27.HAFTA, 26.HAFTA, OKUL İL VE İLÇE, ÖZEL LİG, TBF-FIBA...
  *   📁 Arşiv → (circle ref, skip)
- * 
+ *
  * 📁 Arşiv (1wW7_ITBS2JWRHQqpBH1xq926070U2WQP)
  *   📁 2025-2026 Sezonu (1Tqtn2oN96UAyeARYtmYFGSfzkrSJOG9s)         ← has weeks 1-25
  *   📁 2024-2025 Sezonu (12ugwc-i-fQEKbqfS-qbUtaYvz3ozTIsh)
@@ -38,6 +38,14 @@ const CURRENT_SEASON_ARCHIVE = "2025-2026";
 // Old seasons are scanned ONCE and permanently cached
 const OLD_ARCHIVE_SEASONS = ["2024-2025", "2023-2024", "2022-2023", "2021-2022"];
 const ALL_ARCHIVE_SEASONS = [CURRENT_SEASON_ARCHIVE, ...OLD_ARCHIVE_SEASONS];
+
+// Defined at module scope to avoid recreating on every request
+function normalizeName(first: string, last: string): string {
+    return `${first} ${last}`.replace(/İ/g, "i").replace(/I/g, "ı")
+        .replace(/Ğ/g, "ğ").replace(/Ü/g, "ü")
+        .replace(/Ş/g, "ş").replace(/Ö/g, "ö")
+        .replace(/Ç/g, "ç").toLowerCase().replace(/\s+/g, " ").trim();
+}
 
 export async function GET(request: Request) {
     try {
@@ -74,8 +82,25 @@ export async function GET(request: Request) {
 
             const folderId = SEASON_FOLDERS[seasonParam];
             // maxDepth=2: season folder → weekly subfolders → spreadsheets
-            const seasonMatches = await getAllMatches([folderId], 2);
+            const { matches: seasonMatches, hasErrors: archiveHadErrors } = await getAllMatches([folderId], 2);
             console.log(`[MATCHES] ${seasonParam}: ${seasonMatches.length} total matches found`);
+
+            // If Drive errored out and returned nothing, skip saving to avoid wiping archive cache
+            const existing = await getUserMatchesStore(session.userId);
+            const existingMatchesArchive = existing?.matches || [];
+
+            if (archiveHadErrors && seasonMatches.length === 0) {
+                console.log(`[MATCHES] ${seasonParam}: Drive error, skipping save`);
+                return NextResponse.json({
+                    season: seasonParam,
+                    newMatchesFound: 0,
+                    totalSeasonMatches: 0,
+                    totalAfterMerge: existingMatchesArchive.length,
+                    matches: existingMatchesArchive,
+                    lastSync: existing?.lastSync || new Date().toISOString(),
+                    driveError: true,
+                });
+            }
 
             const userResults = getMatchesForUser(seasonMatches, firstName, lastName);
             console.log(`[MATCHES] ${seasonParam}: ${userResults.toplam_mac} matches for user`);
@@ -84,9 +109,7 @@ export async function GET(request: Request) {
             const taggedMatches = userResults.maclar.map(m => ({ ...m, sezon: seasonParam }));
 
             // Replace matches for this season in existing cache
-            const existing = await getUserMatchesStore(session.userId);
-            const existingMatches = existing?.matches || [];
-            const merged = mergeMatches(existingMatches, taggedMatches, seasonParam);
+            const merged = mergeMatches(existingMatchesArchive, taggedMatches, seasonParam);
 
             const existingSeasons = existing?.scannedSeasons || [];
             await saveUserMatchesStore(session.userId, merged, false, [...existingSeasons, seasonParam]).catch(() => { });
@@ -105,8 +128,14 @@ export async function GET(request: Request) {
         // MODE: Normal load (current season + auto archive)
         // ========================================
 
-        // Step 1: Read existing cache and determine what archive seasons we already have
-        const cached = await getUserMatchesStore(session.userId);
+        // Step 1: Read cache and phone data in parallel — both are needed regardless of cache state.
+        // Running them concurrently saves ~40ms per request compared to sequential awaits.
+        const [cached, allReferees, allOfficials] = await Promise.all([
+            getUserMatchesStore(session.userId),
+            db.referee.findMany({ select: { firstName: true, lastName: true, phone: true } }),
+            db.generalOfficial.findMany({ select: { firstName: true, lastName: true, phone: true } }),
+        ]);
+
         const existingMatches = cached?.matches || [];
 
         let pendingSeasons: string[] = [];
@@ -120,21 +149,7 @@ export async function GET(request: Request) {
             pendingSeasons = [...ALL_ARCHIVE_SEASONS];
         }
 
-        // --- Fetch Phone Numbers (only name+phone, minimal query) ---
-        const [allReferees, allOfficials] = await Promise.all([
-            db.referee.findMany({ select: { firstName: true, lastName: true, phone: true } }),
-            db.generalOfficial.findMany({ select: { firstName: true, lastName: true, phone: true } }),
-        ]);
-
         const personnelPhones: Record<string, string> = {};
-
-        // Helper to normalize name for dictionary matching
-        const normalizeName = (first: string, last: string) => {
-            return `${first} ${last}`.replace(/İ/g, "i").replace(/I/g, "ı")
-                .replace(/Ğ/g, "ğ").replace(/Ü/g, "ü")
-                .replace(/Ş/g, "ş").replace(/Ö/g, "ö")
-                .replace(/Ç/g, "ç").toLowerCase().replace(/\s+/g, " ").trim();
-        };
 
         allReferees.forEach(r => {
             if (r.phone) personnelPhones[normalizeName(r.firstName, r.lastName)] = r.phone;
@@ -161,8 +176,23 @@ export async function GET(request: Request) {
         console.log(`[MATCHES] Fresh scan for: ${firstName} ${lastName} (forceRefresh: ${forceRefresh})`);
 
         const currentFolder = SEASON_FOLDERS["current"];
-        const allMatches = await getAllMatches([currentFolder], 0);
+        const { matches: allMatches, hasErrors: driveHadErrors } = await getAllMatches([currentFolder], 0);
         console.log(`[MATCHES] Current season: ${allMatches.length} matches total`);
+
+        // If Drive returned 0 results due to errors, preserve the existing cache instead of wiping it
+        if (driveHadErrors && allMatches.length === 0 && existingMatches.length > 0) {
+            console.log(`[MATCHES] Drive scan failed, preserving existing cache (${existingMatches.length} matches)`);
+            return NextResponse.json({
+                matches: existingMatches,
+                lastSync: cached?.lastSync,
+                fromCache: true,
+                driveError: true,
+                searchName: `${firstName} ${lastName}`,
+                scannedSeasons: cached?.scannedSeasons || [],
+                pendingSeasons: [],
+                personnelPhones
+            });
+        }
 
         // Save global registry
         await saveGlobalMatchesStore(allMatches, false).catch(e =>

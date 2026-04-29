@@ -35,7 +35,7 @@ export async function GET() {
             .split(",").map((s: string) => s.trim()).filter(Boolean);
 
         // 2. Perform Full Sync (Drive + Local Archive)
-        const allMatches = await getAllMatches(folderIds);
+        const { matches: allMatches } = await getAllMatches(folderIds);
 
         // 3. Filter for this user
         const newSummary = getMatchesForUser(allMatches, firstName, lastName);
@@ -86,8 +86,4 @@ export async function GET() {
         console.error("[SYNC API] Error:", error?.message);
         return NextResponse.json({ error: error?.message }, { status: 500 });
     }
-}
-
-function newSet(arr: string[]) {
-    return new Set(arr);
 }
