@@ -1,6 +1,6 @@
 import { useActionState, useEffect, useState } from "react";
-import Link from "next/link";
 import { Modal } from "@/components/ui/modal";
+import { KvkkModal } from "@/components/kvkk/KvkkModal";
 import { register, ActionState } from "@/app/actions/auth";
 import { TURKEY_CITIES, ISTANBUL_DISTRICTS, SECURITY_QUESTIONS } from "@/lib/constants";
 import { getPasswordStrength, filterOnlyLetters, validateIBAN } from "@/lib/validation-utils";
@@ -42,6 +42,7 @@ export function RegisterModal({ isOpen, onClose, onSwitchToLogin }: RegisterModa
     const [kvkk, setKvkk] = useState(false);
     const [consent, setConsent] = useState(false);
     const [strengthData, setStrengthData] = useState(getPasswordStrength(""));
+    const [kvkkModalOpen, setKvkkModalOpen] = useState(false);
 
     // Derived address string for the hidden input
     const fullAddress = `${city} / ${district} - ${details}`;
@@ -337,7 +338,14 @@ export function RegisterModal({ isOpen, onClose, onSwitchToLogin }: RegisterModa
                             className="mt-1 w-4 h-4 text-red-600 rounded focus:ring-red-600"
                         />
                         <label htmlFor="kvkk" className="text-xs text-zinc-600 dark:text-zinc-400 cursor-pointer">
-                            <Link href="/kvkk" target="_blank" className="font-semibold text-zinc-900 dark:text-zinc-100 hover:underline">KVKK Aydınlatma Metni</Link>'ni okudum ve anladım.
+                            <button
+                                type="button"
+                                onClick={() => setKvkkModalOpen(true)}
+                                className="font-semibold text-zinc-900 dark:text-zinc-100 hover:underline"
+                            >
+                                KVKK Aydınlatma Metni
+                            </button>
+                            'ni okudum ve anladım.
                         </label>
                     </div>
 
@@ -352,10 +360,19 @@ export function RegisterModal({ isOpen, onClose, onSwitchToLogin }: RegisterModa
                             className="mt-1 w-4 h-4 text-red-600 rounded focus:ring-red-600"
                         />
                         <label htmlFor="consent" className="text-xs text-zinc-600 dark:text-zinc-400 cursor-pointer">
-                            <Link href="/kvkk" target="_blank" className="font-semibold text-zinc-900 dark:text-zinc-100 hover:underline">Açık Rıza Metni</Link> kapsamında kişisel verilerimin işlenmesini kabul ediyorum.
+                            <button
+                                type="button"
+                                onClick={() => setKvkkModalOpen(true)}
+                                className="font-semibold text-zinc-900 dark:text-zinc-100 hover:underline"
+                            >
+                                Açık Rıza Metni
+                            </button>{" "}
+                            kapsamında kişisel verilerimin işlenmesini kabul ediyorum.
                         </label>
                     </div>
                 </div>
+
+                <KvkkModal isOpen={kvkkModalOpen} onClose={() => setKvkkModalOpen(false)} />
 
                 {state?.error && (
                     <div className="p-3 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm border border-red-200 dark:border-red-800">
