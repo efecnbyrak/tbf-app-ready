@@ -1,6 +1,7 @@
 import { ResponsiveNav } from "@/app/referee/ResponsiveNav";
 
 import { verifySession } from "@/lib/session";
+import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { getSetting } from "@/lib/settings-cache";
 
@@ -14,6 +15,11 @@ export default async function OfficialLayout({
     children: React.ReactNode;
 }) {
     const session = await verifySession();
+
+    // SUPER_ADMIN'in /general paneline ihtiyacı yok; doğrudan yönetim hub'una gönder.
+    if (session.role === "SUPER_ADMIN") {
+        redirect("/admin");
+    }
 
     const [user, ibanValue] = await Promise.all([
         db.user.findUnique({

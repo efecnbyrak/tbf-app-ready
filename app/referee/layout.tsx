@@ -2,6 +2,7 @@ import { verifySession } from "@/lib/session";
 import { Suspense } from "react";
 import { RefereeNavWrapper } from "./components/RefereeNavWrapper";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { ResponsiveNav } from "./ResponsiveNav";
 import { db } from "@/lib/db";
 import { getSetting } from "@/lib/settings-cache";
@@ -16,6 +17,11 @@ export default async function RefereeLayout({
     children: React.ReactNode;
 }) {
     const session = await verifySession();
+
+    // SUPER_ADMIN'in /referee paneline ihtiyacı yok; doğrudan yönetim hub'una gönder.
+    if (session.role === "SUPER_ADMIN") {
+        redirect("/admin");
+    }
 
     const [user, ibanValue] = await Promise.all([
         db.user.findUnique({

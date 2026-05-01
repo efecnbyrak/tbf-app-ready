@@ -266,7 +266,11 @@ export async function register(prevState: ActionState, formData: FormData): Prom
 
     const { firstName, lastName, email, phone, password, roleType, job, address, iban, securityQuestion, securityAnswer } = validatedFields.data;
 
-
+    // Confirm password match (form sends passwordConfirm; Zod schema does not validate it)
+    const passwordConfirm = (formData.get("passwordConfirm") as string | null) ?? "";
+    if (password !== passwordConfirm) {
+        return { error: "Şifreler eşleşmiyor.", errors: { password: "Şifreler eşleşmiyor." }, success: false };
+    }
 
     const { formatEmail } = await import('@/lib/format-utils');
     const sanitizedEmail = formatEmail(email);
@@ -279,12 +283,13 @@ export async function register(prevState: ActionState, formData: FormData): Prom
         // 1. Hash password
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        // 2. Check existing user (Email)
-
+        // 2. Check existing user (Email) — also check User.username so we surface a clear
+        //    message instead of letting the transaction fail with a unique-constraint error.
+        const existingUser = await db.user.findUnique({ where: { username: sanitizedEmail } });
         const existingRefereeEmail = await db.referee.findUnique({ where: { email: sanitizedEmail } });
         const existingOfficialEmail = await db.generalOfficial.findUnique({ where: { email: sanitizedEmail } });
 
-        if (existingRefereeEmail || existingOfficialEmail) {
+        if (existingUser || existingRefereeEmail || existingOfficialEmail) {
             return { error: "Bu E-posta zaten kullanımda.", errors: { email: "Zaten kayıtlı." }, success: false };
         }
 

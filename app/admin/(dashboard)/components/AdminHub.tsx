@@ -104,7 +104,7 @@ export default function AdminHub({ role, pendingCount = 0, hasReferee = false, h
         return !card.showFor || (role && card.showFor.includes(role));
     });
 
-    if (hasReferee || hasOfficial) {
+    if ((hasReferee || hasOfficial) && role !== "SUPER_ADMIN") {
         filteredCards = [
             {
                 title: "Kişisel Görev Paneli",

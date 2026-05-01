@@ -54,6 +54,21 @@ export function ResponsiveNav({ refereeName, roleType, basePath = "/referee", ti
         }
     }, [pathname]);
 
+    // Mobil sidebar açıkken body scroll'unu kilitle (iOS dahil). Desktop'ta
+    // (md ve üstü) sidebar zaten kalıcı olduğu için bu kilit anlamlı değil;
+    // window genişliği <768 ise uygula.
+    useEffect(() => {
+        if (typeof window === "undefined") return;
+        const isMobile = window.innerWidth < 768;
+        if (isOpen && isMobile) {
+            const prev = document.body.style.overflow;
+            document.body.style.overflow = "hidden";
+            return () => {
+                document.body.style.overflow = prev;
+            };
+        }
+    }, [isOpen]);
+
     const isActive = (path: string) => {
         if (path === basePath) {
             return pathname === basePath;

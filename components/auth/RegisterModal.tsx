@@ -23,19 +23,31 @@ const initialState: ActionState = {
 export function RegisterModal({ isOpen, onClose, onSwitchToLogin }: RegisterModalProps) {
     const [state, formAction, isPending] = useActionState(register, initialState);
 
-    // Form State
+    // Form State — TÜM alanlar controlled. React 19 <form action> her submit
+    // sonrasında uncontrolled inputları otomatik resetliyor; validation hatası
+    // dönerse kullanıcı verilerini kaybediyordu. Controlled state bunu önler.
     const [firstName, setFirstName] = useState("");
     const [lastName, setLastName] = useState("");
+    const [phone, setPhone] = useState("");
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [passwordConfirm, setPasswordConfirm] = useState("");
+    const [roleType, setRoleType] = useState("");
+    const [job, setJob] = useState("");
     const [city, setCity] = useState("İstanbul");
     const [district, setDistrict] = useState("");
     const [details, setDetails] = useState("");
-    const [password, setPassword] = useState("");
     const [securityQuestion, setSecurityQuestion] = useState("");
     const [securityAnswer, setSecurityAnswer] = useState("");
+    const [kvkk, setKvkk] = useState(false);
+    const [consent, setConsent] = useState(false);
     const [strengthData, setStrengthData] = useState(getPasswordStrength(""));
 
     // Derived address string for the hidden input
     const fullAddress = `${city} / ${district} - ${details}`;
+
+    // Anlık şifre eşleşme uyarısı (sadece kullanıcı her ikisini de yazdığında)
+    const passwordsMismatch = passwordConfirm.length > 0 && password !== passwordConfirm;
 
     useEffect(() => {
         if (state.success && isOpen) {
@@ -93,6 +105,8 @@ export function RegisterModal({ isOpen, onClose, onSwitchToLogin }: RegisterModa
                             type="tel"
                             name="phone"
                             required
+                            value={phone}
+                            onChange={(e) => setPhone(e.target.value.replace(/[^0-9]/g, ""))}
                             className={`w-full px-4 py-3 border-2 rounded-2xl outline-none bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-white transition-all ${state.errors?.phone ? 'border-red-500' : 'border-transparent focus:border-red-600'}`}
                             placeholder="05XXXXXXXXX"
                             maxLength={11}
@@ -107,6 +121,8 @@ export function RegisterModal({ isOpen, onClose, onSwitchToLogin }: RegisterModa
                             type="email"
                             name="email"
                             required
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
                             className={`w-full px-4 py-3 border-2 rounded-2xl outline-none bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-white transition-all ${state.errors?.email ? 'border-red-500' : 'border-transparent focus:border-red-600'}`}
                             placeholder="ornek@mail.com"
                         />
@@ -123,6 +139,7 @@ export function RegisterModal({ isOpen, onClose, onSwitchToLogin }: RegisterModa
                             type="password"
                             name="password"
                             required
+                            value={password}
                             onChange={(e) => {
                                 const val = e.target.value;
                                 setPassword(val);
@@ -161,9 +178,14 @@ export function RegisterModal({ isOpen, onClose, onSwitchToLogin }: RegisterModa
                             type="password"
                             name="passwordConfirm"
                             required
-                            className="w-full px-4 py-4 border-2 border-transparent focus:border-red-600 rounded-2xl outline-none bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-white transition-all"
+                            value={passwordConfirm}
+                            onChange={(e) => setPasswordConfirm(e.target.value)}
+                            className={`w-full px-4 py-4 border-2 rounded-2xl outline-none bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-white transition-all ${passwordsMismatch ? 'border-red-500' : 'border-transparent focus:border-red-600'}`}
                             placeholder="Tekrar"
                         />
+                        {passwordsMismatch && (
+                            <p className="text-red-500 text-[10px] font-bold mt-1 ml-1 uppercase">Şifreler eşleşmiyor.</p>
+                        )}
                     </div>
                 </div>
 
@@ -175,7 +197,8 @@ export function RegisterModal({ isOpen, onClose, onSwitchToLogin }: RegisterModa
                         <select
                             name="roleType"
                             required
-                            defaultValue=""
+                            value={roleType}
+                            onChange={(e) => setRoleType(e.target.value)}
                             className={`w-full px-4 py-3 border-2 rounded-2xl outline-none bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-white transition-all appearance-none cursor-pointer ${state.errors?.roleType ? 'border-red-500' : 'border-transparent focus:border-red-600'}`}
                         >
                             <option value="" disabled>Seçiniz</option>
@@ -196,6 +219,8 @@ export function RegisterModal({ isOpen, onClose, onSwitchToLogin }: RegisterModa
                         <input
                             type="text"
                             name="job"
+                            value={job}
+                            onChange={(e) => setJob(e.target.value)}
                             className="w-full px-4 py-3 border-2 border-transparent focus:border-red-600 rounded-2xl outline-none bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-white transition-all"
                             placeholder="Mühendis vb."
                         />
@@ -307,6 +332,8 @@ export function RegisterModal({ isOpen, onClose, onSwitchToLogin }: RegisterModa
                             name="kvkk"
                             required
                             id="kvkk"
+                            checked={kvkk}
+                            onChange={(e) => setKvkk(e.target.checked)}
                             className="mt-1 w-4 h-4 text-red-600 rounded focus:ring-red-600"
                         />
                         <label htmlFor="kvkk" className="text-xs text-zinc-600 dark:text-zinc-400 cursor-pointer">
@@ -320,6 +347,8 @@ export function RegisterModal({ isOpen, onClose, onSwitchToLogin }: RegisterModa
                             name="consent"
                             required
                             id="consent"
+                            checked={consent}
+                            onChange={(e) => setConsent(e.target.checked)}
                             className="mt-1 w-4 h-4 text-red-600 rounded focus:ring-red-600"
                         />
                         <label htmlFor="consent" className="text-xs text-zinc-600 dark:text-zinc-400 cursor-pointer">
@@ -336,8 +365,8 @@ export function RegisterModal({ isOpen, onClose, onSwitchToLogin }: RegisterModa
 
                 <button
                     type="submit"
-                    disabled={isPending}
-                    className="w-full bg-zinc-900 dark:bg-red-600 text-white font-semibold py-3 rounded-xl hover:opacity-90 transition-all disabled:opacity-50 mt-4 h-12 flex items-center justify-center"
+                    disabled={isPending || passwordsMismatch}
+                    className="w-full bg-zinc-900 dark:bg-red-600 text-white font-semibold py-3 rounded-xl hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed mt-4 h-12 flex items-center justify-center"
                 >
                     {isPending ? "KAYDEDİLİYOR..." : "KAYIT OL"}
                 </button>
