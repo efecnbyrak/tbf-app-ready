@@ -40,7 +40,9 @@ model User {
   chats ChatSession[]
   securityQuestion String?
   securityAnswer String?
-  
+  mobileToken       String?   @unique
+  mobileTokenExpiry DateTime?
+
   auditLogs AuditLog[]
 
   announcements Announcement[]

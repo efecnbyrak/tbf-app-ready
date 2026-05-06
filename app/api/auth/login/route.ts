@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import bcrypt from "bcryptjs";
 import { SignJWT } from "jose";
+import { createHash } from "crypto";
 
 /**
  * POST /api/auth/login
@@ -133,6 +134,14 @@ export async function POST(request: NextRequest) {
 
         // Create JWT token for mobile
         const token = await createMobileToken(user.id, user.role.name);
+
+        // Store SHA-256 hash of token in DB for DB-backed verification
+        const tokenHash = createHash("sha256").update(token).digest("hex");
+        const tokenExpiry = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days
+        await db.user.update({
+            where: { id: user.id },
+            data: { mobileToken: tokenHash, mobileTokenExpiry: tokenExpiry },
+        });
 
         // Build user response
         const profile = user.referee || user.official;

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { jwtVerify } from "jose";
+import { createHash } from "crypto";
 import { db } from "@/lib/db";
 import { getAvailabilityWindow } from "@/lib/availability-utils";
 import { sendAvailabilityConfirmationEmail } from "@/lib/email";
@@ -20,11 +21,34 @@ async function verifyMobileToken(request: NextRequest): Promise<{ userId: number
     if (!authHeader?.startsWith("Bearer ")) return null;
 
     const token = authHeader.slice(7);
+    if (!token) return null;
+
+    // Primary: DB-backed hash verification (bypasses JWT key issues entirely)
+    try {
+        const tokenHash = createHash("sha256").update(token).digest("hex");
+        const userWithToken = await db.user.findFirst({
+            where: {
+                mobileToken: tokenHash,
+                mobileTokenExpiry: { gt: new Date() },
+                isActive: true,
+                isApproved: true,
+            },
+            include: { role: true },
+        });
+        if (userWithToken) {
+            return { userId: userWithToken.id, role: userWithToken.role.name };
+        }
+    } catch (err) {
+        console.error("[verifyMobileToken] DB verification error:", err);
+    }
+
+    // Fallback: JWT signature verification (for tokens created before DB-backed flow)
     try {
         const { payload } = await jwtVerify(token, getMobileKey(), { algorithms: ["HS256"] });
         if (!payload.mobile || !payload.userId) return null;
         return { userId: payload.userId as number, role: payload.role as string };
-    } catch {
+    } catch (err) {
+        console.error("[verifyMobileToken] JWT verification error:", err);
         return null;
     }
 }
