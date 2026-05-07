@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "tsx scripts/extract-pdf-text.ts && next build",
+    "build": "prisma db push --skip-generate --accept-data-loss && tsx scripts/extract-pdf-text.ts && next build",
     "postinstall": "prisma generate",
     "db:push": "prisma db push",
     "db:seed": "prisma db seed",
