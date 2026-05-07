@@ -30,8 +30,6 @@ async function verifyMobileToken(request: NextRequest): Promise<{ userId: number
             where: {
                 mobileToken: tokenHash,
                 mobileTokenExpiry: { gt: new Date() },
-                isActive: true,
-                isApproved: true,
             },
             include: { role: true },
         });
@@ -45,7 +43,7 @@ async function verifyMobileToken(request: NextRequest): Promise<{ userId: number
     // Fallback: JWT signature verification (for tokens created before DB-backed flow)
     try {
         const { payload } = await jwtVerify(token, getMobileKey(), { algorithms: ["HS256"] });
-        if (!payload.mobile || !payload.userId) return null;
+        if (!payload.userId) return null;
         return { userId: payload.userId as number, role: payload.role as string };
     } catch (err) {
         console.error("[verifyMobileToken] JWT verification error:", err);
