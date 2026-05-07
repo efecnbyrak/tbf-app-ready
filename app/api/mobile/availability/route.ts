@@ -16,12 +16,14 @@ const getMobileKey = () => {
     return new TextEncoder().encode(secret);
 };
 
-async function verifyMobileToken(request: NextRequest): Promise<{ userId: number; role: string } | null> {
+async function verifyMobileToken(request: NextRequest): Promise<{ userId: number; role: string; dbError?: boolean } | null> {
     const authHeader = request.headers.get("Authorization");
     if (!authHeader?.startsWith("Bearer ")) return null;
 
     const token = authHeader.slice(7);
     if (!token) return null;
+
+    let dbFailed = false;
 
     // Primary: DB-backed hash verification (bypasses JWT key issues entirely)
     try {
@@ -38,13 +40,14 @@ async function verifyMobileToken(request: NextRequest): Promise<{ userId: number
         }
     } catch (err) {
         console.error("[verifyMobileToken] DB verification error:", err);
+        dbFailed = true;
     }
 
-    // Fallback: JWT signature verification (for tokens created before DB-backed flow)
+    // Fallback: JWT signature verification (when DB is down or token not found in DB)
     try {
         const { payload } = await jwtVerify(token, getMobileKey(), { algorithms: ["HS256"] });
         if (!payload.userId) return null;
-        return { userId: payload.userId as number, role: payload.role as string };
+        return { userId: payload.userId as number, role: payload.role as string, dbError: dbFailed };
     } catch (err) {
         console.error("[verifyMobileToken] JWT verification error:", err);
         return null;
@@ -59,6 +62,10 @@ export async function GET(request: NextRequest) {
     const auth = await verifyMobileToken(request);
     if (!auth) {
         return NextResponse.json({ error: "Yetkisiz erişim." }, { status: 401 });
+    }
+
+    if (auth.dbError) {
+        return NextResponse.json({ error: "Veritabanı geçici olarak kullanılamıyor. Lütfen tekrar deneyin." }, { status: 503 });
     }
 
     try {
@@ -171,6 +178,10 @@ export async function POST(request: NextRequest) {
     const auth = await verifyMobileToken(request);
     if (!auth) {
         return NextResponse.json({ error: "Yetkisiz erişim." }, { status: 401 });
+    }
+
+    if (auth.dbError) {
+        return NextResponse.json({ error: "Veritabanı geçici olarak kullanılamıyor. Lütfen tekrar deneyin." }, { status: 503 });
     }
 
     try {

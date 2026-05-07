@@ -4,7 +4,7 @@ const createPrismaClient = () => {
   return new PrismaClient({
     log: process.env.NODE_ENV === "production" ? ["error"] : ["warn"],
     datasourceUrl: process.env.DATABASE_URL
-      ? `${process.env.DATABASE_URL}${process.env.DATABASE_URL.includes("?") ? "&" : "?"}connection_limit=5&pool_timeout=15`
+      ? `${process.env.DATABASE_URL}${process.env.DATABASE_URL.includes("?") ? "&" : "?"}connection_limit=5&pool_timeout=30&connect_timeout=15`
       : undefined,
   }).$extends({
     result: {
