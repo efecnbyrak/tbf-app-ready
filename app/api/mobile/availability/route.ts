@@ -18,7 +18,10 @@ const getMobileKey = () => {
 
 async function verifyMobileToken(request: NextRequest): Promise<{ userId: number; role: string; dbError?: boolean } | null> {
     const authHeader = request.headers.get("Authorization");
-    if (!authHeader?.startsWith("Bearer ")) return null;
+    if (!authHeader?.startsWith("Bearer ")) {
+        console.warn("[verifyMobileToken] No Bearer token in Authorization header");
+        return null;
+    }
 
     const token = authHeader.slice(7);
     if (!token) return null;
@@ -36,8 +39,10 @@ async function verifyMobileToken(request: NextRequest): Promise<{ userId: number
             include: { role: true },
         });
         if (userWithToken) {
+            console.log(`[verifyMobileToken] DB hash match OK — userId=${userWithToken.id}`);
             return { userId: userWithToken.id, role: userWithToken.role.name };
         }
+        console.warn("[verifyMobileToken] DB hash: no match or token expired, falling back to JWT");
     } catch (err) {
         console.error("[verifyMobileToken] DB verification error:", err);
         dbFailed = true;
@@ -46,10 +51,14 @@ async function verifyMobileToken(request: NextRequest): Promise<{ userId: number
     // Fallback: JWT signature verification (when DB is down or token not found in DB)
     try {
         const { payload } = await jwtVerify(token, getMobileKey(), { algorithms: ["HS256"] });
-        if (!payload.userId) return null;
+        if (!payload.userId) {
+            console.warn("[verifyMobileToken] JWT payload missing userId");
+            return null;
+        }
+        console.log(`[verifyMobileToken] JWT fallback OK — userId=${payload.userId} dbFailed=${dbFailed}`);
         return { userId: payload.userId as number, role: payload.role as string, dbError: dbFailed };
-    } catch (err) {
-        console.error("[verifyMobileToken] JWT verification error:", err);
+    } catch (err: any) {
+        console.error("[verifyMobileToken] JWT verification error:", err?.code ?? err?.message ?? err);
         return null;
     }
 }
