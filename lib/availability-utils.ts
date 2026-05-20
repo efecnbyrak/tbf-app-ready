@@ -55,6 +55,19 @@ export const getAvailabilityWindow = cache(async function getAvailabilityWindow(
     }
     storedTargetDate.setHours(0, 0, 0, 0);
 
+    // Auto-expire manual override when that week's form has already closed (Tuesday 20:30).
+    // This prevents the manual flag from permanently blocking auto-rollover.
+    let didManualExpired = false;
+    if (isManualOverride) {
+        const manualWeekDeadline = new Date(storedTargetDate);
+        manualWeekDeadline.setDate(storedTargetDate.getDate() - 4); // Tuesday before target Saturday
+        manualWeekDeadline.setHours(20, 30, 0, 0);
+        if (today > manualWeekDeadline) {
+            isManualOverride = false;
+            didManualExpired = true;
+        }
+    }
+
     // --- AUTOMATIC ROLLOVER LOGIC ---
     let currentTarget = new Date(storedTargetDate);
     let currentWeek = storedWeekNumber;
@@ -93,9 +106,16 @@ export const getAvailabilityWindow = cache(async function getAvailabilityWindow(
         didRolloverWeek = true;
     }
 
-    if (didRolloverTarget || didRolloverWeek) {
+    if (didRolloverTarget || didRolloverWeek || didManualExpired) {
         try {
             const updates = [];
+            if (didManualExpired) {
+                updates.push(db.systemSetting.upsert({
+                    where: { key: "AVAILABILITY_TARGET_MANUAL" },
+                    create: { key: "AVAILABILITY_TARGET_MANUAL", value: "false" },
+                    update: { value: "false" }
+                }));
+            }
             if (didRolloverTarget) {
                 updates.push(db.systemSetting.upsert({
                     where: { key: "AVAILABILITY_TARGET_DATE" },

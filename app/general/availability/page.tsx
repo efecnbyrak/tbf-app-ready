@@ -6,6 +6,7 @@ import { formatOfficialType } from "@/lib/format-utils";
 import { OfficialAvailabilityForm } from "../../referee/availability/OfficialAvailabilityForm";
 import { SuspensionOverlay } from "@/components/referee/SuspensionOverlay";
 import { PastAvailabilitiesModal } from "@/components/referee/PastAvailabilitiesModal";
+import { CurrentWeekSummary } from "@/components/referee/CurrentWeekSummary";
 
 export default async function OfficialAvailabilityPage() {
     const session = await verifySession();
@@ -86,6 +87,14 @@ export default async function OfficialAvailabilityPage() {
                     </div>
                 )}
             </header>
+
+            {isLocked && existingForm && (
+                <CurrentWeekSummary
+                    existingForm={existingForm}
+                    startDate={startDate}
+                    endDate={endDate}
+                />
+            )}
 
             <OfficialAvailabilityForm
                 referee={official}

@@ -5,6 +5,7 @@ import { Info, Lock } from "lucide-react";
 import { OfficialAvailabilityForm } from "./OfficialAvailabilityForm";
 import { SuspensionOverlay } from "@/components/referee/SuspensionOverlay";
 import { PastAvailabilitiesModal } from "@/components/referee/PastAvailabilitiesModal";
+import { CurrentWeekSummary } from "@/components/referee/CurrentWeekSummary";
 
 export default async function AvailabilityPage() {
     const session = await verifySession();
@@ -116,6 +117,14 @@ export default async function AvailabilityPage() {
                     </div>
                 )}
             </header>
+
+            {isLocked && existingForm && (
+                <CurrentWeekSummary
+                    existingForm={existingForm}
+                    startDate={startDate}
+                    endDate={endDate}
+                />
+            )}
 
             <OfficialAvailabilityForm
                 referee={sourceData}
