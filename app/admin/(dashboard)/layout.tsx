@@ -52,7 +52,7 @@ export default async function AdminLayout({
                 </Suspense>
 
                 <main className="flex-1 md:pl-80 flex flex-col min-h-screen relative w-full">
-                    <div className="flex-1 p-4 sm:p-6 md:p-10 lg:p-16 xl:p-24 pt-24 md:pt-16 w-full transition-all duration-500">
+                    <div className="flex-1 p-4 sm:p-6 md:p-10 lg:p-16 xl:p-24 pt-24 md:pt-16 pb-20 md:pb-0 w-full transition-all duration-500">
                         <div className="max-w-[1400px] mx-auto w-full">
                             {children}
                         </div>

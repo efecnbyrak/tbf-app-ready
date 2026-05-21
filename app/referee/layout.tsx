@@ -69,7 +69,7 @@ export default async function RefereeLayout({
             </Suspense>
 
             <main className="flex-1 md:pl-72 flex flex-col min-h-screen">
-                <div className="flex-1 p-4 md:p-8 pt-16 md:pt-8 w-full">
+                <div className="flex-1 p-4 md:p-8 pt-16 md:pt-8 pb-20 md:pb-0 w-full">
                     <div className="max-w-7xl mx-auto">
                         {children}
                     </div>
