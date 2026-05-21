@@ -386,22 +386,11 @@ export function ResponsiveNav({ refereeName, roleType, basePath = "/referee", ti
                                 {isActive(basePath) && pathname === basePath && <span className="absolute bottom-1.5 w-1 h-1 rounded-full bg-red-600" />}
                             </Link>
 
-                            {canSeeMatches ? (
-                                <Link href={`${basePath}/matches`} prefetch={false} className={bottomItem(isActive(`${basePath}/matches`))}>
-                                    <div className="relative">
-                                        <Trophy className="w-5 h-5" />
-                                        {hasNewMatches && <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-600 rounded-full border border-white dark:border-zinc-900" />}
-                                    </div>
-                                    <span className="text-[10px] font-medium">Maçlarım</span>
-                                    {isActive(`${basePath}/matches`) && <span className="absolute bottom-1.5 w-1 h-1 rounded-full bg-red-600" />}
-                                </Link>
-                            ) : (
-                                <Link href={`${basePath}/availability`} prefetch={false} className={bottomItem(isActive(`${basePath}/availability`))}>
-                                    <Calendar className="w-5 h-5" />
-                                    <span className="text-[10px] font-medium">Uygunluk</span>
-                                    {isActive(`${basePath}/availability`) && <span className="absolute bottom-1.5 w-1 h-1 rounded-full bg-red-600" />}
-                                </Link>
-                            )}
+                            <Link href={`${basePath}/availability`} prefetch={false} className={bottomItem(isActive(`${basePath}/availability`))}>
+                                <Calendar className="w-5 h-5" />
+                                <span className="text-[10px] font-medium">Uygunluk</span>
+                                {isActive(`${basePath}/availability`) && <span className="absolute bottom-1.5 w-1 h-1 rounded-full bg-red-600" />}
+                            </Link>
 
                             <Link href={`${basePath}/announcements`} prefetch={false} className={bottomItem(isActive(`${basePath}/announcements`))}>
                                 <div className="relative">
@@ -478,10 +467,17 @@ export function ResponsiveNav({ refereeName, roleType, basePath = "/referee", ti
                 <div className="px-4 pb-8 space-y-1 overflow-y-auto max-h-[60vh]">
                     {basePath !== "/admin" ? (
                         <>
-                            <Link href={`${basePath}/availability`} onClick={() => setIsMoreOpen(false)} prefetch={false} className={drawerLink(isActive(`${basePath}/availability`))}>
-                                <Calendar className="w-4 h-4" />
-                                Uygunluk Formum
-                            </Link>
+                            {canSeeMatches && (
+                                <Link href={`${basePath}/matches`} onClick={() => setIsMoreOpen(false)} prefetch={false} className={drawerLink(isActive(`${basePath}/matches`))}>
+                                    <div className="flex items-center gap-3 flex-1">
+                                        <Trophy className="w-4 h-4 text-amber-500" />
+                                        Maçlarım
+                                    </div>
+                                    {hasNewMatches && (
+                                        <span className="w-2 h-2 bg-red-600 rounded-full" />
+                                    )}
+                                </Link>
+                            )}
 
                             {!isAdminObserver && (
                                 <Link href={`${basePath}/bag`} onClick={() => setIsMoreOpen(false)} prefetch={false} className={drawerLink(isActive(`${basePath}/bag`))}>
