@@ -3,7 +3,7 @@ import { isValidTurkishIBAN } from "@/lib/iban-validator";
 
 export const LoginSchema = z.object({
     identifier: z.string().trim().min(1, "E-posta veya Kullanıcı Adı gereklidir."),
-    password: z.string().min(1, "Şifre gereklidir."),
+    password: z.string().optional().default(""),
     adminLogin: z.boolean().optional(),
 });
 

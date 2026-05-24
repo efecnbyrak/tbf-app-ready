@@ -4,7 +4,7 @@ import { useState, useTransition, useEffect } from "react";
 import { X, Calendar, LogIn, Trophy, UserSquare2, Phone, Mail, MapPin, Briefcase, Hash, Edit3, Save, RotateCcw, Shield, Star, AlertCircle, Check, Search, ShieldCheck, ChevronDown, UserMinus, Copy, CheckCheck, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import { tr } from "date-fns/locale";
-import { updateRefereeProfile, deleteUser, addPenalty, deletePenalty, removeUserAvatar } from "@/app/actions/admin-users";
+import { updateRefereeProfile, deleteUser, addPenalty, deletePenalty, removeUserAvatar, triggerPasswordReset } from "@/app/actions/admin-users";
 import { demoteFromAdmin } from "@/app/actions/auth";
 import { useRouter } from "next/navigation";
 import { TURKEY_CITIES, OFFICIAL_TYPES, CLASSIFICATIONS } from "@/lib/constants";
@@ -50,6 +50,9 @@ export function ProfileDetailModal({ official, onClose, onToggleActive, onPromot
 
     // Success State
     const [showSuccess, setShowSuccess] = useState(false);
+    const [isResetPending, startResetTransition] = useTransition();
+    const [passwordResetRequired, setPasswordResetRequired] = useState<boolean>(official.user?.passwordResetRequired ?? false);
+    const [showResetSuccess, setShowResetSuccess] = useState(false);
 
     // Detect if data has changed to show save button
     // Penalty State
@@ -132,6 +135,20 @@ export function ProfileDetailModal({ official, onClose, onToggleActive, onPromot
             if (res.success) {
                 router.refresh();
                 onClose();
+            } else {
+                alert("Hata: " + res.error);
+            }
+        });
+    };
+
+    const handlePasswordReset = () => {
+        if (!confirm("Bu kullanıcının şifresini sıfırlamak istediğinize emin misiniz?\nKullanıcı bir sonraki girişinde yeni şifre belirlemek zorunda kalacak.")) return;
+        startResetTransition(async () => {
+            const res = await triggerPasswordReset(official.userId);
+            if (res.success) {
+                setPasswordResetRequired(true);
+                setShowResetSuccess(true);
+                setTimeout(() => setShowResetSuccess(false), 3000);
             } else {
                 alert("Hata: " + res.error);
             }
@@ -223,6 +240,18 @@ export function ProfileDetailModal({ official, onClose, onToggleActive, onPromot
                                 <Check className="w-5 h-5 text-white" />
                             </div>
                             <span className="font-black uppercase tracking-widest italic text-sm">Başarıyla Kaydedildi</span>
+                        </div>
+                    </div>
+                )}
+
+                {/* Password Reset Success Overlay */}
+                {showResetSuccess && (
+                    <div className="absolute top-8 left-1/2 -translate-x-1/2 z-[110] animate-in slide-in-from-top-4 duration-500 pointer-events-none">
+                        <div className="bg-amber-600 text-white px-8 py-4 rounded-2xl shadow-2xl shadow-amber-600/30 flex items-center gap-3 border-2 border-amber-400/20">
+                            <div className="bg-white/20 p-1.5 rounded-lg">
+                                <Check className="w-5 h-5 text-white" />
+                            </div>
+                            <span className="font-black uppercase tracking-widest italic text-sm">Şifre Sıfırlama Aktif</span>
                         </div>
                     </div>
                 )}
@@ -401,6 +430,20 @@ export function ProfileDetailModal({ official, onClose, onToggleActive, onPromot
                                     <span className="text-sm font-black tracking-tight uppercase flex items-center gap-2">
                                         <UserMinus className="w-4 h-4" />
                                         YÖNETİCİLİĞİ AL
+                                    </span>
+                                </button>
+                            )}
+
+                            {isSuperAdmin && (
+                                <button
+                                    onClick={handlePasswordReset}
+                                    disabled={isResetPending || passwordResetRequired}
+                                    className={`w-full p-4 rounded-[1.5rem] flex flex-col items-center gap-1 group transition-all mt-4 border-2 ${passwordResetRequired ? 'bg-amber-100 dark:bg-amber-900/20 text-amber-700 border-amber-200 dark:border-amber-800 cursor-default opacity-80' : 'bg-amber-600 text-white border-transparent hover:bg-amber-700 hover:shadow-xl hover:shadow-amber-600/20'}`}
+                                >
+                                    <span className="text-[8px] font-black tracking-[0.3em] uppercase opacity-70">GÜVENLİK</span>
+                                    <span className="text-sm font-black tracking-tight uppercase flex items-center gap-2">
+                                        <Shield className="w-4 h-4" />
+                                        {isResetPending ? "İŞLENİYOR..." : passwordResetRequired ? "RESET BEKLİYOR" : "ŞİFRE RESETLE"}
                                     </span>
                                 </button>
                             )}

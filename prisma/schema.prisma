@@ -42,6 +42,7 @@ model User {
   securityAnswer String?
   mobileToken       String?   @unique
   mobileTokenExpiry DateTime?
+  passwordResetRequired Boolean @default(false)
 
   auditLogs AuditLog[]
 

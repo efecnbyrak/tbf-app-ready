@@ -2,13 +2,15 @@
 
 import { useState, useTransition } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { resetPassword } from "@/app/actions/auth";
-import { Shield, Lock, CheckCircle2, AlertCircle, ChevronRight, Layout } from "lucide-react";
+import { resetPassword, completeForcedPasswordReset } from "@/app/actions/auth";
+import { Shield, Lock, CheckCircle2, AlertCircle, ChevronRight } from "lucide-react";
 
 export default function ResetPasswordPage() {
     const searchParams = useSearchParams();
     const router = useRouter();
     const token = searchParams.get("token");
+    const forced = searchParams.get("forced") === "true";
+    const userId = searchParams.get("userId");
 
     const [password, setPassword] = useState("");
     const [passwordConfirm, setPasswordConfirm] = useState("");
@@ -30,6 +32,21 @@ export default function ResetPasswordPage() {
             return;
         }
 
+        if (forced && userId) {
+            startTransition(async () => {
+                const res = await completeForcedPasswordReset(Number(userId), password);
+                if (res.success) {
+                    setSuccess(true);
+                    setTimeout(() => {
+                        router.push("/");
+                    }, 3000);
+                } else {
+                    setError(res.error || "Bir hata oluştu.");
+                }
+            });
+            return;
+        }
+
         const formData = new FormData();
         formData.append("token", token || "");
         formData.append("password", password);
@@ -48,7 +65,7 @@ export default function ResetPasswordPage() {
         });
     };
 
-    if (!token) {
+    if (!token && !forced) {
         return (
             <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 flex items-center justify-center p-4">
                 <div className="max-w-md w-full bg-white dark:bg-zinc-900 p-8 rounded-[2rem] shadow-2xl border border-zinc-200 dark:border-zinc-800 text-center">
@@ -76,13 +93,22 @@ export default function ResetPasswordPage() {
                     </div>
 
                     <h1 className="text-3xl font-black text-center mb-2 uppercase tracking-tighter text-zinc-900 dark:text-white">Şifre Sıfırlama</h1>
-                    <p className="text-zinc-500 text-center text-sm mb-10">Lütfen hesabınız için yeni ve güçlü bir şifre belirleyin.</p>
+
+                    {forced && (
+                        <div className="bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800/50 p-4 rounded-2xl mb-6 text-center">
+                            <p className="text-amber-800 dark:text-amber-300 text-xs font-bold uppercase tracking-wide">Yönetici tarafından şifre sıfırlamanız istendi. Lütfen yeni şifrenizi belirleyin.</p>
+                        </div>
+                    )}
+
+                    {!forced && (
+                        <p className="text-zinc-500 text-center text-sm mb-10">Lütfen hesabınız için yeni ve güçlü bir şifre belirleyin.</p>
+                    )}
 
                     {success ? (
                         <div className="space-y-6 animate-in fade-in zoom-in duration-500">
                             <div className="bg-emerald-50 dark:bg-emerald-900/10 border-2 border-emerald-100 dark:border-emerald-800/50 p-6 rounded-2xl flex flex-col items-center text-center">
                                 <CheckCircle2 className="w-12 h-12 text-emerald-500 mb-3" />
-                                <h3 className="text-emerald-900 dark:text-emerald-100 font-bold uppercase tracking-tight">Başarılı!</h3>
+                                <h3 className="text-emerald-900 dark:text-emerald-100 font-bold uppercase tracking-tight">Onaylandı!</h3>
                                 <p className="text-emerald-600 dark:text-emerald-400 text-xs mt-1">Şifreniz güncellendi. Giriş sayfasına yönlendiriliyorsunuz...</p>
                             </div>
                         </div>

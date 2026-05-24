@@ -99,9 +99,8 @@ export function LoginModal({ isOpen, onClose, onSwitchToRegister }: LoginModalPr
                                 <input
                                     type="password"
                                     name="password"
-                                    required
                                     className="w-full pl-12 pr-4 py-4 bg-zinc-50 dark:bg-zinc-800 rounded-2xl border-2 border-zinc-200 dark:border-transparent focus:border-red-600 outline-none transition-all text-sm font-bold placeholder:text-zinc-400 text-zinc-900 dark:text-white"
-                                    placeholder="••••••••"
+                                    placeholder="Şifrenizi girin veya boş bırakın"
                                 />
                             </div>
                         </div>

@@ -147,7 +147,17 @@ export async function login(prevState: ActionState, formData: FormData): Promise
             return { error: "Bu panelden giriş yetkiniz bulunmamaktadır.", success: false };
         }
 
-        // 2. Check password
+        // 2. Boş şifre → forced reset kontrolü
+        if (!password || password.trim() === '') {
+            if ((user as any).passwordResetRequired) {
+                await logAction(user.id, "LOGIN_FORCED_RESET_REDIRECT", `User ${user.username} redirected to forced password reset (empty password).`);
+                return { success: true, redirectTo: `/reset-password?forced=true&userId=${user.id}` };
+            }
+            await handleFailedLogin(ip, loginAttempt);
+            return { error: genericError, success: false };
+        }
+
+        // 3. Check password
         const isPasswordValid = await bcrypt.compare(password, user.password);
 
         if (!isPasswordValid) {
@@ -964,3 +974,36 @@ export async function resetPasswordWithRecoveryCode(prevState: ActionState, form
     }
 }
 
+export async function completeForcedPasswordReset(userId: number, newPassword: string): Promise<{ success: boolean; error?: string }> {
+    try {
+        if (!userId || !newPassword || newPassword.length < 6) {
+            return { success: false, error: "Geçersiz istek. Şifre en az 6 karakter olmalıdır." };
+        }
+
+        const user = await db.user.findUnique({ where: { id: userId } });
+        if (!user) return { success: false, error: "Kullanıcı bulunamadı." };
+
+        if (!(user as any).passwordResetRequired) {
+            return { success: false, error: "Bu hesap için şifre sıfırlama aktif değil." };
+        }
+
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+        await db.user.update({
+            where: { id: userId },
+            data: {
+                password: hashedPassword,
+                passwordResetRequired: false,
+                resetPasswordCode: null,
+                resetPasswordExpiresAt: null
+            }
+        });
+
+        await logAction(userId, "FORCED_PASSWORD_RESET_COMPLETED", `User ${user.username} completed forced password reset.`);
+
+        return { success: true };
+    } catch (error: any) {
+        console.error("completeForcedPasswordReset error:", error);
+        return { success: false, error: "Sistemde bir hata oluştu." };
+    }
+}

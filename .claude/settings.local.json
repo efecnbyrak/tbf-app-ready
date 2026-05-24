@@ -5,7 +5,10 @@
       "Bash(Add-Content -Path 'E:\\\\Yazilim\\\\BKS\\\\web.txt' -Value '2026-05-11 00:00 - Otomatik session log sistemi kuruldu: web.txt ve mobile.txt oluşturuldu, CLAUDE.md talimatları eklendi' -Encoding UTF8)",
       "Bash(npx tsc *)",
       "Bash(Get-ChildItem -Path \"e:\\\\Yazilim\\\\BKS\\\\tbf-app-ready\\\\app\\\\referee\" -Recurse -File)",
-      "Bash(Select-Object -ExpandProperty FullName)"
+      "Bash(Select-Object -ExpandProperty FullName)",
+      "Bash(npx prisma *)",
+      "PowerShell(cd \"e:\\\\Yazilim\\\\BKS\\\\tbf-app-ready\"; $content = Get-Content .env.local; $dbUrl = \\($content | Select-String \"^DATABASE_URL\"\\).Line -replace \"^DATABASE_URL=\", \"\"; $directUrl = \\($content | Select-String \"^DIRECT_URL\"\\).Line -replace \"^DIRECT_URL=\", \"\"; $env:DATABASE_URL = $dbUrl; $env:DIRECT_URL = $directUrl; npx prisma migrate dev --name add_password_reset_required 2>&1)",
+      "PowerShell(cd \"e:\\\\Yazilim\\\\BKS\\\\tbf-app-ready\"; $content = Get-Content .env.local; $dbUrl = \\($content | Select-String \"^DATABASE_URL\"\\).Line -replace \"^DATABASE_URL=\", \"\"; $directUrl = \\($content | Select-String \"^DIRECT_URL\"\\).Line -replace \"^DIRECT_URL=\", \"\"; $env:DATABASE_URL = $dbUrl; $env:DIRECT_URL = $directUrl; npx prisma db push --accept-data-loss 2>&1)"
     ]
   }
 }
