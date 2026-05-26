@@ -1,11 +1,10 @@
 "use client";
 
 import { saveAvailability } from "@/app/actions/availability";
-import { Info, Lock, Save, AlertTriangle } from "lucide-react";
+import { Lock, Save, AlertTriangle, CheckCircle2, CalendarCheck } from "lucide-react";
 import { DayRow } from "./DayRow";
 import { useActionState, useState, useEffect } from "react";
 import { formatClassification, formatOfficialType } from "@/lib/format-utils";
-import { Referee, Region, AvailabilityForm as AvailabilityFormType, AvailabilityDay } from "@prisma/client";
 
 interface OfficialAvailabilityFormProps {
     referee: any;
@@ -19,6 +18,11 @@ interface OfficialAvailabilityFormProps {
     customRoleTitle?: string;
 }
 
+interface SavedDay {
+    date: Date;
+    slots: string;
+}
+
 const initialState: { error: string | undefined; success: boolean } = {
     error: undefined,
     success: false
@@ -27,12 +31,20 @@ const initialState: { error: string | undefined; success: boolean } = {
 export function OfficialAvailabilityForm({ referee, days, existingForm, isLocked, deadline, startDate, endDate, customRoleLabel, customRoleTitle }: OfficialAvailabilityFormProps) {
     const [state, formAction, isPending] = useActionState(saveAvailability, initialState);
     const [clientError, setClientError] = useState<string>("");
-
     const [isSubmittedLocked, setIsSubmittedLocked] = useState(!!existingForm);
+    const [showSuccessPopup, setShowSuccessPopup] = useState(false);
+    const [savedDays, setSavedDays] = useState<SavedDay[] | null>(
+        existingForm?.days
+            ? existingForm.days
+                .filter((d: any) => d.slots !== "Uygun Değil")
+                .map((d: any) => ({ date: new Date(d.date), slots: d.slots }))
+                .sort((a: SavedDay, b: SavedDay) => a.date.getTime() - b.date.getTime())
+            : null
+    );
 
     useEffect(() => {
         if (state?.success) {
-            alert("Başarıyla Kaydedildi!");
+            setShowSuccessPopup(true);
             setIsSubmittedLocked(true);
         }
     }, [state?.success]);
@@ -43,7 +55,6 @@ export function OfficialAvailabilityForm({ referee, days, existingForm, isLocked
 
     const getDayData = (day: Date) => {
         if (!existingForm?.days) return null;
-        // Compare dates safely
         return existingForm.days.find((d: any) => {
             const dDate = new Date(d.date);
             return dDate.getDate() === day.getDate() &&
@@ -55,34 +66,18 @@ export function OfficialAvailabilityForm({ referee, days, existingForm, isLocked
     const handleSubmit = (formData: FormData) => {
         setClientError("");
 
-        // 1. Validate Regions
-        const regions = formData.getAll("regions");
-        if (regions.length === 0) {
-            setClientError("Lütfen en az bir görev bölgesi seçiniz.");
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-            return;
-        }
-
-        // 2. Validate Availability
-        // We need to check if at least one day has a status other than "Uygun Değil" (or empty)
-        let hasAvailability = false;
-        const entries = Array.from(formData.entries());
-        for (const [key, value] of entries) {
-            if (key.startsWith("day_") && key.endsWith("_slot")) {
-                if (value !== "Uygun Değil" && value !== "") {
-                    hasAvailability = true;
-                    break;
-                }
+        // Kaydedilecek günleri yakala (özet için)
+        const captured: SavedDay[] = [];
+        for (let i = 0; i < 7; i++) {
+            const slot = formData.get(`day_${i}_slot`) as string;
+            if (slot && slot !== "Uygun Değil") {
+                const d = new Date(startDate);
+                d.setDate(startDate.getDate() + i);
+                captured.push({ date: d, slots: slot });
             }
         }
+        setSavedDays(captured);
 
-        if (!hasAvailability) {
-            setClientError("En az bir gün için uygunluk (UYGUNUM veya saat) belirtmelisiniz.");
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-            return;
-        }
-
-        // Proceed
         formAction(formData);
     };
 
@@ -90,6 +85,72 @@ export function OfficialAvailabilityForm({ referee, days, existingForm, isLocked
 
     return (
         <form action={handleSubmit} className="space-y-8 relative overflow-hidden rounded-3xl">
+            {/* Kaydet Başarı Popup */}
+            {showSuccessPopup && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="bg-white dark:bg-zinc-900 rounded-3xl shadow-2xl border-4 border-green-500 p-8 flex flex-col items-center gap-4 max-w-sm w-full mx-4 animate-in zoom-in-95 duration-200">
+                        <div className="w-16 h-16 bg-green-500 rounded-2xl flex items-center justify-center shadow-lg shadow-green-500/30">
+                            <CheckCircle2 className="w-9 h-9 text-white" />
+                        </div>
+                        <div className="text-center">
+                            <h3 className="text-2xl font-black text-zinc-900 dark:text-white uppercase tracking-tighter mb-1">KAYDEDİLDİ!</h3>
+                            <p className="text-sm text-zinc-500 dark:text-zinc-400 font-medium">Uygunluk formunuz başarıyla kaydedildi.</p>
+                        </div>
+                        <button
+                            type="button"
+                            onClick={() => setShowSuccessPopup(false)}
+                            className="bg-green-500 hover:bg-green-600 text-white font-black py-2 px-8 rounded-xl transition-all transform hover:scale-105 active:scale-95 uppercase text-sm tracking-wider"
+                        >
+                            Tamam
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            {/* Kaydet Sonrası Özet (en üstte) */}
+            {isSubmittedLocked && !isLocked && savedDays && savedDays.length > 0 && (
+                <div className="mb-2 bg-green-50 dark:bg-green-950/30 border-2 border-green-200 dark:border-green-800 rounded-3xl p-6 shadow-sm animate-in fade-in slide-in-from-top-2 duration-500">
+                    <div className="flex items-start gap-3 mb-5">
+                        <div className="w-10 h-10 bg-green-600 rounded-2xl flex items-center justify-center shrink-0 shadow-md shadow-green-600/20">
+                            <CalendarCheck className="w-5 h-5 text-white" />
+                        </div>
+                        <div>
+                            <h2 className="text-lg font-black text-green-800 dark:text-green-200 uppercase tracking-tight">
+                                Bu Haftaki Uygunluğunuz
+                            </h2>
+                            <p className="text-sm text-green-600 dark:text-green-400 font-medium">
+                                {new Date(startDate).toLocaleDateString("tr-TR")} – {new Date(endDate).toLocaleDateString("tr-TR")}
+                                <span className="ml-2 text-xs font-bold bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-300 px-2 py-0.5 rounded-full border border-green-200 dark:border-green-800">
+                                    {savedDays.length} gün uygun
+                                </span>
+                            </p>
+                        </div>
+                        <div className="ml-auto flex items-center gap-1 text-green-600 dark:text-green-400">
+                            <CheckCircle2 className="w-5 h-5" />
+                            <span className="text-xs font-bold uppercase">Gönderildi</span>
+                        </div>
+                    </div>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                        {savedDays.map((day, idx) => (
+                            <div
+                                key={idx}
+                                className="p-3 rounded-2xl border bg-white dark:bg-zinc-900 border-green-200 dark:border-green-800 shadow-sm"
+                            >
+                                <div className="text-xs font-black uppercase mb-1 text-green-600 dark:text-green-400">
+                                    {day.date.toLocaleDateString("tr-TR", { weekday: "short" })}
+                                </div>
+                                <div className="text-sm font-semibold mb-1 text-zinc-800 dark:text-zinc-200">
+                                    {day.date.toLocaleDateString("tr-TR", { day: "numeric", month: "short" })}
+                                </div>
+                                <div className="text-xs font-bold leading-tight text-zinc-600 dark:text-zinc-400">
+                                    {day.slots}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
             {effectiveIsLocked && (
                 <div className="relative z-[40] mb-8 animate-in slide-in-from-top-4 duration-500">
                     {isSubmittedLocked && !isLocked ? (
@@ -135,10 +196,10 @@ export function OfficialAvailabilityForm({ referee, days, existingForm, isLocked
             )}
 
             <div
-                style={effectiveIsLocked ? { filter: 'blur(8px) grayscale(1)', pointerEvents: 'none', userSelect: 'none' } : {}}
+                style={effectiveIsLocked ? { filter: "blur(8px) grayscale(1)", pointerEvents: "none", userSelect: "none" } : {}}
                 className="transition-all duration-700 ease-in-out"
             >
-                {/* Profile Info Section (Read-Only + Phone) */}
+                {/* Profile Info Section */}
                 <div className="bg-white dark:bg-zinc-900 p-6 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-sm mb-8">
                     <h2 className="text-lg font-semibold mb-4 border-b dark:border-zinc-800 pb-2">Kişisel Bilgiler</h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -213,13 +274,12 @@ export function OfficialAvailabilityForm({ referee, days, existingForm, isLocked
                     <div className="space-y-4">
                         {days.map((day, index) => {
                             const dayData = getDayData(day);
-
                             return (
                                 <DayRow
                                     key={index}
                                     index={index}
-                                    dayName={day.toLocaleDateString('tr-TR', { weekday: 'long' })}
-                                    dateString={day.toLocaleDateString('tr-TR')}
+                                    dayName={day.toLocaleDateString("tr-TR", { weekday: "long" })}
+                                    dateString={day.toLocaleDateString("tr-TR")}
                                     initialSlot={dayData ? (dayData.slots as unknown as string) : null}
                                     isLocked={effectiveIsLocked}
                                     officialType={referee.officialType || "REFEREE"}
@@ -238,7 +298,7 @@ export function OfficialAvailabilityForm({ referee, days, existingForm, isLocked
                         className="bg-red-700 hover:bg-red-800 text-white font-bold py-3 px-8 rounded-xl shadow-xl flex items-center gap-2 transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         <Save />
-                        {isPending ? 'Kaydediliyor...' : 'Kaydet'}
+                        {isPending ? "Kaydediliyor..." : "Kaydet"}
                     </button>
                 </div>
             ) : isLocked ? (
@@ -254,7 +314,6 @@ export function OfficialAvailabilityForm({ referee, days, existingForm, isLocked
                     </div>
                 </div>
             ) : null}
-
         </form>
     );
 }

@@ -4,6 +4,7 @@ import { getAvailabilityWindow } from "@/lib/availability-utils";
 import ExcelJS from "exceljs";
 import { NextResponse } from "next/server";
 import { formatClassification, formatOfficialType } from "@/lib/format-utils";
+import { sortForms, SHORT_CLASSIFICATION_LABEL } from "@/lib/availability-sort";
 
 export const runtime = "nodejs";
 
@@ -14,8 +15,7 @@ export async function GET(request: Request) {
     }
 
     const { searchParams } = new URL(request.url);
-    const group = searchParams.get("group") || "REFEREE";
-    const type = searchParams.get("type");
+    const group = (searchParams.get("group") || "REFEREE") as "REFEREE" | "GENERAL";
     const week = searchParams.get("week");
 
     const { startDate: currentStartDate } = await getAvailabilityWindow();
@@ -38,10 +38,7 @@ export async function GET(request: Request) {
         }
     });
 
-    // 2. Fetch DATA (ALL forms for the window)
-    // Use a date range to avoid timezone-induced exact-match failures.
-    // The startDate from getAvailabilityWindow is a Saturday at 00:00 local time.
-    // Forms may have been stored with a slightly different UTC offset.
+    // 2. Fetch DATA
     const rangeStart = new Date(startDate);
     rangeStart.setHours(0, 0, 0, 0);
     const rangeEnd = new Date(startDate);
@@ -68,51 +65,64 @@ export async function GET(request: Request) {
         }
     });
 
-    // Sort to emulate the orderBy logic
-    allForms.sort((a, b) => {
-        const lastNameA = a.referee?.lastName || a.official?.lastName || "";
-        const lastNameB = b.referee?.lastName || b.official?.lastName || "";
-        return lastNameA.localeCompare(lastNameB, 'tr-TR');
-    });
+    // Sıralama: Klasman → A-Z isim
+    const sortedForms = sortForms(allForms, group);
 
     // 3. Generate Excel
     try {
         const workbook = new ExcelJS.Workbook();
 
-        // Helper to add a sheet with data
         const addDataSheet = async (sheetName: string, data: typeof allForms) => {
             const worksheet = workbook.addWorksheet(sheetName);
 
-            // Prepare Headers based on Dates
+            // Yatay (landscape) sayfa yapısı, A4, tek sayfaya sığdır
+            worksheet.pageSetup = {
+                orientation: "landscape",
+                fitToPage: true,
+                fitToWidth: 1,
+                fitToHeight: 0,
+                paperSize: 9, // A4
+            };
+
+            // Tarih başlıkları
             const dateHeaders: string[] = [];
             for (let i = 0; i < 7; i++) {
                 const d = new Date(startDate);
                 d.setDate(startDate.getDate() + i);
-                const weekday = d.toLocaleDateString('tr-TR', { weekday: 'long' });
-                const dateStr = d.toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit' });
+                const weekday = d.toLocaleDateString("tr-TR", { weekday: "long" });
+                const dateStr = d.toLocaleDateString("tr-TR", { day: "2-digit", month: "2-digit" });
                 dateHeaders.push(`${weekday} ${dateStr}`);
             }
 
-            worksheet.columns = [
-                { header: 'AD SOYAD', key: 'name', width: 45 },
-                { header: 'GÖREV', key: 'officialType', width: 22 },
-                { header: 'KLASMAN', key: 'class', width: 18 },
-                { header: 'TELEFON', key: 'phone', width: 18 },
-                { header: 'BÖLGELER', key: 'regions', width: 40 },
-                ...dateHeaders.map((dh, i) => ({ header: dh.toUpperCase(), key: `day_${i}`, width: 24 }))
-            ];
+            // Kolon tanımları — Hakemler ve Genel Görevliler farklı
+            if (group === "REFEREE") {
+                worksheet.columns = [
+                    { header: "AD SOYAD", key: "name", width: 45 },
+                    { header: "KLASMAN", key: "class", width: 18 },
+                    { header: "BÖLGELER", key: "regions", width: 30 },
+                    ...dateHeaders.map((dh, i) => ({ header: dh.toUpperCase(), key: `day_${i}`, width: 24 }))
+                ];
+            } else {
+                worksheet.columns = [
+                    { header: "AD SOYAD", key: "name", width: 45 },
+                    { header: "GÖREV", key: "officialType", width: 22 },
+                    { header: "BÖLGELER", key: "regions", width: 30 },
+                    ...dateHeaders.map((dh, i) => ({ header: dh.toUpperCase(), key: `day_${i}`, width: 24 }))
+                ];
+            }
 
-            // Style Header
+            // Header satırı stili
             const headerRow = worksheet.getRow(1);
-            headerRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+            headerRow.height = 50;
+            headerRow.font = { bold: true, color: { argb: "FFFFFFFF" }, size: 14 };
             headerRow.fill = {
-                type: 'pattern',
-                pattern: 'solid',
-                fgColor: { argb: 'FFDC143C' } // Crimson Red (BKS Kırmızı)
+                type: "pattern",
+                pattern: "solid",
+                fgColor: { argb: "FFDC143C" }
             };
-            headerRow.alignment = { vertical: 'middle', horizontal: 'center' };
+            headerRow.alignment = { vertical: "middle", horizontal: "center" };
 
-            // Add Rows
+            // Veri satırları
             for (let index = 0; index < data.length; index++) {
                 const form = data[index];
                 const isOff = !!form.official;
@@ -132,100 +142,87 @@ export async function GET(request: Request) {
                     "FIELD_COMMISSIONER": "Saha Komiseri"
                 } as Record<string, string>)[oType] || oType;
 
-                const formatPhone = (phone: string | null | undefined) => {
-                    if (!phone) return "-";
-                    const digits = phone.replace(/\D/g, '');
-                    if (digits.length === 11 && digits.startsWith('0')) {
-                        // 05321234567 → 0532 123 45 67
-                        return `${digits.substring(0, 4)} ${digits.substring(4, 7)} ${digits.substring(7, 9)} ${digits.substring(9, 11)}`;
-                    } else if (digits.length === 10) {
-                        // 5321234567 → 0532 123 45 67
-                        return `0${digits.substring(0, 3)} ${digits.substring(3, 6)} ${digits.substring(6, 8)} ${digits.substring(8, 10)}`;
-                    } else if (digits.length === 12 && digits.startsWith('90')) {
-                        // 905321234567 → 0532 123 45 67
-                        const local = digits.substring(2);
-                        return `0${local.substring(0, 3)} ${local.substring(3, 6)} ${local.substring(6, 8)} ${local.substring(8, 10)}`;
-                    } else if (digits.length === 13 && digits.startsWith('090')) {
-                        // 0905321234567 → 0532 123 45 67
-                        const local = digits.substring(3);
-                        return `0${local.substring(0, 3)} ${local.substring(3, 6)} ${local.substring(6, 8)} ${local.substring(8, 10)}`;
-                    }
-                    return phone;
-                };
-
                 const rowData: any = {
-                    name: `${ref.firstName} ${ref.lastName}`.toLocaleUpperCase('tr-TR'),
-                    officialType: oTypeLabel,
-                    class: !isOff ? formatClassification((ref as any).classification) : "GÖREVLİ",
-                    phone: formatPhone(ref.phone),
+                    name: `${ref.firstName} ${ref.lastName}`.toLocaleUpperCase("tr-TR"),
                     regions: regions
                 };
+
+                if (group === "REFEREE") {
+                    const fullLabel = formatClassification((ref as any).classification);
+                    rowData.class = SHORT_CLASSIFICATION_LABEL[fullLabel] ?? fullLabel;
+                } else {
+                    rowData.officialType = oTypeLabel;
+                }
 
                 for (let i = 0; i < 7; i++) {
                     const d = new Date(startDate);
                     d.setDate(startDate.getDate() + i);
-                    const dayId = d.toISOString().split('T')[0];
-                    const dayRecord = form.days.find(fd => fd.date.toISOString().split('T')[0] === dayId);
+                    const dayId = d.toISOString().split("T")[0];
+                    const dayRecord = form.days.find(fd => fd.date.toISOString().split("T")[0] === dayId);
 
                     if (dayRecord) {
                         let slots = dayRecord.slots;
                         if (slots) {
-                            slots = slots.replace(/\s+(Sonrası|Öncesi|İtibaren|Arası)/gi, '');
-                            slots = slots.split(',')
+                            slots = slots.replace(/\s+(Sonrası|Öncesi|İtibaren|Arası)/gi, "");
+                            slots = slots.split(",")
                                 .map(s => s.trim())
-                                .filter(s => s !== '18:00')
-                                .join(', ');
+                                .filter(s => s !== "18:00")
+                                .join(", ");
                         }
                         rowData[`day_${i}`] = slots || "-";
                     } else {
                         rowData[`day_${i}`] = "-";
                     }
                 }
+
                 worksheet.addRow(rowData);
-                
-                // EVENT LOOP YIELDING FOR OOM PROTECTION
+
                 if (index % 100 === 0) {
                     await new Promise(resolve => setTimeout(resolve, 0));
                 }
             }
 
-            // Styling adjustments for Data rows
+            // Veri satırları stili
             worksheet.eachRow((row, rowNumber) => {
-                // Zebra striping: Light grey for even data rows
                 const isEvenRow = rowNumber > 1 && rowNumber % 2 === 0;
 
                 row.eachCell((cell, colNumber) => {
                     cell.border = {
-                        top: { style: 'thin' },
-                        left: { style: 'thin' },
-                        bottom: { style: 'thin' },
-                        right: { style: 'thin' }
+                        top: { style: "thin" },
+                        left: { style: "thin" },
+                        bottom: { style: "thin" },
+                        right: { style: "thin" }
                     };
 
                     if (rowNumber > 1) {
+                        cell.font = { size: 14 };
+
                         if (isEvenRow) {
                             cell.fill = {
-                                type: 'pattern',
-                                pattern: 'solid',
-                                fgColor: { argb: 'FFF2F2F2' } // Light Grey
+                                type: "pattern",
+                                pattern: "solid",
+                                fgColor: { argb: "FFF2F2F2" }
                             };
                         }
 
-                        if (colNumber >= 6) {
-                            cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
+                        // Gün sütunları ortalı; diğerleri sola
+                        const fixedCols = group === "REFEREE" ? 3 : 3; // AD SOYAD + KLASMAN/GÖREV + BÖLGELER
+                        if (colNumber > fixedCols) {
+                            cell.alignment = { vertical: "middle", horizontal: "center", wrapText: true };
                         } else {
-                            // Name, type, class, phone, regions: no wrap so nothing gets cut off
-                            cell.alignment = { vertical: 'middle', wrapText: false };
+                            cell.alignment = { vertical: "middle", wrapText: false };
                         }
                     }
                 });
-                if (rowNumber > 1) row.height = 20;
+
+                if (rowNumber > 1) row.height = 50;
             });
         };
-        // Populate Sheets depending on Group
+
+        // Sheet'leri grup bazında oluştur
         if (group === "REFEREE") {
             const formattedFormsMap = new Map<string, typeof allForms>();
-            allForms.forEach(form => {
+            sortedForms.forEach(form => {
                 if (form.referee) {
                     const formatted = formatClassification(form.referee.classification);
                     if (!formattedFormsMap.has(formatted)) formattedFormsMap.set(formatted, []);
@@ -233,30 +230,27 @@ export async function GET(request: Request) {
                 }
             });
 
-            if (allForms.length > 0) await addDataSheet("HEPSİ", allForms);
+            if (sortedForms.length > 0) await addDataSheet("HEPSİ", sortedForms);
 
             const classOrder = ["A Klasmanı", "B Klasmanı", "C Klasmanı", "İl Hakemi", "Aday Hakem", "Bölge Hakemi", "Ulusal Hakem", "FIBA Hakemi"];
-
-            // First, add sheets in the preferred order
             for (const label of classOrder) {
                 const forms = formattedFormsMap.get(label);
                 if (forms && forms.length > 0) {
-                    await addDataSheet(label, forms);
+                    const sheetName = SHORT_CLASSIFICATION_LABEL[label] ?? label.substring(0, 31);
+                    await addDataSheet(sheetName, forms);
                 }
             }
-
-            // Then, add any other sheets that weren't in the preferred order
             for (const key of Array.from(formattedFormsMap.keys())) {
                 if (!classOrder.includes(key)) {
-                    // Avoid overlapping with existing sheets
-                    await addDataSheet(key.substring(0, 31), formattedFormsMap.get(key)!);
+                    const sheetName = SHORT_CLASSIFICATION_LABEL[key] ?? key.substring(0, 31);
+                    await addDataSheet(sheetName, formattedFormsMap.get(key)!);
                 }
             }
 
-            // Regional sheets: Avrupa, Anadolu, BGM
+            // Bölge sheet'leri
             const regionNames = ["Avrupa", "Anadolu", "BGM"];
             for (const regionName of regionNames) {
-                const regionForms = allForms.filter(form => {
+                const regionForms = sortedForms.filter(form => {
                     const ref = form.referee || form.official;
                     return ref?.regions?.some((r: any) => r.name === regionName);
                 });
@@ -272,7 +266,7 @@ export async function GET(request: Request) {
                 officialsMap.get(sheetName)!.push(form);
             };
 
-            allForms.forEach(form => {
+            sortedForms.forEach(form => {
                 if (form.official) {
                     const t = form.official.officialType;
                     if (t === "TABLE") addToMap("Masa Görevlisi", form);
@@ -293,27 +287,25 @@ export async function GET(request: Request) {
                 }
             });
 
-            if (allForms.length > 0) await addDataSheet("HEPSİ", allForms);
+            if (sortedForms.length > 0) await addDataSheet("HEPSİ", sortedForms);
 
             const officialOrder = ["Gözlemci", "Masa Görevlisi", "Saha Komiseri", "İstatistik Görevlisi", "Sağlık Görevlisi"];
-            
             for (const label of officialOrder) {
                 const forms = officialsMap.get(label);
                 if (forms && forms.length > 0) {
                     await addDataSheet(label, forms);
                 }
             }
-
             for (const key of Array.from(officialsMap.keys())) {
                 if (!officialOrder.includes(key)) {
                     await addDataSheet(key.substring(0, 31), officialsMap.get(key)!);
                 }
             }
 
-            // Regional sheets: Avrupa, Anadolu, BGM
+            // Bölge sheet'leri
             const regionNames = ["Avrupa", "Anadolu", "BGM"];
             for (const regionName of regionNames) {
-                const regionForms = allForms.filter(form => {
+                const regionForms = sortedForms.filter(form => {
                     const ref = form.referee || form.official;
                     return ref?.regions?.some((r: any) => r.name === regionName);
                 });
@@ -330,7 +322,7 @@ export async function GET(request: Request) {
         const buffer = await workbook.xlsx.writeBuffer();
         const nodeBuffer = Buffer.isBuffer(buffer) ? buffer : Buffer.from(buffer);
 
-        const dateStr = startDate.toISOString().split('T')[0];
+        const dateStr = startDate.toISOString().split("T")[0];
         let filename = "";
         const weekPrefix = week === "last" ? "Gecen_Hafta_" : "";
         if (group === "GENERAL") {
@@ -351,4 +343,3 @@ export async function GET(request: Request) {
         return NextResponse.json({ error: "Excel dosyası oluşturulurken bir hata oluştu." }, { status: 500 });
     }
 }
-
